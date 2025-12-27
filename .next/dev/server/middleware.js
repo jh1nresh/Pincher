@@ -1,0 +1,12 @@
+var R=require("./chunks/[turbopack]_runtime.js")("server/middleware.js")
+R.c("server/chunks/cb648_next_f36699b5._.js")
+R.c("server/chunks/608e9_@solana-program_token_dist_src_index_mjs_a22884e2._.js")
+R.c("server/chunks/608e9_@solana-program_token-2022_dist_src_index_mjs_e2873203._.js")
+R.c("server/chunks/cb648_@x402_paywall_dist_esm_index_175fc32c.js")
+R.c("server/chunks/cb648_@x402_paywall_dist_esm_evm_index_fdc6c9f2.js")
+R.c("server/chunks/cb648_@x402_paywall_dist_esm_svm_index_d5874765.js")
+R.c("server/chunks/cb648_ajv_dist_83e56405._.js")
+R.c("server/chunks/cb648_04b90b73._.js")
+R.c("server/chunks/[root-of-the-server]__8266c4a8._.js")
+R.m("[project]/Desktop/pincher/node_modules/next/dist/esm/build/templates/middleware.js { INNER_MIDDLEWARE_MODULE => \"[project]/Desktop/pincher/proxy.ts [middleware] (ecmascript)\" } [middleware] (ecmascript)")
+module.exports=R.m("[project]/Desktop/pincher/node_modules/next/dist/esm/build/templates/middleware.js { INNER_MIDDLEWARE_MODULE => \"[project]/Desktop/pincher/proxy.ts [middleware] (ecmascript)\" } [middleware] (ecmascript)").exports

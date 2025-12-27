@@ -1,0 +1,9 @@
+[profile.default]
+src = 'contracts'
+out = 'out'
+libs = ['lib']
+eth_rpc_url = 'https://sepolia.base.org'
+verifier = 'blockscout'
+
+[rpc_endpoints]
+base_sepolia = "https://sepolia.base.org"

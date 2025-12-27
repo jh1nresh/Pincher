@@ -1,0 +1,11 @@
+var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/escrow/config/route.js")
+R.c("server/chunks/cb648_viem_3222f43f._.js")
+R.c("server/chunks/cb648_next_e8dfc38a._.js")
+R.c("server/chunks/cb648_viem__esm_58e3c027._.js")
+R.c("server/chunks/5e06e_@noble_curves_esm_728e8dec._.js")
+R.c("server/chunks/5e06e_ox__esm_3281e3db._.js")
+R.c("server/chunks/cb648_8bb240a8._.js")
+R.c("server/chunks/[root-of-the-server]__6ffd61a8._.js")
+R.c("server/chunks/3d860_pincher__next-internal_server_app_api_escrow_config_route_actions_7a80d0b7.js")
+R.m("[project]/Desktop/pincher/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/Desktop/pincher/app/api/escrow/config/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)")
+module.exports=R.m("[project]/Desktop/pincher/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/Desktop/pincher/app/api/escrow/config/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)").exports

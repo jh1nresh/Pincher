@@ -1,0 +1,50 @@
+{
+  "pages": {
+    "/_app": [
+      "static/chunks/cb648_next_dist_compiled_0b80cd64._.js",
+      "static/chunks/cb648_next_dist_shared_lib_5f9510fd._.js",
+      "static/chunks/cb648_next_dist_client_d9cf11fd._.js",
+      "static/chunks/cb648_next_dist_c5cd4aa8._.js",
+      "static/chunks/cb648_next_app_298a2b27.js",
+      "static/chunks/[next]_entry_page-loader_ts_dc1c36a8._.js",
+      "static/chunks/cb648_react-dom_776a9faf._.js",
+      "static/chunks/cb648_0223f367._.js",
+      "static/chunks/[root-of-the-server]__c5243c3d._.js",
+      "static/chunks/Desktop_pincher_pages__app_2da965e7._.js",
+      "static/chunks/turbopack-Desktop_pincher_pages__app_bc412672._.js"
+    ],
+    "/_error": [
+      "static/chunks/cb648_next_dist_compiled_0b80cd64._.js",
+      "static/chunks/cb648_next_dist_shared_lib_3ca1183b._.js",
+      "static/chunks/cb648_next_dist_client_d9cf11fd._.js",
+      "static/chunks/cb648_next_dist_aa052222._.js",
+      "static/chunks/cb648_next_error_71cc36a0.js",
+      "static/chunks/[next]_entry_page-loader_ts_3d7d2fbd._.js",
+      "static/chunks/cb648_react-dom_776a9faf._.js",
+      "static/chunks/cb648_0223f367._.js",
+      "static/chunks/[root-of-the-server]__f12e22a2._.js",
+      "static/chunks/Desktop_pincher_pages__error_2da965e7._.js",
+      "static/chunks/turbopack-Desktop_pincher_pages__error_24e330a3._.js"
+    ]
+  },
+  "devFiles": [],
+  "polyfillFiles": [
+    "static/chunks/cb648_next_dist_build_polyfills_polyfill-nomodule.js"
+  ],
+  "lowPriorityFiles": [
+    "static/development/_ssgManifest.js",
+    "static/development/_buildManifest.js"
+  ],
+  "rootMainFiles": [
+    "static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_b528a25b._.js",
+    "static/chunks/cb648_next_dist_compiled_react-dom_12d2e0e3._.js",
+    "static/chunks/cb648_next_dist_compiled_react-server-dom-turbopack_868601d1._.js",
+    "static/chunks/cb648_next_dist_compiled_next-devtools_index_174ac915.js",
+    "static/chunks/cb648_next_dist_compiled_1003a6ee._.js",
+    "static/chunks/cb648_next_dist_client_02bc1815._.js",
+    "static/chunks/cb648_next_dist_1ef70377._.js",
+    "static/chunks/cb648_@swc_helpers_cjs_49023182._.js",
+    "static/chunks/Desktop_pincher_a0ff3932._.js",
+    "static/chunks/turbopack-Desktop_pincher_8c4bc9bf._.js"
+  ]
+}

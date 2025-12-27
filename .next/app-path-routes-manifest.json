@@ -1,0 +1,16 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/agent-pay/route": "/api/agent-pay",
+  "/api/escrow/config/route": "/api/escrow/config",
+  "/api/escrow/deposit/route": "/api/escrow/deposit",
+  "/api/escrow/release/route": "/api/escrow/release",
+  "/api/faucet/route": "/api/faucet",
+  "/api/rides/route": "/api/rides",
+  "/api/weather/route": "/api/weather",
+  "/demo/page": "/demo",
+  "/page": "/",
+  "/protected/page": "/protected",
+  "/test-map/page": "/test-map",
+  "/uber/page": "/uber"
+}

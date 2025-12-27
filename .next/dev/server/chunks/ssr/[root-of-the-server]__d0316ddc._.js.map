@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 20, "column": 0}, "map": {"version":3,"sources":["file:///Users/jhinresh/Desktop/pincher/app/demo/page.tsx"],"sourcesContent":["import DemoDashboard from '@/components/DemoDashboard';\n\nexport default function DemoPage() {\n  return (\n    <main className=\"min-h-screen bg-black text-white\">\n      <DemoDashboard />\n    </main>\n  );\n}\n"],"names":[],"mappings":";;;;;AAAA;;;AAEe,SAAS;IACtB,qBACE,oQAAC;QAAK,WAAU;kBACd,cAAA,oQAAC,6JAAa;;;;;;;;;;AAGpB"}}]
+}
