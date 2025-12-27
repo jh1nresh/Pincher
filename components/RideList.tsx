@@ -53,9 +53,6 @@ interface RideListProps {
   refreshTrigger?: number;
 }
 
-import Link from 'next/link';
-import RideChat from './RideChat';
-
 // ... (existing code)
 
 const SHORT_USDC_ADDRESS = `${USDC_ADDRESS.slice(0, 6)}...${USDC_ADDRESS.slice(-4)}`;
@@ -65,20 +62,9 @@ export default function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate
   const [rides, setRides] = useState<Ride[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<number | null>(null); // rideId
-  const [activeChatId, setActiveChatId] = useState<number | null>(null); // For chat toggle
-  const [expandedRideId, setExpandedRideId] = useState<number | null>(null);
-
-  const toggleExpand = (id: number) => {
-      setExpandedRideId(prev => prev === id ? null : id);
-  };
-
   const [successTicket, setSuccessTicket] = useState<{ id: number; tx: string } | null>(null);
   const { wallets } = useWallets();
   const { user } = usePrivy();
-
-  const onToggleChat = (rideId: number) => {
-      setActiveChatId(prev => prev === rideId ? null : rideId);
-  };
   
   // -- Action Handlers --
   const handleBook = async (ride: Ride) => {
@@ -474,26 +460,7 @@ export default function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate
                              </div>
                         )}
                         
-                        {/* Expanded Chat Toggle */}
-                        {isExpanded && (
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onToggleChat(ride.id);
-                                }}
-                                className="mt-2 w-full text-[10px] font-bold text-gray-400 hover:text-black hover:bg-gray-50 py-1.5 rounded border border-transparent hover:border-gray-100 transition-all flex items-center justify-center gap-1"
-                            >
-                                {activeChatId === ride.id ? 'Hide Chat' : '💬 Open Chat'}
-                            </button>
-                        )}
                     </div>
-
-                    {/* Render Chat if Open */}
-                    {activeChatId === ride.id && (
-                        <div className="mt-2 pt-2 border-t border-gray-100" onClick={(e) => e.stopPropagation()}>
-                             <RideChat rideId={ride.id} />
-                        </div>
-                    )}
                 </div>
                 </div>
             );
