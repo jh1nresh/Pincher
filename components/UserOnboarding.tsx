@@ -16,7 +16,7 @@ interface UserOnboardingProps {
 }
 
 export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
-  const { login, authenticated, user, ready, createWallet } = usePrivy();
+  const { login, authenticated, user, ready, createWallet, logout } = usePrivy();
   const { wallets } = useWallets();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [balance, setBalance] = useState<{ eth: string; usdc: string } | null>(null);
@@ -109,21 +109,44 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
                   <span className="text-xs font-bold text-black uppercase tracking-widest">Identity</span>
                 </div>
                 
-                <button
-                  onClick={() => {
-                      if (!ready) return;
-                      // If already authenticated but no wallet (stuck), try createWallet
-                      if (authenticated && !user?.wallet) {
-                          createWallet();
-                      } else {
-                          login();
-                      }
-                  }}
-                  disabled={!ready}
-                  className="w-full py-4 bg-black hover:bg-gray-800 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {ready ? (authenticated ? 'Create Wallet' : 'Login / Sign Up') : 'Initializing...'}
-                </button>
+                <div className="flex flex-col gap-3">
+                    <button
+                      onClick={async () => {
+                          if (!ready) return;
+                          
+                          // If authenticated but no wallet, try createWallet
+                          if (authenticated && !user?.wallet) {
+                              try {
+                                  console.log("Attempting to create wallet...");
+                                  await createWallet();
+                                  console.log("Wallet created successfully");
+                              } catch (e: any) {
+                                  console.error("Create wallet failed:", e);
+                                  alert(`Failed to create wallet: ${e.message}`);
+                              }
+                          } else {
+                              login();
+                          }
+                      }}
+                      disabled={!ready}
+                      className="w-full py-4 bg-black hover:bg-gray-800 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {ready ? (authenticated && !user?.wallet ? 'Create Wallet (Fix)' : 'Login / Sign Up') : 'Initializing...'}
+                    </button>
+
+                    {/* Escape Hatch: Logout */}
+                    {authenticated && (
+                         <button
+                            onClick={async () => {
+                                await logout();
+                                window.location.reload();
+                            }}
+                            className="text-xs text-gray-400 hover:text-red-500 underline"
+                        >
+                            Stuck? Reset Session
+                        </button>
+                    )}
+                </div>
               </div>
             )}
 
