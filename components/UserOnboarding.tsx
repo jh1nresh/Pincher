@@ -110,35 +110,32 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
                 </div>
                 
                 <div className="flex flex-col gap-3">
+                    {/* Standard Login Button */}
                     <button
-                      onClick={async () => {
-                          if (!ready) return;
-                          
-                          // Seamless recovery: If authenticated but no wallet, strictly call createWallet
-                          if (authenticated && !user?.wallet) {
-                              try {
-                                  console.log("Authenticated but no wallet. Resuming setup...");
-                                  await createWallet();
-                              } catch (e: any) {
-                                  console.error("Setup failed:", e);
-                                  // Only show alert if it's a real error, not just a close
-                                  if (e?.message !== 'User dismissed modal') {
-                                       const shouldReset = confirm("Setup stalled. Reset session to try again?");
-                                       if (shouldReset) {
-                                           await logout();
-                                           window.location.reload();
-                                       }
-                                  }
-                              }
-                          } else {
-                              login();
-                          }
-                      }}
+                      onClick={login}
                       disabled={!ready}
                       className="w-full py-4 bg-black hover:bg-gray-800 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {ready ? (authenticated && !user?.wallet ? 'Continue Login...' : 'Login / Sign Up') : 'Initializing...'}
+                      {ready ? 'Login / Sign Up' : 'Initializing...'}
                     </button>
+
+                    {/* Recovery Options for Stuck Users */}
+                    {authenticated && !user?.wallet && (
+                         <button
+                            onClick={async () => {
+                                try {
+                                    console.log("Manually triggering wallet creation...");
+                                    await createWallet();
+                                } catch (e: any) {
+                                    console.error("Wallet creation error:", e);
+                                    alert(`Setup Error: ${e.message}`);
+                                }
+                            }}
+                            className="w-full py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-black font-bold transition-all flex items-center justify-center gap-2"
+                        >
+                            ⚠️ Complete Setup
+                        </button>
+                    )}
 
                     {/* Escape Hatch: Logout */}
                     {authenticated && (
