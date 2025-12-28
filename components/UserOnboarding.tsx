@@ -114,15 +114,21 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
                       onClick={async () => {
                           if (!ready) return;
                           
-                          // If authenticated but no wallet, try createWallet
+                          // Seamless recovery: If authenticated but no wallet, strictly call createWallet
                           if (authenticated && !user?.wallet) {
                               try {
-                                  console.log("Attempting to create wallet...");
+                                  console.log("Authenticated but no wallet. Resuming setup...");
                                   await createWallet();
-                                  console.log("Wallet created successfully");
                               } catch (e: any) {
-                                  console.error("Create wallet failed:", e);
-                                  alert(`Failed to create wallet: ${e.message}`);
+                                  console.error("Setup failed:", e);
+                                  // Only show alert if it's a real error, not just a close
+                                  if (e?.message !== 'User dismissed modal') {
+                                       const shouldReset = confirm("Setup stalled. Reset session to try again?");
+                                       if (shouldReset) {
+                                           await logout();
+                                           window.location.reload();
+                                       }
+                                  }
                               }
                           } else {
                               login();
@@ -131,7 +137,7 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
                       disabled={!ready}
                       className="w-full py-4 bg-black hover:bg-gray-800 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {ready ? (authenticated && !user?.wallet ? 'Create Wallet (Fix)' : 'Login / Sign Up') : 'Initializing...'}
+                      {ready ? (authenticated && !user?.wallet ? 'Continue Login...' : 'Login / Sign Up') : 'Initializing...'}
                     </button>
 
                     {/* Escape Hatch: Logout */}
