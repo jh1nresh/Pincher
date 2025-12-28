@@ -188,7 +188,9 @@ export default function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate
       });
   };
 
-  const openInUber = (ride: Ride) => {
+
+
+  const openInUber = async (ride: Ride) => {
       const pLat = ride.ride_pickup_coords?.lat;
       const pLng = ride.ride_pickup_coords?.lng;
       const dLat = ride.ride_dropoff_coords?.lat;
@@ -199,19 +201,36 @@ export default function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate
           return;
       }
       
+      // Robust Uber Deep Link
+      // formatting addresses to remove duplicates or odd chars could help, but raw string is usually fine if encoded
       const baseUrl = "https://m.uber.com/ul/";
       const params = new URLSearchParams({
         action: 'setPickup',
-        client_id: 'pincher_demo',
+        client_id: 'pincher', // optional
         'pickup[latitude]': pLat.toString(),
         'pickup[longitude]': pLng.toString(),
-        'pickup[nickname]': ride.pickup_location,
+        'pickup[nickname]': ride.pickup_location.split(',')[0], // Short name
+        'pickup[formatted_address]': ride.pickup_location,
         'dropoff[latitude]': dLat.toString(),
         'dropoff[longitude]': dLng.toString(),
-        'dropoff[nickname]': ride.dropoff_location,
+        'dropoff[nickname]': ride.dropoff_location.split(',')[0], // Short name
+        'dropoff[formatted_address]': ride.dropoff_location,
       });
       
+      // 1. Open Uber
       window.open(`${baseUrl}?${params.toString()}`, '_blank');
+
+      // 2. Auto-complete ride status
+      try {
+          await fetch('/api/rides/complete', {
+              method: 'POST',
+              body: JSON.stringify({ rideId: ride.id })
+          });
+          // Optimistic update
+          setRides(prev => prev.map(r => r.id === ride.id ? { ...r, status: 'completed' } : r));
+      } catch (e) {
+          console.error("Failed to complete ride", e);
+      }
   };
 
   const handleCopyWeChat = (text: string) => {
@@ -336,7 +355,16 @@ export default function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate
 
   return (
     <div className="space-y-4">
-      {/* ... (Header remains same) ... */}
+      <div className="flex items-center justify-between px-1">
+          <h2 className="text-xl font-black tracking-tight text-gray-900">Nearby Rides</h2>
+          <button 
+            onClick={() => { setLoading(true); fetchRides(); }}
+            className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-full transition-all active:scale-95"
+            title="Refresh"
+          >
+             <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+          </button>
+      </div>
       
       {displayedRides.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100">
