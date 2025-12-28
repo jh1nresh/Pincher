@@ -77,13 +77,13 @@ if (!PRIVATE_KEY) {
 let account = null;
 try {
     let key = process.env.FAUCET_PRIVATE_KEY;
-    console.log("Debug: FAUCET_PRIVATE_KEY length:", key ? key.length : 'undefined');
+    console.log("Debug: FAUCET_PRIVATE_KEY length:", key ? key.length : "undefined");
     // Auto-fix: Prepend 0x if missing
-    if (key && !key.startsWith('0x')) {
+    if (key && !key.startsWith("0x")) {
         console.log("⚠️ Auto-fixing key: Prepending '0x'");
         key = `0x${key}`;
     }
-    if (key && key.startsWith('0x')) {
+    if (key && key.startsWith("0x")) {
         account = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$accounts$2f$privateKeyToAccount$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["privateKeyToAccount"])(key);
     } else {
         console.warn("❌ Key missing or invalid format (must start with 0x)");
@@ -138,7 +138,7 @@ async function POST(req) {
         const receipt = await __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$lib$2f$server$2d$wallet$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["publicClient"].getTransactionReceipt({
             hash: txHash
         });
-        if (receipt.status !== 'success') {
+        if (receipt.status !== "success") {
             return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
                 error: "Transaction failed on-chain"
             }, {
@@ -154,10 +154,10 @@ async function POST(req) {
         const supabaseUrl = ("TURBOPACK compile-time value", "https://ksfucvikvbnkocjkrvev.supabase.co");
         const supabaseKey = ("TURBOPACK compile-time value", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzZnVjdmlrdmJua29jamtydmV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY2MDQ3NTQsImV4cCI6MjA4MjE4MDc1NH0.dvnPd1IMH1ANvjySFAnq5EhR_m-qTfb4xKmR845qfSg");
         const supabase = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$supabase$2f$supabase$2d$js$2f$dist$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__["createClient"])(supabaseUrl, supabaseKey);
-        const { error } = await supabase.from('rides').update({
-            status: 'escrow_holding'
+        const { error } = await supabase.from("rides").update({
+            status: "escrow_holding"
         }) // Custom status indicating funds are locked
-        .eq('id', rideId);
+        .eq("id", rideId);
         if (error) {
             console.error("Supabase Error", error);
             return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
@@ -173,26 +173,26 @@ async function POST(req) {
             const { agentWallet } = await __turbopack_context__.A("[project]/Desktop/pincher/lib/server-wallet.ts [app-route] (ecmascript, async loader)");
             console.log(`[V2] Minting Ticket #${rideId} to ${userAddress}...`);
             const hash = await agentWallet.writeContract({
-                address: '0x1225A84FC29FcdA297736ffe22977f8C594C21bc',
+                address: "0x1225A84FC29FcdA297736ffe22977f8C594C21bc",
                 abi: [
                     {
-                        name: 'adminMint',
-                        type: 'function',
-                        stateMutability: 'nonpayable',
+                        name: "adminMint",
+                        type: "function",
+                        stateMutability: "nonpayable",
                         inputs: [
                             {
-                                name: 'to',
-                                type: 'address'
+                                name: "to",
+                                type: "address"
                             },
                             {
-                                name: 'rideId',
-                                type: 'uint256'
+                                name: "rideId",
+                                type: "uint256"
                             }
                         ],
                         outputs: []
                     }
                 ],
-                functionName: 'adminMint',
+                functionName: "adminMint",
                 args: [
                     userAddress,
                     BigInt(rideId)
@@ -205,7 +205,7 @@ async function POST(req) {
         console.log(`[Escrow] Ride ${rideId} locked. Funds in Agent Wallet.`);
         return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             success: true,
-            status: 'escrow_holding'
+            status: "escrow_holding"
         });
     } catch (error) {
         console.error("Deposit Error:", error);
