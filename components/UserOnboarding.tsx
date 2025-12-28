@@ -110,44 +110,49 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
                 </div>
                 
                 <div className="flex flex-col gap-3">
-                    {/* Standard Login Button */}
-                    <button
-                      onClick={login}
-                      disabled={!ready}
-                      className="w-full py-4 bg-black hover:bg-gray-800 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {ready ? 'Login / Sign Up' : 'Initializing...'}
-                    </button>
+                    {/* State 1: Not Authenticated -> Login */}
+                    {!authenticated && (
+                        <button
+                          onClick={login}
+                          disabled={!ready}
+                          className="w-full py-4 bg-black hover:bg-gray-800 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {ready ? 'Login / Sign Up' : 'Initializing...'}
+                        </button>
+                    )}
 
-                    {/* Recovery Options for Stuck Users */}
+                    {/* State 2: Authenticated but No Wallet -> Create Wallet */}
                     {authenticated && !user?.wallet && (
                          <button
                             onClick={async () => {
                                 try {
-                                    console.log("Manually triggering wallet creation...");
+                                    console.log("Creating wallet for authenticated user...");
                                     await createWallet();
                                 } catch (e: any) {
                                     console.error("Wallet creation error:", e);
-                                    alert(`Setup Error: ${e.message}`);
+                                    alert(`Wallet Creation Failed: ${e.message}`);
                                 }
                             }}
-                            className="w-full py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-black font-bold transition-all flex items-center justify-center gap-2"
+                            disabled={!ready}
+                            className="w-full py-4 bg-black hover:bg-gray-800 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg active:scale-[0.98]"
                         >
-                            ⚠️ Complete Setup
+                            Create Wallet
                         </button>
                     )}
 
-                    {/* Escape Hatch: Logout */}
+                    {/* Debug/Reset for stuck states */}
                     {authenticated && (
-                         <button
-                            onClick={async () => {
-                                await logout();
-                                window.location.reload();
-                            }}
-                            className="text-xs text-gray-400 hover:text-red-500 underline"
-                        >
-                            Stuck? Reset Session
-                        </button>
+                        <div className="text-center">
+                            <button
+                                onClick={async () => {
+                                    await logout();
+                                    window.location.reload();
+                                }}
+                                className="text-xs text-gray-400 hover:text-red-500 underline"
+                            >
+                                Reset Session
+                            </button>
+                        </div>
                     )}
                 </div>
               </div>
