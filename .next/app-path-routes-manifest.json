@@ -8,9 +8,7 @@
   "/api/faucet/route": "/api/faucet",
   "/api/rides/route": "/api/rides",
   "/api/weather/route": "/api/weather",
-  "/demo/page": "/demo",
   "/page": "/",
   "/protected/page": "/protected",
-  "/test-map/page": "/test-map",
-  "/uber/page": "/uber"
+  "/test-map/page": "/test-map"
 }

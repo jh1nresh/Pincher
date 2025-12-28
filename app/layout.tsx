@@ -20,6 +20,7 @@ export const metadata: Metadata = {
     icon: "/pincher-v1.png",
     apple: "/pincher-v1.png",
   },
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({
@@ -30,10 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="icon" type="image/png" href="/pincher-v1.png" />
-        <link rel="apple-touch-icon" href="/pincher-v1.png" />
         <meta name="apple-mobile-web-app-title" content="Pincher" />
-        <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

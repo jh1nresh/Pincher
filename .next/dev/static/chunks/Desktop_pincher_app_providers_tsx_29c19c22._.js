@@ -36,8 +36,8 @@ function Providers({ children }) {
             })["Providers.useEffect"];
         }
     }["Providers.useEffect"], []);
-    const appId = ("TURBOPACK compile-time value", "clw7229m108m7di52v0iya2qc");
-    const clientId = ("TURBOPACK compile-time value", "client-WY2mABYxPWCherPBzKMW4HXRTghZMjhjNTTCfrDvn3PMT");
+    const appId = ("TURBOPACK compile-time value", "clw7229m108m7di52v0iya2qc") || 'clw7229m108m7di52v0iya2qc';
+    const clientId = ("TURBOPACK compile-time value", "client-WY2mABYxPWCherPBzKMW4HXRTghZMjhjNTTCfrDvn3PMT") || 'client-WY2mABYxPWCherPBzKMW4HXRTghZMjhjNTTCfrDvn3PMT';
     if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
     ;
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$index$2d$NL2cPmJD$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__H__as__PrivyProvider$3e$__["PrivyProvider"], {
@@ -59,7 +59,7 @@ function Providers({ children }) {
         children: children
     }, void 0, false, {
         fileName: "[project]/Desktop/pincher/app/providers.tsx",
-        lineNumber: 30,
+        lineNumber: 29,
         columnNumber: 5
     }, this);
 }

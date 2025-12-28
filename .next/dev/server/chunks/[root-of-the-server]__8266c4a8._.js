@@ -82,16 +82,14 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_m
 ;
 ;
 ;
-const facilitatorUrl = process.env.FACILITATOR_URL;
-const evmAddress = process.env.EVM_ADDRESS;
-const svmAddress = process.env.SVM_ADDRESS;
-if (!facilitatorUrl) {
-    console.error("❌ FACILITATOR_URL environment variable is required");
-    process.exit(1);
+const facilitatorUrl = process.env.FACILITATOR_URL || "https://facilitator.x402.org";
+const evmAddress = process.env.EVM_ADDRESS || "0x0000000000000000000000000000000000000000";
+const svmAddress = process.env.SVM_ADDRESS || "0x0000000000000000000000000000000000000000";
+if (!process.env.FACILITATOR_URL) {
+    console.warn("⚠️  FACILITATOR_URL not set, using default:", facilitatorUrl);
 }
-if (!evmAddress || !svmAddress) {
-    console.error("❌ EVM_ADDRESS and SVM_ADDRESS environment variables are required");
-    process.exit(1);
+if (!process.env.EVM_ADDRESS || !process.env.SVM_ADDRESS) {
+    console.warn("⚠️  EVM_ADDRESS or SVM_ADDRESS not set, using defaults");
 }
 // Create HTTP facilitator client
 const facilitatorClient = new __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$x402$2f$core$2f$dist$2f$esm$2f$chunk$2d$RCHDDVGC$2e$mjs__$5b$middleware$5d$__$28$ecmascript$29$__["HTTPFacilitatorClient"]({

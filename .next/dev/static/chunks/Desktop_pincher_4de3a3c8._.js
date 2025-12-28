@@ -713,11 +713,6 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_m
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$utils$2f$unit$2f$parseUnits$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/_esm/utils/unit/parseUnits.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$utils$2f$abi$2f$encodeFunctionData$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/_esm/utils/abi/encodeFunctionData.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$chains$2f$definitions$2f$baseSepolia$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/_esm/chains/definitions/baseSepolia.js [app-client] (ecmascript)");
-(()=>{
-    const e = new Error("Cannot find module './RideChat'");
-    e.code = 'MODULE_NOT_FOUND';
-    throw e;
-})();
 ;
 var _s = __turbopack_context__.k.signature();
 ;
@@ -752,7 +747,6 @@ const ERC20_ABI = [
         type: 'function'
     }
 ];
-;
 // ... (existing code)
 const SHORT_USDC_ADDRESS = `${USDC_ADDRESS.slice(0, 6)}...${USDC_ADDRESS.slice(-4)}`;
 const V2_CONTRACT_ADDRESS = "0x1225A84FC29FcdA297736ffe22977f8C594C21bc"; // Deployed on Base Sepolia
@@ -761,17 +755,9 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
     const [rides, setRides] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
     const [loading, setLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(true);
     const [actionLoading, setActionLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null); // rideId
-    const [activeChatId, setActiveChatId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null); // For chat toggle
-    const [expandedRideId, setExpandedRideId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
-    const toggleExpand = (id)=>{
-        setExpandedRideId((prev)=>prev === id ? null : id);
-    };
     const [successTicket, setSuccessTicket] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const { wallets } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$useWallets$2d$kObl6ZLS$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__useWallets$3e$__["useWallets"])();
     const { user } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$usePrivy$2d$BWtc2XF$2d2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__usePrivy$3e$__["usePrivy"])();
-    const onToggleChat = (rideId)=>{
-        setActiveChatId((prev)=>prev === rideId ? null : rideId);
-    };
     // -- Action Handlers --
     const handleBook = async (ride)=>{
         try {
@@ -1032,12 +1018,12 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
             className: "w-6 h-6 border-2 border-slate-200 border-t-black rounded-full animate-spin"
         }, void 0, false, {
             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-            lineNumber: 330,
+            lineNumber: 316,
             columnNumber: 11
         }, this)
     }, void 0, false, {
         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-        lineNumber: 329,
+        lineNumber: 315,
         columnNumber: 7
     }, this);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1053,12 +1039,12 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                             children: "🚗"
                         }, void 0, false, {
                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                            lineNumber: 343,
+                            lineNumber: 329,
                             columnNumber: 19
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                        lineNumber: 342,
+                        lineNumber: 328,
                         columnNumber: 14
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1066,13 +1052,13 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                         children: "No rides nearby"
                     }, void 0, false, {
                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                        lineNumber: 345,
+                        lineNumber: 331,
                         columnNumber: 14
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                lineNumber: 340,
+                lineNumber: 326,
                 columnNumber: 9
             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "space-y-3 pb-20 px-1",
@@ -1101,7 +1087,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                     children: timeStr
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 368,
+                                                    lineNumber: 354,
                                                     columnNumber: 30
                                                 }, this),
                                                 (ride.match_score || 0) > 80 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1119,12 +1105,12 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                                 d: "M5 13l4 4L19 7"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                                lineNumber: 373,
+                                                                lineNumber: 359,
                                                                 columnNumber: 120
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                            lineNumber: 373,
+                                                            lineNumber: 359,
                                                             columnNumber: 37
                                                         }, this),
                                                         ride.match_score,
@@ -1132,13 +1118,13 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 372,
+                                                    lineNumber: 358,
                                                     columnNumber: 33
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 367,
+                                            lineNumber: 353,
                                             columnNumber: 26
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1149,7 +1135,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                     children: "Escrow"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 380,
+                                                    lineNumber: 366,
                                                     columnNumber: 34
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1157,7 +1143,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                     children: "0.01 USDC"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 382,
+                                                    lineNumber: 368,
                                                     columnNumber: 30
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
@@ -1172,24 +1158,24 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                         d: "M19 9l-7 7-7-7"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                        lineNumber: 384,
+                                                        lineNumber: 370,
                                                         columnNumber: 180
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 384,
+                                                    lineNumber: 370,
                                                     columnNumber: 30
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 378,
+                                            lineNumber: 364,
                                             columnNumber: 26
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                    lineNumber: 366,
+                                    lineNumber: 352,
                                     columnNumber: 21
                                 }, this),
                                 isExpanded ? // EXPANDED VIEW: Full Addresses
@@ -1203,7 +1189,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                     children: "Pickup"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 393,
+                                                    lineNumber: 379,
                                                     columnNumber: 33
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1211,13 +1197,13 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                     children: ride.pickup_location
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 394,
+                                                    lineNumber: 380,
                                                     columnNumber: 33
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 392,
+                                            lineNumber: 378,
                                             columnNumber: 29
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1227,7 +1213,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                     children: "Dropoff"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 397,
+                                                    lineNumber: 383,
                                                     columnNumber: 33
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1235,13 +1221,13 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                     children: ride.dropoff_location
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 398,
+                                                    lineNumber: 384,
                                                     columnNumber: 33
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 396,
+                                            lineNumber: 382,
                                             columnNumber: 29
                                         }, this),
                                         ride.distance_from_user !== undefined && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1252,13 +1238,13 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 401,
+                                            lineNumber: 387,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                    lineNumber: 391,
+                                    lineNumber: 377,
                                     columnNumber: 25
                                 }, this) : // COLLAPSED VIEW: Summary Line
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1269,7 +1255,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                             children: ride.pickup_location.split(',')[0]
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 409,
+                                            lineNumber: 395,
                                             columnNumber: 29
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1277,7 +1263,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                             children: "➜"
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 410,
+                                            lineNumber: 396,
                                             columnNumber: 29
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1285,13 +1271,13 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                             children: ride.dropoff_location.split(',')[0]
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 411,
+                                            lineNumber: 397,
                                             columnNumber: 29
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                    lineNumber: 408,
+                                    lineNumber: 394,
                                     columnNumber: 25
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1305,7 +1291,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                             children: isBooking ? 'Processing...' : 'Pay Deposit (0.01 USDC) & Join'
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 418,
+                                            lineNumber: 404,
                                             columnNumber: 29
                                         }, this),
                                         ride.status === 'escrow_holding' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1319,7 +1305,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                             children: "Ride In Progress"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                            lineNumber: 430,
+                                                            lineNumber: 416,
                                                             columnNumber: 38
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1330,7 +1316,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                                     children: ride.wechat_id
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                                    lineNumber: 432,
+                                                                    lineNumber: 418,
                                                                     columnNumber: 41
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1352,29 +1338,29 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                                             d: "M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 012 2v-8a2 2 0 01-2-2h-8a2 2 0 01-2 2v8a2 2 0 012 2z"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                                            lineNumber: 434,
+                                                                            lineNumber: 420,
                                                                             columnNumber: 124
                                                                         }, this)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                                        lineNumber: 434,
+                                                                        lineNumber: 420,
                                                                         columnNumber: 45
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                                    lineNumber: 433,
+                                                                    lineNumber: 419,
                                                                     columnNumber: 41
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                            lineNumber: 431,
+                                                            lineNumber: 417,
                                                             columnNumber: 38
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 429,
+                                                    lineNumber: 415,
                                                     columnNumber: 33
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1388,7 +1374,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                                 children: "Open Uber"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                                lineNumber: 444,
+                                                                lineNumber: 430,
                                                                 columnNumber: 45
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1397,13 +1383,13 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                                 children: "Support"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                                lineNumber: 450,
+                                                                lineNumber: 436,
                                                                 columnNumber: 45
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                        lineNumber: 443,
+                                                        lineNumber: 429,
                                                         columnNumber: 41
                                                     }, this) : /* Passenger Actions */ /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                         onClick: ()=>handleRelease(ride),
@@ -1412,18 +1398,18 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                         children: isBooking ? 'Verifying...' : '✅ Confirm Pickup'
                                                     }, void 0, false, {
                                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                        lineNumber: 459,
+                                                        lineNumber: 445,
                                                         columnNumber: 41
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 439,
+                                                    lineNumber: 425,
                                                     columnNumber: 33
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 428,
+                                            lineNumber: 414,
                                             columnNumber: 30
                                         }, this),
                                         ride.status === 'completed' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1431,57 +1417,30 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                             children: "Completed"
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 472,
+                                            lineNumber: 458,
                                             columnNumber: 30
-                                        }, this),
-                                        isExpanded && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                            onClick: (e)=>{
-                                                e.stopPropagation();
-                                                onToggleChat(ride.id);
-                                            },
-                                            className: "mt-2 w-full text-[10px] font-bold text-gray-400 hover:text-black hover:bg-gray-50 py-1.5 rounded border border-transparent hover:border-gray-100 transition-all flex items-center justify-center gap-1",
-                                            children: activeChatId === ride.id ? 'Hide Chat' : '💬 Open Chat'
-                                        }, void 0, false, {
-                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 479,
-                                            columnNumber: 29
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                    lineNumber: 416,
+                                    lineNumber: 402,
                                     columnNumber: 21
-                                }, this),
-                                activeChatId === ride.id && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "mt-2 pt-2 border-t border-gray-100",
-                                    onClick: (e)=>e.stopPropagation(),
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(RideChat, {
-                                        rideId: ride.id
-                                    }, void 0, false, {
-                                        fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                        lineNumber: 494,
-                                        columnNumber: 30
-                                    }, this)
-                                }, void 0, false, {
-                                    fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                    lineNumber: 493,
-                                    columnNumber: 25
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                            lineNumber: 364,
+                            lineNumber: 350,
                             columnNumber: 17
                         }, this)
                     }, ride.id, false, {
                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                        lineNumber: 356,
+                        lineNumber: 342,
                         columnNumber: 17
                     }, this);
                 })
             }, void 0, false, {
                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                lineNumber: 348,
+                lineNumber: 334,
                 columnNumber: 9
             }, this),
             successTicket && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1505,17 +1464,17 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                         d: "M5 13l4 4L19 7"
                                     }, void 0, false, {
                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                        lineNumber: 512,
+                                        lineNumber: 479,
                                         columnNumber: 27
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                    lineNumber: 511,
+                                    lineNumber: 478,
                                     columnNumber: 25
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                lineNumber: 510,
+                                lineNumber: 477,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -1523,7 +1482,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                 children: "Ride Confirmed"
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                lineNumber: 516,
+                                lineNumber: 483,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1531,7 +1490,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                 children: "Deposit locked. Driver is on the way."
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                lineNumber: 519,
+                                lineNumber: 486,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1545,7 +1504,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                 children: "Ticket ID"
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                lineNumber: 526,
+                                                lineNumber: 493,
                                                 columnNumber: 29
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1556,20 +1515,20 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                lineNumber: 527,
+                                                lineNumber: 494,
                                                 columnNumber: 29
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                        lineNumber: 525,
+                                        lineNumber: 492,
                                         columnNumber: 25
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "w-full h-px bg-gray-200 my-2"
                                     }, void 0, false, {
                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                        lineNumber: 529,
+                                        lineNumber: 496,
                                         columnNumber: 25
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1580,7 +1539,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                 children: "Status"
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                lineNumber: 531,
+                                                lineNumber: 498,
                                                 columnNumber: 29
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1588,19 +1547,19 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                 children: "ACTIVE"
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                lineNumber: 532,
+                                                lineNumber: 499,
                                                 columnNumber: 29
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                        lineNumber: 530,
+                                        lineNumber: 497,
                                         columnNumber: 25
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                lineNumber: 524,
+                                lineNumber: 491,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1612,7 +1571,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                         children: "Track Driver"
                                     }, void 0, false, {
                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                        lineNumber: 538,
+                                        lineNumber: 505,
                                         columnNumber: 25
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
@@ -1623,39 +1582,39 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                         children: "View Receipt on BaseScan ↗"
                                     }, void 0, false, {
                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                        lineNumber: 545,
+                                        lineNumber: 512,
                                         columnNumber: 25
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                lineNumber: 537,
+                                lineNumber: 504,
                                 columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                        lineNumber: 508,
+                        lineNumber: 475,
                         columnNumber: 17
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                    lineNumber: 507,
+                    lineNumber: 474,
                     columnNumber: 13
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                lineNumber: 506,
+                lineNumber: 473,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-        lineNumber: 336,
+        lineNumber: 322,
         columnNumber: 5
     }, this);
 }
-_s(RideList, "1LUtA7+fF7OmU9VmKTcXBlDvWqM=", false, function() {
+_s(RideList, "yxebYz5nPXTtSy40fs5QXbqF73U=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$useWallets$2d$kObl6ZLS$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__useWallets$3e$__["useWallets"],
         __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$usePrivy$2d$BWtc2XF$2d2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__usePrivy$3e$__["usePrivy"]
