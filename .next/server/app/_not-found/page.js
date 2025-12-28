@@ -2,12 +2,12 @@ var R=require("../../chunks/ssr/[turbopack]_runtime.js")("server/app/_not-found/
 R.c("server/chunks/ssr/[root-of-the-server]__eac1e014._.js")
 R.c("server/chunks/ssr/cb648_next_dist_d307b085._.js")
 R.c("server/chunks/ssr/cb648_next_dist_esm_build_templates_app-page_422d37ef.js")
-R.c("server/chunks/ssr/[root-of-the-server]__be64ae53._.js")
-R.c("server/chunks/ssr/cb648_next_dist_fdb7cba4._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__99221f69._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__efdd8aea._.js")
 R.c("server/chunks/ssr/cb648_next_dist_749133df._.js")
-R.c("server/chunks/ssr/[root-of-the-server]__9beb80eb._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__c2cc5bb6._.js")
 R.c("server/chunks/ssr/cb648_next_dist_client_components_43ef269e._.js")
 R.c("server/chunks/ssr/cb648_next_dist_client_components_builtin_forbidden_49036e28.js")
 R.c("server/chunks/ssr/Desktop_pincher__next-internal_server_app__not-found_page_actions_f71ae08b.js")
-R.m(983447)
-module.exports=R.m(983447).exports
+R.m(83447)
+module.exports=R.m(83447).exports

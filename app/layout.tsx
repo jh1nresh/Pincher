@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Providers from "./providers";
+import DynamicProviders from "@/components/DynamicProviders";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,15 +29,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <head>
         <meta name="apple-mobile-web-app-title" content="Pincher" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        suppressHydrationWarning
       >
-        <Providers>{children}</Providers>
+        <DynamicProviders>{children}</DynamicProviders>
       </body>
     </html>
   );
