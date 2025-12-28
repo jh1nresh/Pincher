@@ -83,7 +83,10 @@ export default function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate
   const handleBook = async (ride: Ride) => {
     try {
         setActionLoading(ride.id);
-        const wallet = wallets[0];
+        
+        // Prioritize Privy embedded wallet
+        const wallet = wallets.find(w => w.walletClientType === 'privy') || wallets[0];
+        
         if (!wallet) {
             alert("Connect wallet first!");
             return;

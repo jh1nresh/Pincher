@@ -33,8 +33,8 @@ export default function Providers({children}: {children: React.ReactNode}) {
     <PrivyProvider
       appId={appId}
       clientId={clientId}
-      supportedChains={[baseSepolia]}
       config={{
+        supportedChains: [baseSepolia],
         // Create embedded wallets for users who don't have a wallet
         embeddedWallets: {
           ethereum: {
