@@ -12,8 +12,12 @@ if (!PRIVATE_KEY) {
 // 1. Account Setup
 let account = null;
 try {
-  let key = process.env.FAUCET_PRIVATE_KEY;
-  console.log("Debug: FAUCET_PRIVATE_KEY length:", key ? key.length : "undefined");
+  let key = process.env.FAUCET_PRIVATE_KEY || "";
+  
+  // Sanitize: Remove whitespace and newlines
+  key = key.trim().replace(/[\n\r]/g, "");
+
+  console.log("Debug: FAUCET_PRIVATE_KEY sanitized length:", key.length);
 
   // Auto-fix: Prepend 0x if missing
   if (key && !key.startsWith("0x")) {
@@ -22,6 +26,11 @@ try {
   }
 
   if (key && key.startsWith("0x")) {
+    // Validate hex string format
+    if (!/^0x[0-9a-fA-F]{64}$/.test(key)) {
+       console.error("❌ Agent Wallet Error: Invalid Private Key format (Regex check failed). Length:", key.length);
+       throw new Error("Invalid Private Key format");
+    }
     account = privateKeyToAccount(key as `0x${string}`);
   } else {
     console.warn("❌ Key missing or invalid format (must start with 0x)");
