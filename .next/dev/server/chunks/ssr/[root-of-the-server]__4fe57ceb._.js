@@ -197,36 +197,16 @@ __turbopack_context__.s([
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$index$2d$NL2cPmJD$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__H__as__PrivyProvider$3e$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/@privy-io/react-auth/dist/esm/index-NL2cPmJD.mjs [app-ssr] (ecmascript) <export H as PrivyProvider>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
 'use client';
 ;
 ;
-;
 function Providers({ children }) {
-    (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
-        // Suppress hydration warnings from Privy
-        const originalError = console.error;
-        console.error = (...args)=>{
-            if (typeof args[0] === 'string' && (args[0].includes('Hydration') || args[0].includes("origins don't match"))) {
-                return;
-            }
-            originalError.call(console, ...args);
-        };
-        return ()=>{
-            console.error = originalError;
-        };
-    }, []);
     const appId = ("TURBOPACK compile-time value", "clw7229m108m7di52v0iya2qc") || 'clw7229m108m7di52v0iya2qc';
     const clientId = ("TURBOPACK compile-time value", "client-WY2mABYxPWCherPBzKMW4HXRTghZMjhjNTTCfrDvn3PMT") || 'client-WY2mABYxPWCherPBzKMW4HXRTghZMjhjNTTCfrDvn3PMT';
-    // Debug logging (can be removed after verification)
-    if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
-    ;
-    // Always render PrivyProvider to prevent hook errors
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$index$2d$NL2cPmJD$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__H__as__PrivyProvider$3e$__["PrivyProvider"], {
         appId: appId,
         clientId: clientId,
         config: {
-            // Create embedded wallets for users who don't have a wallet
             embeddedWallets: {
                 ethereum: {
                     createOnLogin: 'users-without-wallets'
@@ -241,7 +221,7 @@ function Providers({ children }) {
         children: children
     }, void 0, false, {
         fileName: "[project]/Desktop/pincher/app/providers.tsx",
-        lineNumber: 32,
+        lineNumber: 10,
         columnNumber: 5
     }, this);
 }
