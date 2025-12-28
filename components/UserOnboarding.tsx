@@ -16,7 +16,7 @@ interface UserOnboardingProps {
 }
 
 export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
-  const { login, authenticated, user, ready } = usePrivy();
+  const { login, authenticated, user, ready, createWallet } = usePrivy();
   const { wallets } = useWallets();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [balance, setBalance] = useState<{ eth: string; usdc: string } | null>(null);
@@ -111,14 +111,18 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
                 
                 <button
                   onClick={() => {
-                      console.log("Login button clicked. Ready:", ready);
-                      if (ready) login();
-                      else alert("Auth system initializing...");
+                      if (!ready) return;
+                      // If already authenticated but no wallet (stuck), try createWallet
+                      if (authenticated && !user?.wallet) {
+                          createWallet();
+                      } else {
+                          login();
+                      }
                   }}
                   disabled={!ready}
                   className="w-full py-4 bg-black hover:bg-gray-800 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {ready ? 'Login / Sign Up' : 'Initializing...'}
+                  {ready ? (authenticated ? 'Create Wallet' : 'Login / Sign Up') : 'Initializing...'}
                 </button>
               </div>
             )}
