@@ -300,11 +300,21 @@ export default function SearchBox({
                         <div className="flex gap-2">
                             <div className="flex-1">
                                 <label className="text-[10px] uppercase font-bold text-gray-400">Time</label>
-                                <input type="datetime-local" className="w-full bg-gray-50 rounded p-2 text-xs font-bold" value={departureTime} onChange={e=>setDepartureTime(e.target.value)} />
+                                <input 
+                                    type="datetime-local" 
+                                    className="w-full bg-gray-100 border border-gray-200 rounded p-2 text-xs font-bold text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black" 
+                                    value={departureTime} 
+                                    onChange={e=>setDepartureTime(e.target.value)} 
+                                />
                             </div>
                             <div className="flex-1">
                                 <label className="text-[10px] uppercase font-bold text-gray-400">WeChat</label>
-                                <input className="w-full bg-gray-50 rounded p-2 text-xs font-bold" placeholder="ID" value={wechatId} onChange={e=>setWechatId(e.target.value)} />
+                                <input 
+                                    className="w-full bg-gray-100 border border-gray-200 rounded p-2 text-xs font-bold text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black" 
+                                    placeholder="ID" 
+                                    value={wechatId} 
+                                    onChange={e=>setWechatId(e.target.value)} 
+                                />
                             </div>
                         </div>
                         <button onClick={handleSubmit} disabled={loading||!wechatId} className="w-full bg-black text-white py-3 rounded-lg font-bold text-sm shadow-lg hover:bg-gray-800 disabled:opacity-50">
