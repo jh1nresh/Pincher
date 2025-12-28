@@ -2,6 +2,7 @@
 
 import {PrivyProvider} from '@privy-io/react-auth';
 import {useEffect} from 'react';
+import {baseSepolia} from 'viem/chains';
 
 export default function Providers({children}: {children: React.ReactNode}) {
   useEffect(() => {
@@ -32,6 +33,7 @@ export default function Providers({children}: {children: React.ReactNode}) {
     <PrivyProvider
       appId={appId}
       clientId={clientId}
+      supportedChains={[baseSepolia]}
       config={{
         // Create embedded wallets for users who don't have a wallet
         embeddedWallets: {
@@ -44,6 +46,7 @@ export default function Providers({children}: {children: React.ReactNode}) {
           accentColor: '#000000',
           logo: 'https://auth.privy.io/logos/privy-logo.png',
         },
+        defaultChain: baseSepolia,
       }}
     >
       {children}
