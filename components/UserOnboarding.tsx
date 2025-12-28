@@ -139,7 +139,7 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
                      )}
                   </div>
 
-                  {balance && parseFloat(balance.usdc) < 1 && (
+                  {balance && parseFloat(balance.usdc) < 0.01 && (
                       <button
                         onClick={claimFaucet}
                         disabled={faucetStatus === 'claiming' || faucetStatus === 'success'}
@@ -153,11 +153,11 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
                          ) : faucetStatus === 'success' ? (
                              'Funds Received!'
                          ) : (
-                             'Claim 50 Test-USDC & ETH'
+                             'Claim 0.05 USDC & 0.0001 ETH'
                          )}
                       </button>
                   )}
-                  {balance && parseFloat(balance.usdc) >= 1 && (
+                  {balance && parseFloat(balance.usdc) >= 0.01 && (
                       <div className="text-center text-xs text-green-700 font-bold py-2 bg-green-50 rounded-lg border border-green-100">
                           Ready to use!
                       </div>
@@ -167,7 +167,7 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
                 {/* Step 3 Action moved here */}
                 <button
                     onClick={onComplete}
-                    disabled={balance ? parseFloat(balance.usdc) < 1 : true}
+                    disabled={balance ? parseFloat(balance.usdc) < 0.01 : true}
                     className="w-full py-4 bg-black text-white hover:bg-gray-900 disabled:bg-gray-200 disabled:text-gray-400 rounded-xl font-bold text-lg tracking-wide transition-all shadow-lg active:scale-[0.98]"
                 >
                     Start Ride

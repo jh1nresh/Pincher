@@ -40,6 +40,7 @@ export async function POST(req: Request) {
     }).extend(publicActions);
 
     console.log(`Faucet request for: ${address}`);
+    console.log(`Sender Address: ${account.address}`);
 
     // 1. Send ETH (0.0001 ETH) for gas
     // @ts-expect-error - viem strict type mismatch for kzg on Base Sepolia
