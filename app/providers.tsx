@@ -18,13 +18,13 @@ export default function Providers({children}: {children: React.ReactNode}) {
     };
   }, []);
 
-  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || 'clw7229m108m7di52v0iya2qc';
-  const clientId = process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID || 'client-WY2mABYxPWCherPBzKMW4HXRTghZMjhjNTTCfrDvn3PMT';
+  const appId = (process.env.NEXT_PUBLIC_PRIVY_APP_ID || '').trim() || 'clw7229m108m7di52v0iya2qc';
+  const clientId = (process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID || '').trim() || 'client-WY2mABYxPWCherPBzKMW4HXRTghZMjhjNTTCfrDvn3PMT';
 
   // Debug logging (can be removed after verification)
   if (typeof window !== 'undefined') {
-    console.log("Privy ID Check:", appId);
-    console.log("Privy Client ID Check:", clientId);
+    console.log("Privy ID (Sanitized):", appId);
+    console.log("Privy Client ID (Sanitized):", clientId);
   }
 
   // Always render PrivyProvider to prevent hook errors
