@@ -1,13 +1,10 @@
 'use client';
 
 import {PrivyProvider} from '@privy-io/react-auth';
-import {useEffect, useState} from 'react';
+import {useEffect} from 'react';
 
 export default function Providers({children}: {children: React.ReactNode}) {
-  const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
-    setMounted(true);
     // Suppress hydration warnings from Privy
     const originalError = console.error;
     console.error = (...args: any[]) => {
@@ -21,25 +18,16 @@ export default function Providers({children}: {children: React.ReactNode}) {
     };
   }, []);
 
-  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
-  const clientId = process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID;
+  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || 'clw7229m108m7di52v0iya2qc';
+  const clientId = process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID || 'client-WY2mABYxPWCherPBzKMW4HXRTghZMjhjNTTCfrDvn3PMT';
 
-  // Debug logging
-  console.log("Privy ID Check:", process.env.NEXT_PUBLIC_PRIVY_APP_ID);
-  console.log("Privy Client ID Check:", process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID);
-  console.log("Mounted:", mounted);
-
-  // Don't render Privy during SSR - always render children first
-  if (!mounted) {
-    return <>{children}</>;
+  // Debug logging (can be removed after verification)
+  if (typeof window !== 'undefined') {
+    console.log("Privy ID Check:", appId);
+    console.log("Privy Client ID Check:", clientId);
   }
 
-  // If environment variables are missing after mount, render without Privy
-  if (!appId || !clientId) {
-    console.warn('⚠️  Privy environment variables not set. Authentication features will be disabled.');
-    return <>{children}</>;
-  }
-
+  // Always render PrivyProvider to prevent hook errors
   return (
     <PrivyProvider
       appId={appId}
