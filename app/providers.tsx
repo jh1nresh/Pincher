@@ -1,13 +1,10 @@
 'use client';
 
 import {PrivyProvider} from '@privy-io/react-auth';
-import {useEffect, useState} from 'react';
+import {useEffect} from 'react';
 
 export default function Providers({children}: {children: React.ReactNode}) {
-  const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
-    setMounted(true);
     // Suppress hydration warnings from Privy
     const originalError = console.error;
     console.error = (...args: any[]) => {
@@ -21,15 +18,16 @@ export default function Providers({children}: {children: React.ReactNode}) {
     };
   }, []);
 
-  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || 'clw7229m108m7di52v0iya2qc';
-  const clientId = process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID || 'client-WY2mABYxPWCherPBzKMW4HXRTghZMjhjNTTCfrDvn3PMT';
+  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
+  const clientId = process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID;
 
-  if (!process.env.NEXT_PUBLIC_PRIVY_APP_ID || !process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID) {
-    console.warn('⚠️  Using default Privy configuration. Set NEXT_PUBLIC_PRIVY_APP_ID and NEXT_PUBLIC_PRIVY_CLIENT_ID in your environment.');
-  }
-
-  // Don't render Privy provider during SSR
-  if (!mounted) {
+  // If environment variables are missing, show error only in development
+  if (!appId || !clientId) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Missing Privy environment variables');
+      return <div>Missing Privy configuration. Please check your .env file.</div>;
+    }
+    // In production, use empty provider to prevent crashes
     return <>{children}</>;
   }
 
