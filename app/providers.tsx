@@ -1,10 +1,13 @@
 'use client';
 
 import {PrivyProvider} from '@privy-io/react-auth';
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 
 export default function Providers({children}: {children: React.ReactNode}) {
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
     // Suppress hydration warnings from Privy
     const originalError = console.error;
     console.error = (...args: any[]) => {
@@ -23,6 +26,11 @@ export default function Providers({children}: {children: React.ReactNode}) {
 
   if (!process.env.NEXT_PUBLIC_PRIVY_APP_ID || !process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID) {
     console.warn('⚠️  Using default Privy configuration. Set NEXT_PUBLIC_PRIVY_APP_ID and NEXT_PUBLIC_PRIVY_CLIENT_ID in your environment.');
+  }
+
+  // Don't render Privy provider during SSR
+  if (!mounted) {
+    return <>{children}</>;
   }
 
   return (
