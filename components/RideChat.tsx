@@ -83,7 +83,7 @@ export default function RideChat({ rideId }: { rideId: number }) {
       </div>
       <div className="flex gap-2 p-2 border-t border-gray-200">
         <input 
-            className="flex-1 bg-white border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-black"
+            className="flex-1 bg-white border border-gray-200 rounded px-2 py-1.5 text-xs text-black focus:outline-none focus:border-black"
             placeholder="Type a message..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}

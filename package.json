@@ -14,8 +14,11 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@langchain/core": "^1.1.8",
+    "@langchain/langgraph": "^1.0.7",
     "@privy-io/react-auth": "^3.10.0",
     "@supabase/supabase-js": "^2.89.0",
+    "@types/leaflet": "^1.9.21",
     "@vis.gl/react-google-maps": "^1.7.1",
     "@x402/core": "latest",
     "@x402/evm": "latest",
@@ -23,10 +26,15 @@
     "@x402/next": "latest",
     "@x402/paywall": "latest",
     "@x402/svm": "latest",
+    "ai": "^3.2.0",
+    "framer-motion": "^12.23.26",
+    "leaflet": "^1.9.4",
     "next": "^16.0.10",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "viem": "^2.43.3"
+    "react-leaflet": "^5.0.0",
+    "viem": "^2.43.3",
+    "zod": "^4.3.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",

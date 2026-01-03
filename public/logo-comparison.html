@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pincher Logo Comparison</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+        min-height: 100vh;
+        padding: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="max-w-6xl mx-auto">
+      <h1 class="text-3xl font-black text-center mb-12">Pincher Logo Strategy</h1>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <!-- New Generated Logo -->
+        <div
+          class="bg-white/80 backdrop-blur-md rounded-3xl p-6 shadow-xl border border-blue-200 ring-2 ring-blue-500 relative"
+        >
+          <div
+            class="absolute -top-3 -right-3 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold"
+          >
+            Current Selection
+          </div>
+          <h3 class="text-sm font-bold text-gray-400 uppercase mb-4 text-center">
+            New "Pincher" (Generated)
+          </h3>
+          <div
+            class="aspect-square bg-gray-50 rounded-2xl flex items-center justify-center p-8 mb-4"
+          >
+            <img src="/pincher-logo.png" alt="New Logo" class="w-full h-full object-contain" />
+          </div>
+          <div class="space-y-2">
+            <p class="text-xs text-gray-600">
+              <strong>Pros:</strong> High contrast, optimized for small sizes (favicon/UI),
+              conceptually clear (Pin + Car).
+            </p>
+            <p class="text-xs text-gray-600"><strong>Cons:</strong> Maybe too generic?</p>
+          </div>
+        </div>
+
+        <!-- V1 -->
+        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-gray-100">
+          <h3 class="text-sm font-bold text-gray-400 uppercase mb-4 text-center">
+            Pincher v1 / v1.5
+          </h3>
+          <div
+            class="aspect-square bg-gray-50 rounded-2xl flex items-center justify-center p-8 mb-4"
+          >
+            <img src="/pincher-v1.png" alt="v1 Logo" class="w-full h-full object-contain" />
+          </div>
+          <p class="text-xs text-gray-500 text-center">Same file size as v1.5</p>
+        </div>
+
+        <!-- V2 -->
+        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-gray-100">
+          <h3 class="text-sm font-bold text-gray-400 uppercase mb-4 text-center">Pincher v2</h3>
+          <div
+            class="aspect-square bg-gray-50 rounded-2xl flex items-center justify-center p-8 mb-4"
+          >
+            <img src="/pincher-v2.png" alt="v2 Logo" class="w-full h-full object-contain" />
+          </div>
+        </div>
+
+        <!-- Icon Clean -->
+        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-gray-100">
+          <h3 class="text-sm font-bold text-gray-400 uppercase mb-4 text-center">Icon Clean</h3>
+          <div
+            class="aspect-square bg-gray-50 rounded-2xl flex items-center justify-center p-8 mb-4"
+          >
+            <img
+              src="/pincher-icon-clean.png"
+              alt="Clean Icon"
+              class="w-full h-full object-contain"
+            />
+          </div>
+        </div>
+        <!-- Icon clean rfbg -->
+        <div class="bg-white/60 backdrop-blur-sm rounded-3xl p-6 shadow-lg border border-gray-100">
+          <h3 class="text-sm font-bold text-gray-400 uppercase mb-4 text-center">RFBG</h3>
+          <div
+            class="aspect-square bg-gray-50 rounded-2xl flex items-center justify-center p-8 mb-4"
+          >
+            <img src="/pincher-rfbg.png" alt="Clean Icon" class="w-full h-full object-contain" />
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-12 bg-black text-white p-8 rounded-3xl shadow-2xl">
+        <h2 class="text-xl font-bold mb-6">Privy Login Preview</h2>
+        <div class="flex items-center justify-center gap-12">
+          <!-- Simulation of Privy with New Logo -->
+          <div class="text-center">
+            <div
+              class="w-16 h-16 bg-white rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden"
+            >
+              <img src="/pincher-logo.png" class="w-10 h-10 object-contain" />
+            </div>
+            <p class="text-sm text-gray-400">New Logo</p>
+          </div>
+
+          <!-- Simulation of Privy with V2 -->
+          <div class="text-center">
+            <div
+              class="w-16 h-16 bg-white rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden"
+            >
+              <img src="/pincher-v2.png" class="w-10 h-10 object-contain" />
+            </div>
+            <p class="text-sm text-gray-400">v2 Logo</p>
+          </div>
+
+          <!-- Simulation of Privy with Icon Clean -->
+          <div class="text-center">
+            <div
+              class="w-16 h-16 bg-white rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden"
+            >
+              <img src="/pincher-icon-clean.png" class="w-10 h-10 object-contain" />
+            </div>
+            <p class="text-sm text-gray-400">Icon Clean</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -9,9 +9,13 @@ export default function Providers({children}: {children: React.ReactNode}) {
     // Suppress hydration warnings from Privy
     const originalError = console.error;
     console.error = (...args: any[]) => {
-      if (typeof args[0] === 'string' && (args[0].includes('Hydration') || args[0].includes("origins don't match"))) {
-        return;
+      const msg = args[0];
+      if (typeof msg === 'string') {
+           if (msg.includes('Hydration') || msg.includes("origins don't match") || msg.includes('isActive')) return;
+           if (msg.includes('prop on a DOM element') && args.some(a => typeof a === 'string' && a.includes('isActive'))) return;
       }
+      // Also check arg[1] directly which is often the prop name in React warnings
+      if (args.length > 1 && typeof args[1] === 'string' && args[1] === 'isActive') return;
       originalError.call(console, ...args);
     };
     return () => {
@@ -44,7 +48,7 @@ export default function Providers({children}: {children: React.ReactNode}) {
         appearance: {
           theme: 'light',
           accentColor: '#000000',
-          logo: 'https://auth.privy.io/logos/privy-logo.png',
+          logo: '/pincher-v1.5.png',
         },
         defaultChain: baseSepolia,
       }}

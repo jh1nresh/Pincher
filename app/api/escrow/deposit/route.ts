@@ -28,19 +28,39 @@ export async function POST(req: Request) {
     // For USDC: we check logs, but for hackathon, success + user claim is "good enough" trust level.
     // We will trust the success for now to keep it simpler.
 
-    // 2. Update Ride Status in DB
+    // 2. Insert Booking & Update Ride Status
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { error } = await supabase
-      .from("rides")
-      .update({ status: "escrow_holding" }) // Custom status indicating funds are locked
-      .eq("id", rideId);
+    // A. Insert Booking
+    const { error: bookingError } = await supabase
+      .from("bookings")
+      .insert([{ ride_id: rideId, user_address: userAddress, tx_hash: txHash }]);
 
-    if (error) {
-      console.error("Supabase Error", error);
-      return NextResponse.json({ error: "DB Update Failed" }, { status: 500 });
+    if (bookingError) {
+       console.error("Booking Insert Failed", bookingError);
+       return NextResponse.json({ error: "Booking Failed (DB)" }, { status: 500 });
+    }
+
+    // B. Check Count & Update Status
+    const { count, error: countError } = await supabase
+      .from("bookings")
+      .select("*", { count: 'exact', head: true })
+      .eq("ride_id", rideId);
+    
+    // Default limit = 4
+    if (count !== null && count >= 4) {
+        await supabase.from("rides").update({ status: "full" }).eq("id", rideId);
+    } else {
+        // Ensure it is at least 'escrow_holding' if it was 'active' to show it's live? 
+        // Actually user wants "Active" until Full. 
+        // But our UI uses 'escrow_holding' to show yellow "Escrow".
+        // Let's keep 'escrow_holding' which signifies "At least one person paid".
+        // BUT logic: "Active" = joins allowed. "Full" = joins disabled.
+        // Current UI: 'escrow_holding' allows joins (Passenger Actions).
+        // So we keep 'escrow_holding'.
+        await supabase.from("rides").update({ status: "escrow_holding" }).eq("id", rideId);
     }
 
     // 3. Instant V2 Minting (Airdrop to User)

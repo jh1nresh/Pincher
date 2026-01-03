@@ -110,27 +110,30 @@ async function POST(req) {
             });
         }
         // Setup Wallet Client
-        const account = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$accounts$2f$privateKeyToAccount$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["privateKeyToAccount"])(pKey);
+        const formattedKey = pKey.startsWith('0x') ? pKey : `0x${pKey}`;
+        const account = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$accounts$2f$privateKeyToAccount$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["privateKeyToAccount"])(formattedKey);
         const client = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$clients$2f$createWalletClient$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["createWalletClient"])({
             account,
             chain: __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$chains$2f$definitions$2f$baseSepolia$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["baseSepolia"],
             transport: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$clients$2f$transports$2f$http$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["http"])()
         }).extend(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$clients$2f$decorators$2f$public$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["publicActions"]);
         console.log(`Faucet request for: ${address}`);
-        // 1. Send ETH (0.005 ETH) for gas
+        console.log(`Sender Address: ${account.address}`);
+        // 1. Send ETH (0.0001 ETH) for gas
+        // @ts-expect-error - viem strict type mismatch for kzg on Base Sepolia
         const ethHash = await client.sendTransaction({
             to: address,
-            value: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$utils$2f$unit$2f$parseEther$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["parseEther"])("0.005")
+            value: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$utils$2f$unit$2f$parseEther$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["parseEther"])("0.0001")
         });
         console.log(`Sent ETH: ${ethHash}`);
-        // 2. Send USDC (50 USDC)
+        // 2. Send USDC (0.05 USDC)
         const { request } = await client.simulateContract({
             address: USDC_ADDRESS,
             abi: ERC20_ABI,
             functionName: 'transfer',
             args: [
                 address,
-                (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$utils$2f$unit$2f$parseUnits$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["parseUnits"])("50", 6)
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$utils$2f$unit$2f$parseUnits$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["parseUnits"])("0.05", 6)
             ]
         });
         const usdcHash = await client.writeContract(request);
@@ -141,7 +144,7 @@ async function POST(req) {
                 eth: ethHash,
                 usdc: usdcHash
             },
-            message: "Sent 0.005 ETH and 50 USDC"
+            message: "Sent 0.0001 ETH and 0.05 USDC"
         });
     } catch (error) {
         console.error("Faucet Error:", error);

@@ -76,14 +76,21 @@ if (!PRIVATE_KEY) {
 // 1. Account Setup
 let account = null;
 try {
-    let key = process.env.FAUCET_PRIVATE_KEY;
-    console.log("Debug: FAUCET_PRIVATE_KEY length:", key ? key.length : "undefined");
+    let key = process.env.FAUCET_PRIVATE_KEY || "";
+    // Sanitize: Remove whitespace and newlines
+    key = key.trim().replace(/[\n\r]/g, "");
+    console.log("Debug: FAUCET_PRIVATE_KEY sanitized length:", key.length);
     // Auto-fix: Prepend 0x if missing
     if (key && !key.startsWith("0x")) {
         console.log("⚠️ Auto-fixing key: Prepending '0x'");
         key = `0x${key}`;
     }
     if (key && key.startsWith("0x")) {
+        // Validate hex string format
+        if (!/^0x[0-9a-fA-F]{64}$/.test(key)) {
+            console.error("❌ Agent Wallet Error: Invalid Private Key format (Regex check failed). Length:", key.length);
+            throw new Error("Invalid Private Key format");
+        }
         account = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$accounts$2f$privateKeyToAccount$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["privateKeyToAccount"])(key);
     } else {
         console.warn("❌ Key missing or invalid format (must start with 0x)");
@@ -150,21 +157,47 @@ async function POST(req) {
         // For native ETH: receipt.to === agentAccount.address
         // For USDC: we check logs, but for hackathon, success + user claim is "good enough" trust level.
         // We will trust the success for now to keep it simpler.
-        // 2. Update Ride Status in DB
+        // 2. Insert Booking & Update Ride Status
         const supabaseUrl = ("TURBOPACK compile-time value", "https://ksfucvikvbnkocjkrvev.supabase.co");
         const supabaseKey = ("TURBOPACK compile-time value", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzZnVjdmlrdmJua29jamtydmV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY2MDQ3NTQsImV4cCI6MjA4MjE4MDc1NH0.dvnPd1IMH1ANvjySFAnq5EhR_m-qTfb4xKmR845qfSg");
         const supabase = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$supabase$2f$supabase$2d$js$2f$dist$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__["createClient"])(supabaseUrl, supabaseKey);
-        const { error } = await supabase.from("rides").update({
-            status: "escrow_holding"
-        }) // Custom status indicating funds are locked
-        .eq("id", rideId);
-        if (error) {
-            console.error("Supabase Error", error);
+        // A. Insert Booking
+        const { error: bookingError } = await supabase.from("bookings").insert([
+            {
+                ride_id: rideId,
+                user_address: userAddress,
+                tx_hash: txHash
+            }
+        ]);
+        if (bookingError) {
+            console.error("Booking Insert Failed", bookingError);
             return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-                error: "DB Update Failed"
+                error: "Booking Failed (DB)"
             }, {
                 status: 500
             });
+        }
+        // B. Check Count & Update Status
+        const { count, error: countError } = await supabase.from("bookings").select("*", {
+            count: 'exact',
+            head: true
+        }).eq("ride_id", rideId);
+        // Default limit = 4
+        if (count !== null && count >= 4) {
+            await supabase.from("rides").update({
+                status: "full"
+            }).eq("id", rideId);
+        } else {
+            // Ensure it is at least 'escrow_holding' if it was 'active' to show it's live? 
+            // Actually user wants "Active" until Full. 
+            // But our UI uses 'escrow_holding' to show yellow "Escrow".
+            // Let's keep 'escrow_holding' which signifies "At least one person paid".
+            // BUT logic: "Active" = joins allowed. "Full" = joins disabled.
+            // Current UI: 'escrow_holding' allows joins (Passenger Actions).
+            // So we keep 'escrow_holding'.
+            await supabase.from("rides").update({
+                status: "escrow_holding"
+            }).eq("id", rideId);
         }
         // 3. Instant V2 Minting (Airdrop to User)
         try {

@@ -76,14 +76,21 @@ if (!PRIVATE_KEY) {
 // 1. Account Setup
 let account = null;
 try {
-    let key = process.env.FAUCET_PRIVATE_KEY;
-    console.log("Debug: FAUCET_PRIVATE_KEY length:", key ? key.length : "undefined");
+    let key = process.env.FAUCET_PRIVATE_KEY || "";
+    // Sanitize: Remove whitespace and newlines
+    key = key.trim().replace(/[\n\r]/g, "");
+    console.log("Debug: FAUCET_PRIVATE_KEY sanitized length:", key.length);
     // Auto-fix: Prepend 0x if missing
     if (key && !key.startsWith("0x")) {
         console.log("⚠️ Auto-fixing key: Prepending '0x'");
         key = `0x${key}`;
     }
     if (key && key.startsWith("0x")) {
+        // Validate hex string format
+        if (!/^0x[0-9a-fA-F]{64}$/.test(key)) {
+            console.error("❌ Agent Wallet Error: Invalid Private Key format (Regex check failed). Length:", key.length);
+            throw new Error("Invalid Private Key format");
+        }
         account = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$accounts$2f$privateKeyToAccount$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["privateKeyToAccount"])(key);
     } else {
         console.warn("❌ Key missing or invalid format (must start with 0x)");

@@ -1,5 +1,5 @@
 {
-  "/api/escrow/config/route": "app/api/escrow/config/route.js",
-  "/api/escrow/deposit/route": "app/api/escrow/deposit/route.js",
-  "/page": "app/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/page": "app/page.js",
+  "/simulation/page": "app/simulation/page.js"
 }

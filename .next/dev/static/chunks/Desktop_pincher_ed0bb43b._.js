@@ -28,13 +28,47 @@ __turbopack_context__.s([
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$usePrivy$2d$BWtc2XF$2d2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__usePrivy$3e$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/@privy-io/react-auth/dist/esm/usePrivy-BWtc2XF-.mjs [app-client] (ecmascript) <export u as usePrivy>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$useWallets$2d$kObl6ZLS$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__useWallets$3e$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/@privy-io/react-auth/dist/esm/useWallets-kObl6ZLS.mjs [app-client] (ecmascript) <export u as useWallets>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$lib$2f$supabase$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/lib/supabase.ts [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$clients$2f$createWalletClient$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/_esm/clients/createWalletClient.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$clients$2f$transports$2f$custom$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/_esm/clients/transports/custom.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$utils$2f$unit$2f$parseUnits$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/_esm/utils/unit/parseUnits.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$utils$2f$abi$2f$encodeFunctionData$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/_esm/utils/abi/encodeFunctionData.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$chains$2f$definitions$2f$baseSepolia$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/_esm/chains/definitions/baseSepolia.js [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
-function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPickupCoords, externalDropoffCoords, onRideCreated, isSidebarOpen, onOpenProfile }) {
+;
+;
+const USDC_ADDRESS = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
+const BOOKING_PRICE_USDC = 0.01;
+const BOOKING_PRICE_UNITS = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$utils$2f$unit$2f$parseUnits$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["parseUnits"])(BOOKING_PRICE_USDC.toString(), 6);
+const ERC20_ABI = [
+    {
+        inputs: [
+            {
+                name: 'to',
+                type: 'address'
+            },
+            {
+                name: 'amount',
+                type: 'uint256'
+            }
+        ],
+        name: 'transfer',
+        outputs: [
+            {
+                name: '',
+                type: 'bool'
+            }
+        ],
+        stateMutability: 'nonpayable',
+        type: 'function'
+    }
+];
+function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPickupCoords, externalDropoffCoords, onRideCreated, isSidebarOpen, onOpenProfile, onToggleSidebar }) {
     _s();
     const { user, authenticated, login, logout } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$usePrivy$2d$BWtc2XF$2d2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__usePrivy$3e$__["usePrivy"])();
     const [pickup, setPickup] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
@@ -234,6 +268,7 @@ function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPi
             setLocating(false);
         });
     };
+    const { wallets } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$useWallets$2d$kObl6ZLS$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__useWallets$3e$__["useWallets"])();
     const handleSubmit = async ()=>{
         if (!authenticated) {
             login();
@@ -243,9 +278,16 @@ function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPi
             alert('Please fill fields');
             return;
         }
+        // 1. Check Wallet
+        const wallet = wallets.find((w)=>w.walletClientType === 'privy') || wallets[0];
+        if (!wallet) {
+            alert("Connect wallet first!");
+            return;
+        }
         setLoading(true);
         try {
-            const { error } = await __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$lib$2f$supabase$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["supabase"].from('rides').insert([
+            // 2. Create Ride in DB (Active)
+            const { data: rideData, error } = await __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$lib$2f$supabase$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["supabase"].from('rides').insert([
                 {
                     user_address: user?.wallet?.address || user?.email?.address || 'unknown',
                     pickup_location: pickup,
@@ -260,12 +302,53 @@ function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPi
                 }
             ]).select().single();
             if (error) throw error;
-            alert('Ride published!');
-            setDropoffCoords(null);
-            setWechatId('');
-            setDepartureTime('');
-            setShowDetails(false);
-            onRideCreated?.();
+            const newRideId = rideData.id;
+            // 3. Process Payment (Organizer Deposit)
+            try {
+                const configRes = await fetch('/api/escrow/config');
+                const { address: agentAddress } = await configRes.json();
+                if (!agentAddress) throw new Error("Agent address missing");
+                await wallet.switchChain(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$chains$2f$definitions$2f$baseSepolia$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["baseSepolia"].id);
+                const provider = await wallet.getEthereumProvider();
+                const client = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$clients$2f$createWalletClient$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["createWalletClient"])({
+                    account: wallet.address,
+                    chain: __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$chains$2f$definitions$2f$baseSepolia$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["baseSepolia"],
+                    transport: (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$clients$2f$transports$2f$custom$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["custom"])(provider)
+                });
+                const data = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$_esm$2f$utils$2f$abi$2f$encodeFunctionData$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["encodeFunctionData"])({
+                    abi: ERC20_ABI,
+                    functionName: 'transfer',
+                    args: [
+                        agentAddress,
+                        BOOKING_PRICE_UNITS
+                    ]
+                });
+                // @ts-expect-error - KZG param not needed for simple transfer
+                const hash = await client.sendTransaction({
+                    to: USDC_ADDRESS,
+                    data
+                });
+                const depositRes = await fetch('/api/escrow/deposit', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        rideId: newRideId,
+                        txHash: hash,
+                        userAddress: wallet.address
+                    })
+                });
+                if (!depositRes.ok) throw new Error("Deposit registration failed");
+                // Success!
+                alert(`Ride Published & Deposit Paid! (Ref: ${newRideId})`);
+                setDropoffCoords(null);
+                setWechatId('');
+                setDepartureTime('');
+                setShowDetails(false);
+                onRideCreated?.();
+            } catch (txError) {
+                console.error("Payment failed", txError);
+                // Optional: Delete the ride or mark as failed? For now, alert user.
+                alert(`Ride created but payment failed: ${txError.message}. Please contact support.`);
+            }
         } catch (e) {
             console.error(e);
             alert(e.message);
@@ -320,7 +403,7 @@ function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPi
                     children: "Map Loading..."
                 }, void 0, false, {
                     fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                    lineNumber: 224,
+                    lineNumber: 294,
                     columnNumber: 13
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -334,12 +417,12 @@ function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPi
                                 children: displayName[0].toUpperCase()
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                lineNumber: 232,
+                                lineNumber: 302,
                                 columnNumber: 17
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                            lineNumber: 231,
+                            lineNumber: 301,
                             columnNumber: 14
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -352,27 +435,27 @@ function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPi
                                             className: "w-2 h-2 rounded-full bg-black shrink-0"
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                            lineNumber: 244,
+                                            lineNumber: 314,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: "w-px bg-gray-300 h-8 my-1"
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                            lineNumber: 245,
+                                            lineNumber: 315,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: "w-2 h-2 bg-black shrink-0"
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                            lineNumber: 246,
+                                            lineNumber: 316,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                    lineNumber: 243,
+                                    lineNumber: 313,
                                     columnNumber: 14
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -393,7 +476,7 @@ function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPi
                                             onKeyDown: (e)=>e.key === 'Enter' && !placesApiReady && handleManualGeocode(pickup, true)
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                            lineNumber: 251,
+                                            lineNumber: 321,
                                             columnNumber: 18
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -411,13 +494,13 @@ function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPi
                                             onKeyDown: (e)=>e.key === 'Enter' && !placesApiReady && handleManualGeocode(dropoff, false)
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                            lineNumber: 262,
+                                            lineNumber: 332,
                                             columnNumber: 18
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                    lineNumber: 250,
+                                    lineNumber: 320,
                                     columnNumber: 14
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -436,17 +519,17 @@ function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPi
                                             d: "M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                            lineNumber: 281,
+                                            lineNumber: 351,
                                             columnNumber: 97
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                        lineNumber: 281,
+                                        lineNumber: 351,
                                         columnNumber: 18
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                    lineNumber: 276,
+                                    lineNumber: 346,
                                     columnNumber: 14
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -463,7 +546,7 @@ function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPi
                                                 opacity: "0.3"
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                                lineNumber: 290,
+                                                lineNumber: 360,
                                                 columnNumber: 88
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -471,13 +554,13 @@ function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPi
                                                 d: "M4 12a8 8 0 018-8v8H4z"
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                                lineNumber: 290,
+                                                lineNumber: 360,
                                                 columnNumber: 170
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                        lineNumber: 290,
+                                        lineNumber: 360,
                                         columnNumber: 30
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
                                         className: "w-4 h-4",
@@ -492,7 +575,7 @@ function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPi
                                                 d: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                                lineNumber: 290,
+                                                lineNumber: 360,
                                                 columnNumber: 312
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -502,25 +585,57 @@ function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPi
                                                 d: "M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                                lineNumber: 290,
+                                                lineNumber: 360,
                                                 columnNumber: 468
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                        lineNumber: 290,
+                                        lineNumber: 360,
                                         columnNumber: 233
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                    lineNumber: 285,
+                                    lineNumber: 355,
                                     columnNumber: 14
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                            lineNumber: 241,
+                            lineNumber: 311,
                             columnNumber: 11
+                        }, this),
+                        !showDetails && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "px-3 pb-2 pt-1 border-t border-gray-100 mt-1",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                onClick: onToggleSidebar,
+                                className: "w-full text-xs font-bold text-gray-400 hover:text-black flex items-center justify-center gap-1.5 py-2 hover:bg-gray-50 rounded-lg transition-all",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        children: "Looking to join?"
+                                    }, void 0, false, {
+                                        fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
+                                        lineNumber: 372,
+                                        columnNumber: 23
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "text-black underline decoration-1 underline-offset-2",
+                                        children: "Browse Available Rides"
+                                    }, void 0, false, {
+                                        fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
+                                        lineNumber: 373,
+                                        columnNumber: 23
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
+                                lineNumber: 368,
+                                columnNumber: 19
+                            }, this)
+                        }, void 0, false, {
+                            fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
+                            lineNumber: 367,
+                            columnNumber: 15
                         }, this),
                         (showDetails || pickup && dropoff) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "px-3 pb-3 pt-0 animate-in slide-in-from-top-2",
@@ -538,23 +653,23 @@ function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPi
                                                         children: "Time"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                                        lineNumber: 302,
+                                                        lineNumber: 385,
                                                         columnNumber: 33
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                                         type: "datetime-local",
-                                                        className: "w-full bg-gray-50 rounded p-2 text-xs font-bold",
+                                                        className: "w-full bg-gray-100 border border-gray-200 rounded p-2 text-xs font-bold text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black",
                                                         value: departureTime,
                                                         onChange: (e)=>setDepartureTime(e.target.value)
                                                     }, void 0, false, {
                                                         fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                                        lineNumber: 303,
+                                                        lineNumber: 386,
                                                         columnNumber: 33
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                                lineNumber: 301,
+                                                lineNumber: 384,
                                                 columnNumber: 29
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -565,29 +680,29 @@ function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPi
                                                         children: "WeChat"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                                        lineNumber: 306,
+                                                        lineNumber: 394,
                                                         columnNumber: 33
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                                        className: "w-full bg-gray-50 rounded p-2 text-xs font-bold",
+                                                        className: "w-full bg-gray-100 border border-gray-200 rounded p-2 text-xs font-bold text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black",
                                                         placeholder: "ID",
                                                         value: wechatId,
                                                         onChange: (e)=>setWechatId(e.target.value)
                                                     }, void 0, false, {
                                                         fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                                        lineNumber: 307,
+                                                        lineNumber: 395,
                                                         columnNumber: 33
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                                lineNumber: 305,
+                                                lineNumber: 393,
                                                 columnNumber: 29
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                        lineNumber: 300,
+                                        lineNumber: 383,
                                         columnNumber: 25
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -597,13 +712,13 @@ function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPi
                                         children: loading ? 'Processing...' : authenticated ? 'Request Ride' : 'Connect Wallet'
                                     }, void 0, false, {
                                         fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                        lineNumber: 310,
+                                        lineNumber: 403,
                                         columnNumber: 25
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                lineNumber: 299,
+                                lineNumber: 382,
                                 columnNumber: 22
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                 onClick: ()=>setShowDetails(true),
@@ -611,31 +726,32 @@ function SearchBox({ onPickupChange, onDropoffChange, className = "", externalPi
                                 children: "Continue"
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                                lineNumber: 315,
+                                lineNumber: 408,
                                 columnNumber: 22
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                            lineNumber: 297,
+                            lineNumber: 380,
                             columnNumber: 15
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-                    lineNumber: 227,
+                    lineNumber: 297,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/Desktop/pincher/components/SearchBox.tsx",
-            lineNumber: 220,
+            lineNumber: 290,
             columnNumber: 7
         }, this)
     }, void 0, false);
 }
-_s(SearchBox, "vOmkn3Z0ZuuKT/ZMeIy7J57nDis=", false, function() {
+_s(SearchBox, "U3Ib0+XfslBLBbQFPOMTaPC6XtY=", false, function() {
     return [
-        __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$usePrivy$2d$BWtc2XF$2d2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__usePrivy$3e$__["usePrivy"]
+        __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$usePrivy$2d$BWtc2XF$2d2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__usePrivy$3e$__["usePrivy"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$useWallets$2d$kObl6ZLS$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__useWallets$3e$__["useWallets"]
     ];
 });
 _c = SearchBox;
@@ -840,7 +956,7 @@ function RideChat({ rideId }) {
                 className: "flex gap-2 p-2 border-t border-gray-200",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                        className: "flex-1 bg-white border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-black",
+                        className: "flex-1 bg-white border border-gray-200 rounded px-2 py-1.5 text-xs text-black focus:outline-none focus:border-black",
                         placeholder: "Type a message...",
                         value: newMessage,
                         onChange: (e)=>setNewMessage(e.target.value),
@@ -956,13 +1072,17 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
         setActiveChatId((prev)=>prev === rideId ? null : rideId);
     };
     const [successTicket, setSuccessTicket] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [releaseSuccess, setReleaseSuccess] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const { wallets } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$useWallets$2d$kObl6ZLS$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__useWallets$3e$__["useWallets"])();
     const { user } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$usePrivy$2d$BWtc2XF$2d2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__usePrivy$3e$__["usePrivy"])();
+    const [userBookings, setUserBookings] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [isRefreshing, setIsRefreshing] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     // -- Action Handlers --
     const handleBook = async (ride)=>{
         try {
             setActionLoading(ride.id);
-            const wallet = wallets[0];
+            // Prioritize Privy embedded wallet
+            const wallet = wallets.find((w)=>w.walletClientType === 'privy') || wallets[0];
             if (!wallet) {
                 alert("Connect wallet first!");
                 return;
@@ -999,21 +1119,60 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                 })
             });
             if (!depositRes.ok) throw new Error("Deposit failed");
+            // Optimistic update
             setRides((prev)=>prev.map((r)=>r.id === ride.id ? {
                         ...r,
                         status: 'escrow_holding',
-                        isUnlocked: true
+                        isUnlocked: true,
+                        seats_taken: (r.seats_taken || 0) + 1
                     } : r));
-            addToBooked(ride.id);
+            setUserBookings((prev)=>[
+                    ...prev,
+                    ride.id
+                ]);
             setSuccessTicket({
                 id: ride.id,
                 tx: hash
             });
         } catch (e) {
-            console.error("Booking failed:", e);
-            if (!e.message?.includes("User rejected")) {
-                alert(`Booking Failed: ${e.shortMessage || e.message}`);
+            // Ignore user rejection
+            if (e.message?.toLowerCase().includes("user rejected") || e.cause?.message?.toLowerCase().includes("user rejected")) {
+                console.log("Transaction cancelled by user");
+                return;
             }
+            console.error("Booking failed:", e);
+            alert(`Booking Failed: ${e.shortMessage || e.message}`);
+        } finally{
+            setActionLoading(null);
+        }
+    };
+    const handleCancel = async (ride)=>{
+        if (!confirm("Cancel this ride? You will be refunded 0.01 USDC.")) return;
+        const wallet = wallets.find((w)=>w.walletClientType === 'privy') || wallets[0];
+        if (!wallet) return;
+        setActionLoading(ride.id);
+        try {
+            const res = await fetch('/api/escrow/cancel', {
+                method: 'POST',
+                body: JSON.stringify({
+                    rideId: ride.id,
+                    userAddress: wallet.address
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            alert("Ride Cancelled. 0.01 USDC Refunded.");
+            // Optimistic remove
+            setUserBookings((prev)=>prev.filter((id)=>id !== ride.id));
+            setRides((prev)=>prev.map((r)=>r.id === ride.id ? {
+                        ...r,
+                        seats_taken: Math.max(0, (r.seats_taken || 1) - 1),
+                        // If it was full, unlocking logic is handled on fetch refresh, 
+                        // but we can optimistically set to escrow_holding if we want.
+                        status: r.status === 'full' ? 'escrow_holding' : r.status
+                    } : r));
+        } catch (e) {
+            alert(`Cancellation Failed: ${e.message}`);
         } finally{
             setActionLoading(null);
         }
@@ -1037,8 +1196,9 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
             const userLng = position.coords.longitude;
             if (ride.dropoff_lat && ride.dropoff_lng) {
                 const distKm = getDistanceFromLatLonInKm(userLat, userLng, ride.dropoff_lat, ride.dropoff_lng);
-                if (distKm * 0.621371 > 0.5) {
-                    alert(`Too far from destination! You are ${(distKm * 0.621371).toFixed(2)} miles away.`);
+                // Loosen restriction to 2 miles for testing/drift
+                if (distKm * 0.621371 > 2.0) {
+                    alert(`Too far from destination! You are ${(distKm * 0.621371).toFixed(2)} miles away.\n(Must be within 2 miles to confirm)`);
                     setActionLoading(null);
                     return;
                 }
@@ -1056,7 +1216,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                             ...r,
                             status: 'completed'
                         } : r));
-                alert(`Funds Released!`);
+                setReleaseSuccess(true); // Trigger success modal
             } catch (e) {
                 alert(`Release Failed: ${e.message}`);
             } finally{
@@ -1067,7 +1227,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
             setActionLoading(null);
         });
     };
-    const openInUber = (ride)=>{
+    const openInUber = async (ride)=>{
         const pLat = ride.ride_pickup_coords?.lat;
         const pLng = ride.ride_pickup_coords?.lng;
         const dLat = ride.ride_dropoff_coords?.lat;
@@ -1076,57 +1236,59 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
             alert("Missing coordinates.");
             return;
         }
+        // Robust Uber Deep Link
+        // formatting addresses to remove duplicates or odd chars could help, but raw string is usually fine if encoded
         const baseUrl = "https://m.uber.com/ul/";
         const params = new URLSearchParams({
             action: 'setPickup',
-            client_id: 'pincher_demo',
+            client_id: 'pincher',
             'pickup[latitude]': pLat.toString(),
             'pickup[longitude]': pLng.toString(),
-            'pickup[nickname]': ride.pickup_location,
+            'pickup[nickname]': ride.pickup_location.split(',')[0],
+            'pickup[formatted_address]': ride.pickup_location,
             'dropoff[latitude]': dLat.toString(),
             'dropoff[longitude]': dLng.toString(),
-            'dropoff[nickname]': ride.dropoff_location
+            'dropoff[nickname]': ride.dropoff_location.split(',')[0],
+            'dropoff[formatted_address]': ride.dropoff_location
         });
+        // 1. Open Uber
         window.open(`${baseUrl}?${params.toString()}`, '_blank');
+    // Note: We do NOT auto-complete here anymore.
+    // The ride remains "In Progress" (escrow_holding) until the passenger confirms pickup.
     };
     const handleCopyWeChat = (text)=>{
         navigator.clipboard.writeText(text);
         alert("WeChat ID Copied!");
-    };
-    const [bookedRideIds, setBookedRideIds] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
-    (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "RideList.useEffect": ()=>{
-            const stored = localStorage.getItem('pincher_booked_rides');
-            if (stored) {
-                try {
-                    setBookedRideIds(JSON.parse(stored));
-                } catch (e) {
-                    console.error("Failed to parse booked rides", e);
-                }
-            }
-        }
-    }["RideList.useEffect"], []);
-    const addToBooked = (id)=>{
-        const updated = [
-            ...bookedRideIds,
-            id
-        ];
-        setBookedRideIds(updated);
-        localStorage.setItem('pincher_booked_rides', JSON.stringify(updated));
     };
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "RideList.useEffect": ()=>{
             fetchRides();
         }
     }["RideList.useEffect"], [
-        refreshTrigger
-    ]);
+        refreshTrigger,
+        user?.wallet?.address
+    ]); // Refresh if user changes
     async function fetchRides() {
+        setIsRefreshing(true);
         try {
             const { data, error } = await __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$lib$2f$supabase$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["supabase"].from('rides').select('*').order('departure_time', {
                 ascending: true
             });
             if (error) throw error;
+            // 1. Fetch ALL Bookings to count seats
+            const { data: bookingsData } = await __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$lib$2f$supabase$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["supabase"].from('bookings').select('ride_id, user_address');
+            const bookingCounts = {};
+            const myBookedIds = [];
+            const myAddress = user?.wallet?.address?.toLowerCase();
+            if (bookingsData) {
+                bookingsData.forEach((b)=>{
+                    bookingCounts[b.ride_id] = (bookingCounts[b.ride_id] || 0) + 1;
+                    if (myAddress && b.user_address.toLowerCase() === myAddress) {
+                        myBookedIds.push(b.ride_id);
+                    }
+                });
+            }
+            setUserBookings(myBookedIds);
             const enrichedRides = (data || []).map((ride, index)=>{
                 const hasRealCoords = ride.pickup_lat && ride.pickup_lng && ride.dropoff_lat && ride.dropoff_lng;
                 let pLat, pLng, dLat, dLng;
@@ -1143,10 +1305,14 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                     dLat = 33.7 + latOffset;
                     dLng = -117.8 + lngOffset;
                 }
+                const occupied = bookingCounts[ride.id] || 1; // Default to 1 (Organizer) if no table/record
+                // However, if we inserted Organizer into bookings, then bookingCounts[id] should be >= 1.
+                // If table doesn't exist, bookingCounts is empty, so we default to 1.
                 return {
                     ...ride,
                     price: 10 + ride.id % 25,
-                    seats: 1 + ride.id % 3,
+                    seats_taken: occupied,
+                    seats_total: 4,
                     ride_pickup_coords: {
                         lat: pLat,
                         lng: pLng
@@ -1156,7 +1322,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                         lng: dLng
                     },
                     match_score: 0,
-                    isUnlocked: ride.status === 'completed' || ride.status === 'escrow_holding'
+                    isUnlocked: ride.status === 'completed' || ride.status === 'escrow_holding' || ride.status === 'full'
                 };
             });
             setRides(enrichedRides);
@@ -1164,6 +1330,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
             console.error('Error fetching rides:', error?.message || error);
         } finally{
             setLoading(false);
+            setIsRefreshing(false);
         }
     }
     const sortedRides = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
@@ -1200,17 +1367,17 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
         sortedRides,
         onTopMatchUpdate
     ]);
+    // -- Strict Participation Logic --
+    const hasActivePassengerRide = sortedRides.some((r)=>userBookings.includes(r.id) && r.status !== 'completed' && r.status !== 'cancelled');
+    const hasActiveOrganizerRide = sortedRides.some((r)=>user?.wallet?.address && r.user_address && user.wallet.address.toLowerCase() === r.user_address.toLowerCase() && r.status !== 'completed' && r.status !== 'cancelled');
+    const isUserBusy = hasActivePassengerRide || hasActiveOrganizerRide;
     const displayedRides = sortedRides.filter((r)=>{
         const GRACE_PERIOD_MS = 2 * 60 * 60 * 1000;
         const isExpired = new Date(r.departure_time).getTime() < Date.now() - GRACE_PERIOD_MS;
         if (r.status === 'completed' || r.status === 'cancelled') return false;
-        if (r.status === 'escrow_holding') {
-            const isOrganizer = user?.wallet?.address && r.user_address && user.wallet.address.toLowerCase() === r.user_address.toLowerCase();
-            const isPassenger = bookedRideIds.includes(r.id);
-            return isOrganizer || isPassenger;
-        }
-        if (r.status === 'active') return !isExpired;
-        return true;
+        // Default rule for Active/Escrow/Full: Visible unless expired
+        // 'escrow_holding' means the ride is active and deposit paid. It SHOULD be visible to everyone.
+        return !isExpired;
     });
     if (loading) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "flex justify-center p-8",
@@ -1218,17 +1385,65 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
             className: "w-6 h-6 border-2 border-slate-200 border-t-black rounded-full animate-spin"
         }, void 0, false, {
             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-            lineNumber: 329,
+            lineNumber: 404,
             columnNumber: 11
         }, this)
     }, void 0, false, {
         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-        lineNumber: 328,
+        lineNumber: 403,
         columnNumber: 7
     }, this);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "space-y-4",
         children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "flex items-center justify-between px-6",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                        className: "text-xl font-black tracking-tight text-gray-900",
+                        children: "Available Rides"
+                    }, void 0, false, {
+                        fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                        lineNumber: 412,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        onClick: ()=>{
+                            fetchRides();
+                        },
+                        className: "p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-full transition-all active:scale-95",
+                        title: "Refresh",
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                            className: `w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`,
+                            fill: "none",
+                            stroke: "currentColor",
+                            viewBox: "0 0 24 24",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                strokeLinecap: "round",
+                                strokeLinejoin: "round",
+                                strokeWidth: 2,
+                                d: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            }, void 0, false, {
+                                fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                lineNumber: 418,
+                                columnNumber: 133
+                            }, this)
+                        }, void 0, false, {
+                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                            lineNumber: 418,
+                            columnNumber: 14
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                        lineNumber: 413,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                lineNumber: 411,
+                columnNumber: 7
+            }, this),
             displayedRides.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100",
                 children: [
@@ -1239,12 +1454,12 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                             children: "🚗"
                         }, void 0, false, {
                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                            lineNumber: 342,
+                            lineNumber: 426,
                             columnNumber: 19
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                        lineNumber: 341,
+                        lineNumber: 425,
                         columnNumber: 14
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1252,13 +1467,13 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                         children: "No rides nearby"
                     }, void 0, false, {
                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                        lineNumber: 344,
+                        lineNumber: 428,
                         columnNumber: 14
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                lineNumber: 339,
+                lineNumber: 423,
                 columnNumber: 9
             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "space-y-3 pb-20 px-1",
@@ -1270,13 +1485,15 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                     });
                     const isBooking = actionLoading === ride.id;
                     const isExpanded = expandedRideId === ride.id;
+                    const isPassenger = userBookings.includes(ride.id);
+                    const isOrganizer = user?.wallet?.address && ride.user_address && user.wallet.address.toLowerCase() === ride.user_address.toLowerCase();
                     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         onClick: ()=>toggleExpand(ride.id),
-                        className: `group px-4 py-3 bg-white border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-all cursor-pointer ${ride.status === 'escrow_holding' ? 'bg-yellow-50/50' : ride.status === 'completed' ? 'bg-green-50/50' : ''}`,
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "flex flex-col gap-2",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: `group px-4 py-3 bg-white border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-all cursor-pointer ${isPassenger || isOrganizer ? 'bg-yellow-50/50' : ''}`,
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex flex-col gap-2",
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "flex justify-between items-center",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1287,10 +1504,10 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                     children: timeStr
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 367,
+                                                    lineNumber: 454,
                                                     columnNumber: 30
                                                 }, this),
-                                                (ride.match_score || 0) > 80 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                (ride.match_score || 0) > 60 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                     className: "text-[10px] font-bold text-green-600 flex items-center gap-0.5",
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
@@ -1305,46 +1522,54 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                                 d: "M5 13l4 4L19 7"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                                lineNumber: 372,
-                                                                columnNumber: 120
+                                                                lineNumber: 459,
+                                                                columnNumber: 124
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                            lineNumber: 372,
-                                                            columnNumber: 37
+                                                            lineNumber: 459,
+                                                            columnNumber: 41
                                                         }, this),
                                                         ride.match_score,
                                                         "% Match"
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 371,
-                                                    columnNumber: 33
+                                                    lineNumber: 458,
+                                                    columnNumber: 37
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 366,
+                                            lineNumber: 453,
                                             columnNumber: 26
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: "flex items-center gap-2",
                                             children: [
-                                                ride.status === 'escrow_holding' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                    className: "text-[9px] font-bold text-yellow-600 bg-yellow-100 px-1.5 py-0.5 rounded uppercase",
-                                                    children: "Escrow"
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: `text-[9px] font-bold px-1.5 py-0.5 rounded ${(ride.seats_taken || 0) >= (ride.seats_total || 4) ? 'bg-red-100 text-red-600' : 'bg-blue-50 text-blue-600'}`,
+                                                    children: (ride.seats_taken || 0) >= (ride.seats_total || 4) ? 'FULL' : `${ride.seats_taken}/${ride.seats_total} Joined`
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 379,
+                                                    lineNumber: 466,
                                                     columnNumber: 34
+                                                }, this),
+                                                (isOrganizer || isPassenger) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "text-[9px] font-bold text-yellow-600 bg-yellow-100 px-1.5 py-0.5 rounded uppercase",
+                                                    children: "My Ride"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                                    lineNumber: 475,
+                                                    columnNumber: 38
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                     className: "text-sm font-black text-black",
                                                     children: "0.01 USDC"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 381,
-                                                    columnNumber: 30
+                                                    lineNumber: 477,
+                                                    columnNumber: 34
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
                                                     className: `w-3 h-3 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`,
@@ -1358,316 +1583,344 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                         d: "M19 9l-7 7-7-7"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                        lineNumber: 383,
-                                                        columnNumber: 180
+                                                        lineNumber: 479,
+                                                        columnNumber: 184
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 383,
-                                                    columnNumber: 30
+                                                    lineNumber: 479,
+                                                    columnNumber: 34
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 377,
-                                            columnNumber: 26
+                                            lineNumber: 464,
+                                            columnNumber: 30
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                    lineNumber: 365,
+                                    lineNumber: 452,
                                     columnNumber: 21
-                                }, this),
-                                isExpanded ? // EXPANDED VIEW: Full Addresses
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "flex flex-col gap-3 mt-1 py-2 border-l-2 border-black pl-3 ml-1 animate-in fade-in duration-200",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "text-[9px] uppercase font-bold text-gray-400",
-                                                    children: "Pickup"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 392,
-                                                    columnNumber: 33
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "text-xs font-bold text-black",
-                                                    children: ride.pickup_location
-                                                }, void 0, false, {
-                                                    fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 393,
-                                                    columnNumber: 33
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 391,
-                                            columnNumber: 29
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "text-[9px] uppercase font-bold text-gray-400",
-                                                    children: "Dropoff"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 396,
-                                                    columnNumber: 33
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "text-xs font-bold text-black",
-                                                    children: ride.dropoff_location
-                                                }, void 0, false, {
-                                                    fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 397,
-                                                    columnNumber: 33
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 395,
-                                            columnNumber: 29
-                                        }, this),
-                                        ride.distance_from_user !== undefined && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                            className: "text-[10px] text-gray-500 italic",
-                                            children: [
-                                                (ride.distance_from_user * 0.621371).toFixed(1),
-                                                " miles addition"
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 400,
-                                            columnNumber: 33
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                    lineNumber: 390,
-                                    columnNumber: 25
-                                }, this) : // COLLAPSED VIEW: Summary Line
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "flex items-center gap-2 text-xs text-gray-900 font-bold leading-tight",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            className: "truncate max-w-[45%]",
-                                            children: ride.pickup_location.split(',')[0]
-                                        }, void 0, false, {
-                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 408,
-                                            columnNumber: 29
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            className: "text-gray-300",
-                                            children: "➜"
-                                        }, void 0, false, {
-                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 409,
-                                            columnNumber: 29
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            className: "truncate max-w-[45%]",
-                                            children: ride.dropoff_location.split(',')[0]
-                                        }, void 0, false, {
-                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 410,
-                                            columnNumber: 29
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                    lineNumber: 407,
-                                    columnNumber: 25
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "mt-1",
-                                    onClick: (e)=>e.stopPropagation(),
-                                    children: [
-                                        ride.status === 'active' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                            onClick: ()=>handleBook(ride),
-                                            disabled: isBooking,
-                                            className: "w-full py-2 bg-black text-white rounded-md text-[10px] font-bold uppercase tracking-wider hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400 transition-colors flex items-center justify-center gap-2",
-                                            children: isBooking ? 'Processing...' : 'Pay Deposit (0.01 USDC) & Join'
-                                        }, void 0, false, {
-                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 417,
-                                            columnNumber: 29
-                                        }, this),
-                                        ride.status === 'escrow_holding' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "flex flex-col gap-2 mt-2 pt-2 border-t border-dashed border-gray-100",
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "flex items-center justify-between",
-                                                    children: [
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                            className: "text-[9px] font-bold text-yellow-600 bg-yellow-50 px-1.5 py-0.5 rounded uppercase",
-                                                            children: "Ride In Progress"
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                            lineNumber: 429,
-                                                            columnNumber: 38
-                                                        }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                            className: "flex items-center gap-1 text-[10px] text-gray-500",
-                                                            children: [
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                    className: "font-bold select-all",
-                                                                    children: ride.wechat_id
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                                    lineNumber: 431,
-                                                                    columnNumber: 41
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                                    onClick: (e)=>{
-                                                                        e.stopPropagation();
-                                                                        handleCopyWeChat(ride.wechat_id);
-                                                                    },
-                                                                    className: "hover:text-black",
-                                                                    title: "Copy",
-                                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
-                                                                        className: "w-3 h-3",
-                                                                        fill: "none",
-                                                                        stroke: "currentColor",
-                                                                        viewBox: "0 0 24 24",
-                                                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
-                                                                            strokeLinecap: "round",
-                                                                            strokeLinejoin: "round",
-                                                                            strokeWidth: 2,
-                                                                            d: "M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 012 2v-8a2 2 0 01-2-2h-8a2 2 0 01-2 2v8a2 2 0 012 2z"
-                                                                        }, void 0, false, {
-                                                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                                            lineNumber: 433,
-                                                                            columnNumber: 124
-                                                                        }, this)
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                lineNumber: 450,
+                                columnNumber: 17
+                            }, this),
+                            isExpanded ? // EXPANDED VIEW: Full Addresses
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex flex-col gap-3 mt-1 py-2 border-l-2 border-black pl-3 ml-1 animate-in fade-in duration-200",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                className: "text-[9px] uppercase font-bold text-gray-400",
+                                                children: "Pickup"
+                                            }, void 0, false, {
+                                                fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                                lineNumber: 489,
+                                                columnNumber: 37
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                className: "text-xs font-bold text-black",
+                                                children: ride.pickup_location
+                                            }, void 0, false, {
+                                                fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                                lineNumber: 490,
+                                                columnNumber: 37
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                        lineNumber: 488,
+                                        columnNumber: 33
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                className: "text-[9px] uppercase font-bold text-gray-400",
+                                                children: "Dropoff"
+                                            }, void 0, false, {
+                                                fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                                lineNumber: 493,
+                                                columnNumber: 37
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                className: "text-xs font-bold text-black",
+                                                children: ride.dropoff_location
+                                            }, void 0, false, {
+                                                fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                                lineNumber: 494,
+                                                columnNumber: 37
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                        lineNumber: 492,
+                                        columnNumber: 33
+                                    }, this),
+                                    ride.distance_from_user !== undefined && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        className: "text-[10px] text-gray-500 italic",
+                                        children: [
+                                            (ride.distance_from_user * 0.621371).toFixed(1),
+                                            " miles addition"
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                        lineNumber: 497,
+                                        columnNumber: 37
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                lineNumber: 487,
+                                columnNumber: 29
+                            }, this) : // COLLAPSED VIEW: Summary Line
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex items-center gap-2 text-xs text-gray-900 font-bold leading-tight",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "truncate max-w-[45%]",
+                                        children: ride.pickup_location.split(',')[0]
+                                    }, void 0, false, {
+                                        fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                        lineNumber: 505,
+                                        columnNumber: 33
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "text-gray-300",
+                                        children: "➜"
+                                    }, void 0, false, {
+                                        fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                        lineNumber: 506,
+                                        columnNumber: 33
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "truncate max-w-[45%]",
+                                        children: ride.dropoff_location.split(',')[0]
+                                    }, void 0, false, {
+                                        fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                        lineNumber: 507,
+                                        columnNumber: 33
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                lineNumber: 504,
+                                columnNumber: 29
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "mt-1",
+                                onClick: (e)=>e.stopPropagation(),
+                                children: [
+                                    !isPassenger && !isOrganizer && (ride.status === 'active' || ride.status === 'escrow_holding') && (ride.seats_taken || 0) < (ride.seats_total || 4) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        onClick: ()=>handleBook(ride),
+                                        disabled: isBooking || isUserBusy,
+                                        className: `w-full py-2 rounded-md text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors
+                                        ${isUserBusy ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-black text-white hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400'}`,
+                                        children: isBooking ? 'Processing...' : isUserBusy ? 'Verify: Active Ride Limit Reached' : 'Pay Deposit (0.01 USDC) & Join'
+                                    }, void 0, false, {
+                                        fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                        lineNumber: 515,
+                                        columnNumber: 33
+                                    }, this),
+                                    !isPassenger && !isOrganizer && (ride.status === 'full' || (ride.seats_taken || 0) >= (ride.seats_total || 4)) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "w-full py-2 bg-gray-100 text-gray-400 rounded-md text-[10px] font-bold uppercase tracking-wider text-center cursor-not-allowed",
+                                        children: "Ride Full"
+                                    }, void 0, false, {
+                                        fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                        lineNumber: 530,
+                                        columnNumber: 34
+                                    }, this),
+                                    (isOrganizer || isPassenger) && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "flex flex-col gap-2 mt-2 pt-2 border-t border-dashed border-gray-100",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex items-center justify-between",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-[9px] font-bold text-yellow-600 bg-yellow-50 px-1.5 py-0.5 rounded uppercase",
+                                                        children: "Ride In Progress"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                                        lineNumber: 539,
+                                                        columnNumber: 38
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                        className: "flex items-center gap-1 text-[10px] text-gray-500",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                className: "font-bold select-all",
+                                                                children: ride.wechat_id
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                                                lineNumber: 541,
+                                                                columnNumber: 41
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                                onClick: (e)=>{
+                                                                    e.stopPropagation();
+                                                                    handleCopyWeChat(ride.wechat_id);
+                                                                },
+                                                                className: "hover:text-black",
+                                                                title: "Copy",
+                                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                                                    className: "w-3 h-3",
+                                                                    fill: "none",
+                                                                    stroke: "currentColor",
+                                                                    viewBox: "0 0 24 24",
+                                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                                                        strokeLinecap: "round",
+                                                                        strokeLinejoin: "round",
+                                                                        strokeWidth: 2,
+                                                                        d: "M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 012 2v-8a2 2 0 01-2-2h-8a2 2 0 01-2 2v8a2 2 0 012 2z"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                                        lineNumber: 433,
-                                                                        columnNumber: 45
+                                                                        lineNumber: 543,
+                                                                        columnNumber: 124
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                                    lineNumber: 432,
-                                                                    columnNumber: 41
+                                                                    lineNumber: 543,
+                                                                    columnNumber: 45
                                                                 }, this)
-                                                            ]
-                                                        }, void 0, true, {
-                                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                            lineNumber: 430,
-                                                            columnNumber: 38
-                                                        }, this)
-                                                    ]
-                                                }, void 0, true, {
-                                                    fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 428,
-                                                    columnNumber: 33
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "flex gap-2",
-                                                    children: user?.wallet?.address && ride.user_address && user.wallet.address.toLowerCase() === ride.user_address.toLowerCase() ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        className: "flex items-center gap-1 w-full",
-                                                        children: [
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                                onClick: ()=>openInUber(ride),
-                                                                className: "flex-1 py-1.5 bg-black text-white rounded text-[10px] font-bold hover:bg-gray-800",
-                                                                children: "Open Uber"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                                lineNumber: 443,
-                                                                columnNumber: 45
-                                                            }, this),
-                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                                onClick: ()=>alert("Simulated: Customer support contacted."),
-                                                                className: "flex-1 py-1.5 bg-gray-100 text-gray-600 rounded text-[10px] font-bold hover:bg-gray-200",
-                                                                children: "Support"
-                                                            }, void 0, false, {
-                                                                fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                                lineNumber: 449,
-                                                                columnNumber: 45
+                                                                lineNumber: 542,
+                                                                columnNumber: 41
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                        lineNumber: 442,
-                                                        columnNumber: 41
-                                                    }, this) : /* Passenger Actions */ /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                        onClick: ()=>handleRelease(ride),
-                                                        disabled: isBooking,
-                                                        className: "w-full py-2 bg-green-600 text-white rounded text-[10px] font-bold hover:bg-green-700 disabled:bg-green-400 shadow-sm",
-                                                        children: isBooking ? 'Verifying...' : '✅ Confirm Pickup'
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                        lineNumber: 458,
-                                                        columnNumber: 41
+                                                        lineNumber: 540,
+                                                        columnNumber: 38
                                                     }, this)
-                                                }, void 0, false, {
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                                lineNumber: 538,
+                                                columnNumber: 33
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex gap-2",
+                                                children: isOrganizer ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "flex items-center gap-1 w-full",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                            onClick: ()=>openInUber(ride),
+                                                            className: "flex-1 py-1.5 bg-black text-white rounded text-[10px] font-bold hover:bg-gray-800",
+                                                            children: "Open Uber"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                                            lineNumber: 551,
+                                                            columnNumber: 45
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                            onClick: ()=>alert("Simulated: Customer support contacted."),
+                                                            className: "flex-1 py-1.5 bg-gray-100 text-gray-600 rounded text-[10px] font-bold hover:bg-gray-200",
+                                                            children: "Support"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                                            lineNumber: 557,
+                                                            columnNumber: 45
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
                                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                    lineNumber: 438,
-                                                    columnNumber: 33
+                                                    lineNumber: 550,
+                                                    columnNumber: 41
+                                                }, this) : /* Passenger Actions: Confirm Pickup OR Cancel */ /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "flex items-center gap-1 w-full",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                            onClick: ()=>handleRelease(ride),
+                                                            disabled: isBooking,
+                                                            className: "flex-1 py-2 bg-green-600 text-white rounded text-[10px] font-bold hover:bg-green-700 disabled:bg-green-400 shadow-sm",
+                                                            children: isBooking ? 'Verifying...' : '✅ Confirm Pickup'
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                                            lineNumber: 567,
+                                                            columnNumber: 45
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                            onClick: ()=>handleCancel(ride),
+                                                            disabled: isBooking,
+                                                            className: "w-20 py-2 bg-red-50 text-red-600 border border-red-100 rounded text-[10px] font-bold hover:bg-red-100 disabled:opacity-50",
+                                                            children: isBooking ? '...' : 'Cancel'
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                                            lineNumber: 574,
+                                                            columnNumber: 45
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                                    lineNumber: 566,
+                                                    columnNumber: 41
                                                 }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 427,
-                                            columnNumber: 30
-                                        }, this),
-                                        ride.status === 'completed' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "w-full py-2 bg-gray-100 text-gray-500 rounded-md text-[10px] font-bold uppercase tracking-wider text-center cursor-default",
-                                            children: "Completed"
-                                        }, void 0, false, {
-                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 471,
-                                            columnNumber: 30
-                                        }, this),
-                                        isExpanded && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                            onClick: (e)=>{
-                                                e.stopPropagation();
-                                                onToggleChat(ride.id);
-                                            },
-                                            className: "mt-2 w-full text-[10px] font-bold text-gray-400 hover:text-black hover:bg-gray-50 py-1.5 rounded border border-transparent hover:border-gray-100 transition-all flex items-center justify-center gap-1",
-                                            children: activeChatId === ride.id ? 'Hide Chat' : '💬 Open Chat'
-                                        }, void 0, false, {
-                                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                            lineNumber: 479,
-                                            columnNumber: 29
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                    lineNumber: 415,
-                                    columnNumber: 21
-                                }, this),
-                                activeChatId === ride.id && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "mt-2 pt-2 border-t border-gray-100",
-                                    onClick: (e)=>e.stopPropagation(),
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$components$2f$RideChat$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                                        rideId: ride.id
+                                            }, void 0, false, {
+                                                fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                                lineNumber: 548,
+                                                columnNumber: 33
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                        lineNumber: 537,
+                                        columnNumber: 34
+                                    }, this),
+                                    ride.status === 'completed' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "w-full py-2 bg-gray-100 text-gray-500 rounded-md text-[10px] font-bold uppercase tracking-wider text-center cursor-default",
+                                        children: "Completed"
                                     }, void 0, false, {
                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                        lineNumber: 494,
+                                        lineNumber: 588,
                                         columnNumber: 30
+                                    }, this),
+                                    isExpanded && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        onClick: (e)=>{
+                                            e.stopPropagation();
+                                            onToggleChat(ride.id);
+                                        },
+                                        className: "mt-2 w-full text-[10px] font-bold text-gray-400 hover:text-black hover:bg-gray-50 py-1.5 rounded border border-transparent hover:border-gray-100 transition-all flex items-center justify-center gap-1",
+                                        children: activeChatId === ride.id ? 'Hide Chat' : '💬 Open Chat'
+                                    }, void 0, false, {
+                                        fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                        lineNumber: 596,
+                                        columnNumber: 29
                                     }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                lineNumber: 512,
+                                columnNumber: 25
+                            }, this),
+                            activeChatId === ride.id && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "mt-2 pt-2 border-t border-gray-100",
+                                onClick: (e)=>e.stopPropagation(),
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$components$2f$RideChat$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
+                                    rideId: ride.id
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                    lineNumber: 493,
-                                    columnNumber: 25
+                                    lineNumber: 611,
+                                    columnNumber: 30
                                 }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                            lineNumber: 363,
-                            columnNumber: 17
-                        }, this)
-                    }, ride.id, false, {
+                            }, void 0, false, {
+                                fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                lineNumber: 610,
+                                columnNumber: 25
+                            }, this)
+                        ]
+                    }, ride.id, true, {
                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                        lineNumber: 355,
+                        lineNumber: 443,
                         columnNumber: 17
                     }, this);
                 })
             }, void 0, false, {
                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                lineNumber: 347,
+                lineNumber: 431,
                 columnNumber: 9
             }, this),
             successTicket && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1691,17 +1944,17 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                         d: "M5 13l4 4L19 7"
                                     }, void 0, false, {
                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                        lineNumber: 512,
+                                        lineNumber: 628,
                                         columnNumber: 27
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                    lineNumber: 511,
+                                    lineNumber: 627,
                                     columnNumber: 25
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                lineNumber: 510,
+                                lineNumber: 626,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -1709,7 +1962,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                 children: "Ride Confirmed"
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                lineNumber: 516,
+                                lineNumber: 632,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1717,7 +1970,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                 children: "Deposit locked. Driver is on the way."
                             }, void 0, false, {
                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                lineNumber: 519,
+                                lineNumber: 635,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1731,7 +1984,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                 children: "Ticket ID"
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                lineNumber: 526,
+                                                lineNumber: 642,
                                                 columnNumber: 29
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1742,20 +1995,20 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                lineNumber: 527,
+                                                lineNumber: 643,
                                                 columnNumber: 29
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                        lineNumber: 525,
+                                        lineNumber: 641,
                                         columnNumber: 25
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "w-full h-px bg-gray-200 my-2"
                                     }, void 0, false, {
                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                        lineNumber: 529,
+                                        lineNumber: 645,
                                         columnNumber: 25
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1766,7 +2019,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                 children: "Status"
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                lineNumber: 531,
+                                                lineNumber: 647,
                                                 columnNumber: 29
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1774,19 +2027,19 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                                 children: "ACTIVE"
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                                lineNumber: 532,
+                                                lineNumber: 648,
                                                 columnNumber: 29
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                        lineNumber: 530,
+                                        lineNumber: 646,
                                         columnNumber: 25
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                lineNumber: 524,
+                                lineNumber: 640,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1798,7 +2051,7 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                         children: "Track Driver"
                                     }, void 0, false, {
                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                        lineNumber: 538,
+                                        lineNumber: 654,
                                         columnNumber: 25
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
@@ -1809,39 +2062,107 @@ function RideList({ pickupCoords, dropoffCoords, onTopMatchUpdate, refreshTrigge
                                         children: "View Receipt on BaseScan ↗"
                                     }, void 0, false, {
                                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                        lineNumber: 545,
+                                        lineNumber: 661,
                                         columnNumber: 25
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                                lineNumber: 537,
+                                lineNumber: 653,
                                 columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                        lineNumber: 508,
+                        lineNumber: 624,
                         columnNumber: 17
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                    lineNumber: 507,
+                    lineNumber: 623,
                     columnNumber: 13
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-                lineNumber: 506,
+                lineNumber: 622,
+                columnNumber: 9
+            }, this),
+            releaseSuccess && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "fixed inset-0 z-100 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200",
+                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "w-full max-w-sm bg-white rounded-xl shadow-2xl p-6 relative overflow-hidden text-center",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                className: "w-8 h-8 text-green-600",
+                                fill: "none",
+                                stroke: "currentColor",
+                                viewBox: "0 0 24 24",
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                    strokeLinecap: "round",
+                                    strokeLinejoin: "round",
+                                    strokeWidth: 3,
+                                    d: "M5 13l4 4L19 7"
+                                }, void 0, false, {
+                                    fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                    lineNumber: 680,
+                                    columnNumber: 115
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                                lineNumber: 680,
+                                columnNumber: 21
+                            }, this)
+                        }, void 0, false, {
+                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                            lineNumber: 679,
+                            columnNumber: 17
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                            className: "text-xl font-black text-black tracking-tight mb-2",
+                            children: "Ride Completed!"
+                        }, void 0, false, {
+                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                            lineNumber: 682,
+                            columnNumber: 17
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                            className: "text-sm text-gray-500 mb-6",
+                            children: "Funds have been released to the driver."
+                        }, void 0, false, {
+                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                            lineNumber: 683,
+                            columnNumber: 17
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                            onClick: ()=>setReleaseSuccess(false),
+                            className: "w-full py-3 rounded-lg bg-black text-white font-bold text-sm hover:bg-gray-800 transition-all active:scale-[0.98]",
+                            children: "Close"
+                        }, void 0, false, {
+                            fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                            lineNumber: 684,
+                            columnNumber: 17
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                    lineNumber: 678,
+                    columnNumber: 13
+                }, this)
+            }, void 0, false, {
+                fileName: "[project]/Desktop/pincher/components/RideList.tsx",
+                lineNumber: 677,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/Desktop/pincher/components/RideList.tsx",
-        lineNumber: 335,
+        lineNumber: 410,
         columnNumber: 5
     }, this);
 }
-_s(RideList, "1LUtA7+fF7OmU9VmKTcXBlDvWqM=", false, function() {
+_s(RideList, "9euOfJteMTZdUMYymbGIziI0O6Y=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$useWallets$2d$kObl6ZLS$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__useWallets$3e$__["useWallets"],
         __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$usePrivy$2d$BWtc2XF$2d2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__usePrivy$3e$__["usePrivy"]
@@ -2923,7 +3244,7 @@ const client = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pi
 });
 function UserOnboarding({ onComplete }) {
     _s();
-    const { login, authenticated, user } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$usePrivy$2d$BWtc2XF$2d2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__usePrivy$3e$__["usePrivy"])();
+    const { login, authenticated, user, ready, createWallet, logout } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$usePrivy$2d$BWtc2XF$2d2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__usePrivy$3e$__["usePrivy"])();
     const { wallets } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$useWallets$2d$kObl6ZLS$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__useWallets$3e$__["useWallets"])();
     const [step, setStep] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(1);
     const [balance, setBalance] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
@@ -3044,7 +3365,7 @@ function UserOnboarding({ onComplete }) {
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-xs font-medium text-gray-400 mb-6",
+                        className: "text-xs font-medium text-black mb-6",
                         children: "Share Rides. Smart Fares."
                     }, void 0, false, {
                         fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
@@ -3061,7 +3382,7 @@ function UserOnboarding({ onComplete }) {
                                         className: "flex items-center justify-between mb-4",
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                className: "text-xs font-bold text-gray-500 uppercase tracking-widest",
+                                                className: "text-xs font-bold text-black uppercase tracking-widest",
                                                 children: "Step 1/2"
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
@@ -3082,11 +3403,70 @@ function UserOnboarding({ onComplete }) {
                                         lineNumber: 107,
                                         columnNumber: 17
                                     }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                        onClick: login,
-                                        className: "w-full py-4 bg-black hover:bg-gray-800 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg active:scale-[0.98]",
-                                        children: "Login / Sign Up"
-                                    }, void 0, false, {
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "flex flex-col gap-3",
+                                        children: [
+                                            !authenticated && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                onClick: login,
+                                                disabled: !ready,
+                                                className: "w-full py-4 bg-black hover:bg-gray-800 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed",
+                                                children: ready ? 'Login / Sign Up' : 'Initializing...'
+                                            }, void 0, false, {
+                                                fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
+                                                lineNumber: 115,
+                                                columnNumber: 25
+                                            }, this),
+                                            authenticated && !user?.wallet && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                onClick: async ()=>{
+                                                    try {
+                                                        console.log("Creating wallet for authenticated user...");
+                                                        await createWallet();
+                                                    } catch (e) {
+                                                        console.error("Wallet creation error:", e);
+                                                        alert(`Wallet Creation Failed: ${e.message}`);
+                                                    }
+                                                },
+                                                disabled: !ready,
+                                                className: "w-full py-4 bg-black hover:bg-gray-800 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg active:scale-[0.98]",
+                                                children: "Create Wallet"
+                                            }, void 0, false, {
+                                                fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
+                                                lineNumber: 126,
+                                                columnNumber: 26
+                                            }, this),
+                                            authenticated && user?.wallet && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                onClick: ()=>{
+                                                    setStep(2);
+                                                    checkBalance(user.wallet.address);
+                                                },
+                                                className: "w-full py-4 bg-black hover:bg-gray-800 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg active:scale-[0.98]",
+                                                children: "Continue"
+                                            }, void 0, false, {
+                                                fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
+                                                lineNumber: 145,
+                                                columnNumber: 25
+                                            }, this),
+                                            authenticated && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "text-center",
+                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                    onClick: async ()=>{
+                                                        await logout();
+                                                        window.location.reload();
+                                                    },
+                                                    className: "text-xs text-black hover:text-red-500 underline",
+                                                    children: "Reset Session"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
+                                                    lineNumber: 159,
+                                                    columnNumber: 29
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
+                                                lineNumber: 158,
+                                                columnNumber: 25
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
                                         fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
                                         lineNumber: 112,
                                         columnNumber: 17
@@ -3104,11 +3484,11 @@ function UserOnboarding({ onComplete }) {
                                         className: "flex items-center justify-between mb-4",
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                className: "text-xs font-bold text-gray-500 uppercase tracking-widest",
+                                                className: "text-xs font-bold text-black uppercase tracking-widest",
                                                 children: "Step 2/2"
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                                lineNumber: 125,
+                                                lineNumber: 178,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3116,13 +3496,13 @@ function UserOnboarding({ onComplete }) {
                                                 children: "Gas & Tokens"
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                                lineNumber: 126,
+                                                lineNumber: 179,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                        lineNumber: 124,
+                                        lineNumber: 177,
                                         columnNumber: 18
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3132,11 +3512,11 @@ function UserOnboarding({ onComplete }) {
                                                 className: "flex justify-between items-center mb-4",
                                                 children: [
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                        className: "text-xs text-gray-500 font-medium",
+                                                        className: "text-xs text-black font-medium",
                                                         children: "Wallet Balance"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                                        lineNumber: 131,
+                                                        lineNumber: 184,
                                                         columnNumber: 22
                                                     }, this),
                                                     loading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3144,7 +3524,7 @@ function UserOnboarding({ onComplete }) {
                                                         children: "Scanning..."
                                                     }, void 0, false, {
                                                         fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                                        lineNumber: 133,
+                                                        lineNumber: 186,
                                                         columnNumber: 26
                                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                         className: "text-right",
@@ -3157,7 +3537,7 @@ function UserOnboarding({ onComplete }) {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                                                lineNumber: 136,
+                                                                lineNumber: 189,
                                                                 columnNumber: 30
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3168,22 +3548,22 @@ function UserOnboarding({ onComplete }) {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                                                lineNumber: 137,
+                                                                lineNumber: 190,
                                                                 columnNumber: 30
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                                        lineNumber: 135,
+                                                        lineNumber: 188,
                                                         columnNumber: 26
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                                lineNumber: 130,
+                                                lineNumber: 183,
                                                 columnNumber: 19
                                             }, this),
-                                            balance && parseFloat(balance.usdc) < 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            balance && parseFloat(balance.usdc) < 0.01 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                 onClick: claimFaucet,
                                                 disabled: faucetStatus === 'claiming' || faucetStatus === 'success',
                                                 className: "w-full py-3 bg-black text-white hover:bg-gray-900 rounded-lg font-bold text-sm shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all relative overflow-hidden active:scale-[0.98]",
@@ -3204,7 +3584,7 @@ function UserOnboarding({ onComplete }) {
                                                                     fill: "none"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                                                    lineNumber: 150,
+                                                                    lineNumber: 203,
                                                                     columnNumber: 103
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -3213,55 +3593,74 @@ function UserOnboarding({ onComplete }) {
                                                                     d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                                                    lineNumber: 150,
+                                                                    lineNumber: 203,
                                                                     columnNumber: 208
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                                            lineNumber: 150,
+                                                            lineNumber: 203,
                                                             columnNumber: 34
                                                         }, this),
                                                         "Sending Test Tokens..."
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                                    lineNumber: 149,
+                                                    lineNumber: 202,
                                                     columnNumber: 30
-                                                }, this) : faucetStatus === 'success' ? 'Funds Received!' : 'Claim 50 Test-USDC & ETH'
+                                                }, this) : faucetStatus === 'success' ? 'Funds Received!' : 'Claim Base Sepolia USDC & ETH'
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                                lineNumber: 143,
+                                                lineNumber: 196,
                                                 columnNumber: 23
                                             }, this),
-                                            balance && parseFloat(balance.usdc) >= 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            balance && parseFloat(balance.usdc) >= 0.01 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "text-center text-xs text-green-700 font-bold py-2 bg-green-50 rounded-lg border border-green-100",
                                                 children: "Ready to use!"
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                                lineNumber: 161,
+                                                lineNumber: 214,
                                                 columnNumber: 23
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                        lineNumber: 129,
+                                        lineNumber: 182,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         onClick: onComplete,
-                                        disabled: balance ? parseFloat(balance.usdc) < 1 : true,
+                                        disabled: balance ? parseFloat(balance.usdc) < 0.01 : true,
                                         className: "w-full py-4 bg-black text-white hover:bg-gray-900 disabled:bg-gray-200 disabled:text-gray-400 rounded-xl font-bold text-lg tracking-wide transition-all shadow-lg active:scale-[0.98]",
                                         children: "Start Ride"
                                     }, void 0, false, {
                                         fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                        lineNumber: 168,
+                                        lineNumber: 220,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "mt-4 text-center",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            onClick: async ()=>{
+                                                await logout();
+                                                setStep(1);
+                                            },
+                                            className: "text-xs text-gray-400 hover:text-red-500 underline",
+                                            children: "Sign Out"
+                                        }, void 0, false, {
+                                            fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
+                                            lineNumber: 229,
+                                            columnNumber: 21
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
+                                        lineNumber: 228,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Desktop/pincher/components/UserOnboarding.tsx",
-                                lineNumber: 123,
+                                lineNumber: 176,
                                 columnNumber: 15
                             }, this)
                         ]
@@ -3287,7 +3686,7 @@ function UserOnboarding({ onComplete }) {
         columnNumber: 5
     }, this);
 }
-_s(UserOnboarding, "GUuMFUtawNLy3a6wRdax1JBqPLs=", false, function() {
+_s(UserOnboarding, "PMXpHFBgu9i6EW6ufAcG083LGIo=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$usePrivy$2d$BWtc2XF$2d2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__usePrivy$3e$__["usePrivy"],
         __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f40$privy$2d$io$2f$react$2d$auth$2f$dist$2f$esm$2f$useWallets$2d$kObl6ZLS$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__u__as__useWallets$3e$__["useWallets"]
@@ -3495,7 +3894,8 @@ function UberPage() {
                                     externalDropoffCoords: dropoffCoords,
                                     onRideCreated: handleRideCreated,
                                     isSidebarOpen: isSidebarOpen,
-                                    onOpenProfile: ()=>setIsProfileOpen(true)
+                                    onOpenProfile: ()=>setIsProfileOpen(true),
+                                    onToggleSidebar: ()=>setIsSidebarOpen(!isSidebarOpen)
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/pincher/app/page.tsx",
                                     lineNumber: 151,
@@ -3507,7 +3907,7 @@ function UberPage() {
                                     onToggle: ()=>setIsProfileOpen(!isProfileOpen)
                                 }, void 0, false, {
                                     fileName: "[project]/Desktop/pincher/app/page.tsx",
-                                    lineNumber: 161,
+                                    lineNumber: 162,
                                     columnNumber: 15
                                 }, this),
                                 topMatch && topMatch.match_score > 60 && !isSidebarOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3524,12 +3924,12 @@ function UberPage() {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Desktop/pincher/app/page.tsx",
-                                                lineNumber: 174,
+                                                lineNumber: 175,
                                                 columnNumber: 27
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/pincher/app/page.tsx",
-                                            lineNumber: 173,
+                                            lineNumber: 174,
                                             columnNumber: 23
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3540,7 +3940,7 @@ function UberPage() {
                                                     children: "High Match Found!"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/pincher/app/page.tsx",
-                                                    lineNumber: 177,
+                                                    lineNumber: 178,
                                                     columnNumber: 27
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3552,13 +3952,13 @@ function UberPage() {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Desktop/pincher/app/page.tsx",
-                                                    lineNumber: 178,
+                                                    lineNumber: 179,
                                                     columnNumber: 27
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Desktop/pincher/app/page.tsx",
-                                            lineNumber: 176,
+                                            lineNumber: 177,
                                             columnNumber: 23
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3576,23 +3976,23 @@ function UberPage() {
                                                     className: "jsx-3d13115e38a7ee5e"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Desktop/pincher/app/page.tsx",
-                                                    lineNumber: 181,
+                                                    lineNumber: 182,
                                                     columnNumber: 106
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/Desktop/pincher/app/page.tsx",
-                                                lineNumber: 181,
+                                                lineNumber: 182,
                                                 columnNumber: 27
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/Desktop/pincher/app/page.tsx",
-                                            lineNumber: 180,
+                                            lineNumber: 181,
                                             columnNumber: 23
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Desktop/pincher/app/page.tsx",
-                                    lineNumber: 169,
+                                    lineNumber: 170,
                                     columnNumber: 19
                                 }, this)
                             ]

@@ -1,210 +1,292 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { usePrivy } from "@privy-io/react-auth";
-import { APIProvider, Map, ControlPosition, AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
-import SearchBox from "@/components/SearchBox";
-import MapSidebar from "@/components/MapSidebar";
-import UserProfile from "@/components/UserProfile";
-import Directions from "@/components/Directions";
-import UserOnboarding from '@/components/UserOnboarding';
+import { useState, useEffect } from 'react';
+import { LocationInput, Hotzone } from '@/components/LocationInput';
+import { RideOptimizer, Waypoint } from '@/components/RideOptimizer';
+import { MatchCounter } from '@/components/MatchCounter';
+import { MatchingWithNeighbors } from '@/components/MatchingWithNeighbors';
+import { CommunityAuthCard } from '@/components/CommunityAuthCard';
+import { BackgroundBeams } from '@/components/BackgroundBeams';
+import { DynamicGradient } from '@/components/DynamicGradient';
+import { WalletDisplay } from '@/components/WalletDisplay';
+import { ConnectWalletCard } from '@/components/ConnectWalletCard';
+import { matchNodes, MatchResult } from '@/lib/nodes/matcher';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { parseEther, createWalletClient, custom } from 'viem';
+import { baseSepolia } from 'viem/chains';
 
-export default function UberPage() {
-  const { authenticated } = usePrivy();
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
-  const [pickupCoords, setPickupCoords] = useState<{ lat: number; lng: number } | undefined>();
-  const [dropoffCoords, setDropoffCoords] = useState<{ lat: number; lng: number } | undefined>();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [topMatch, setTopMatch] = useState<any>(null); // State for Notification
-  const [hasOnboarded, setHasOnboarded] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
+export default function HomePage() {
+  // Generative UI State
+  const [ui, setUi] = useState<React.ReactNode>(null);
+  const [matchCounter, setMatchCounter] = useState<React.ReactNode>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [pendingMatch, setPendingMatch] = useState<MatchResult | null>(null);
+  
+  // Hotzone & Map State
+  const [selectedPickup, setSelectedPickup] = useState<Hotzone | null>(null);
+  const [selectedDropoff, setSelectedDropoff] = useState<Hotzone | null>(null);
+  const [mapFlyTo, setMapFlyTo] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
+  
+  // Privy Hooks
+  const { user, ready, authenticated, login } = usePrivy();
+  const { wallets } = useWallets();
 
-  // Reset onboarding when user logs out
+  // Simulation Logs
+  const [logs, setLogs] = useState<string[]>([]);
+  const [step, setStep] = useState(0);
+
+  const addLog = (msg: string) => setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
+  
+  // Force Login on Load
   useEffect(() => {
-    if (!authenticated) {
-      setHasOnboarded(false);
+    if (ready && !authenticated) {
+        // Automatically show login modal or just rely on the full-screen blocker
+        // login(); // Optional: Auto-trigger login modal on load
     }
-  }, [authenticated]);
+  }, [ready, authenticated, login]);
 
-  // Auto-open sidebar if high match found? Or just show notification.
-  // We'll show notification.
-
-  // Default center: Orange County
-  const center = pickupCoords || dropoffCoords || { lat: 33.6846, lng: -117.8265 };
-
-  const handlePickupChange = (_location: string, coords?: { lat: number; lng: number }) => {
-    if (coords) {
-      setPickupCoords(coords);
+  // Auto-resume flow after Privy login
+  useEffect(() => {
+    if (user && pendingMatch) {
+      addLog("✅ Login successful! Resuming simulation flow...");
+      const { waypoints, savings, originalFare, optimizedFare, rationale } = pendingMatch;
+      const start = waypoints[0]?.name || 'Unknown';
+      const end = waypoints[waypoints.length - 1]?.name || 'Unknown';
+      renderRideOptimizer(pendingMatch, start, end);
+      setPendingMatch(null); // Clear pending match
     }
+  }, [user, pendingMatch]);
+  
+  const handleHotzoneSelect = (hotzone: Hotzone, type: 'pickup' | 'dropoff') => {
+    if (type === 'pickup') {
+      setSelectedPickup(hotzone);
+    } else {
+      setSelectedDropoff(hotzone);
+    }
+    // Fly map to selected hotzone
+    setMapFlyTo({ lat: hotzone.coordinates.lat, lng: hotzone.coordinates.lng, zoom: 12 });
+    addLog(`Selected ${type}: ${hotzone.displayName} (${hotzone.virtualPickup})`);
   };
 
-  const handleDropoffChange = (_location: string, coords?: { lat: number; lng: number }) => {
-    if (coords) {
-      setDropoffCoords(coords);
-    }
-  };
+  const handleLocationSubmit = async (start: string, end: string) => {
+    setLogs([]);
+    setStep(1);
+    setUi(null);
+    setMatchCounter(null);
+    setShowConfirmation(false);
+    addLog("Initializing x402 v2 MCP Client...");
 
-  const handleRideCreated = () => {
-      setRefreshKey(prev => prev + 1);
-      setIsSidebarOpen(true); // Auto open sidebar to see new ride
-  };
-
-  return (
-    <>
-      {!hasOnboarded && (
-          <UserOnboarding onComplete={() => setHasOnboarded(true)} />
-      )}
-      {/* Global Style for Google Places Autocomplete */}
-      <style jsx global>{`
-        .pac-container {
-          z-index: 9999 !important;
-          border-radius: 8px;
-          box-shadow:
-            0 4px 6px -1px rgb(0 0 0 / 0.1),
-            0 2px 4px -2px rgb(0 0 0 / 0.1);
-          border: none;
-          margin-top: 4px;
-        }
-        .pac-item {
-          padding: 12px 16px;
-          cursor: pointer;
-          border: none;
-          font-size: 14px;
-        }
-        .pac-item:hover {
-          background-color: #f3f4f6;
-        }
-        .pac-icon {
-          display: none;
-        }
-        .pac-item-query {
-          font-size: 14px;
-          font-weight: 500;
-          color: #111827;
-        }
-      `}</style>
-
-      <div className="h-screen w-screen flex relative overflow-hidden">
-        {/* Sidebar */}
-        {/* Sidebar */}
-        <MapSidebar 
-          isOpen={isSidebarOpen} 
-          onToggle={() => setIsSidebarOpen(!isSidebarOpen)} 
-          pickupCoords={pickupCoords}
-          dropoffCoords={dropoffCoords}
-          onTopMatchUpdate={setTopMatch}
-          refreshTrigger={refreshKey}
-        />
+    // Step 1: Request Fare (Virtual)
+    setTimeout(async () => {
+        addLog(`Requesting Ride: ${start} -> ${end}`);
+        addLog("Calling MCP Tool: get_uber_fare...");
         
+        // Simulating 402 Challenge
+        addLog("⚠️ Received HTTP 402 Payment Required");
+        addLog("x402 Header: eyJhbW91bnQiOiI1MDAwMCIsInRva2VuIjoiV1JBUFBFRF9VU0RDIiwicmVjaXBpZW50IjoiMHg4Ny4uIn0=");
+        
+        // Agent Logic Logs
+        setTimeout(async () => {
+            addLog("🤖 Agent Reasoning: Fetching Real-time Vendor Data...");
+            addLog("📊 Comparison: Uber ($45.00, 1.0x) vs Lyft ($52.12, 1.2x Surge)");
+            
+            setStep(2);
+            
 
-
-        {/* Map Container */}
-        <div className="flex-1 relative h-full">
-          {apiKey ? (
-            <APIProvider apiKey={apiKey} libraries={["places", "marker"]}>
-              <Map
-                key={`${center.lat}-${center.lng}`}
-                defaultCenter={center}
-                defaultZoom={pickupCoords || dropoffCoords ? 13 : 11}
-                gestureHandling="greedy"
-                disableDefaultUI={true}
-                mapId="DEMO_MAP_ID"
-                mapTypeControlOptions={{ position: ControlPosition.BOTTOM_LEFT }}
-                className="w-full h-full"
-              >
-                {pickupCoords && (
-                  <AdvancedMarker 
-                    position={pickupCoords}
-                    draggable={true}
-                    onDragEnd={(e: any) => {
-                        if (e.latLng) {
-                            const newLat = e.latLng.lat();
-                            const newLng = e.latLng.lng();
-                            setPickupCoords({ lat: newLat, lng: newLng });
-                        }
-                    }}
-                  >
-                    <Pin background={'#000000'} glyphColor={'#ffffff'} borderColor={'#000000'} />
-                  </AdvancedMarker>
-                )}
-                {dropoffCoords && (
-                   <AdvancedMarker 
-                    position={dropoffCoords}
-                    draggable={true}
-                    onDragEnd={(e: any) => {
-                        if (e.latLng) {
-                            const newLat = e.latLng.lat();
-                            const newLng = e.latLng.lng();
-                            setDropoffCoords({ lat: newLat, lng: newLng });
-                        }
-                    }}
-                   >
-                    <Pin background={'#ffffff'} glyphColor={'#000000'} borderColor={'#000000'} />
-                  </AdvancedMarker>
-                )}
-                
-                {/* Route Line */}
-                <Directions pickup={pickupCoords} dropoff={dropoffCoords} />
-              </Map>
-              {/* Search Box with sliding effect */}
-              <SearchBox 
-                onPickupChange={handlePickupChange} 
-                onDropoffChange={handleDropoffChange} 
-                externalPickupCoords={pickupCoords}
-                externalDropoffCoords={dropoffCoords}
-                onRideCreated={handleRideCreated}
-                isSidebarOpen={isSidebarOpen}
-                onOpenProfile={() => setIsProfileOpen(true)}
+            // Call Matcher Node
+            const matchResult = await matchNodes(start, end);
+            
+            // Show MatchCounter
+            const neighborCount = Math.floor(Math.random() * 4) + 1; // 1-5 neighbors
+            setMatchCounter(
+              <MatchCounter 
+                neighborCount={neighborCount}
+                savings={matchResult.savings}
+                route={`${start} → ${end}`}
               />
+            );
 
-              <UserProfile 
-                isOpen={isProfileOpen} 
-                onClose={() => setIsProfileOpen(false)} 
-                onToggle={() => setIsProfileOpen(!isProfileOpen)}
-              />
-              
-              {/* Match Notification Pill */}
-              {topMatch && topMatch.match_score > 60 && !isSidebarOpen && (
-                  <div 
-                    className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white rounded-full shadow-xl p-2 pr-4 flex items-center gap-3 cursor-pointer hover:scale-105 transition-transform animate-in slide-in-from-bottom-4 duration-500 z-50 border border-gray-100"
-                    onClick={() => setIsSidebarOpen(true)}
-                  >
-                      <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                          <span className="text-sm font-bold text-green-700">{topMatch.match_score}%</span>
-                      </div>
-                      <div className="flex flex-col">
-                          <span className="text-xs font-bold text-gray-900 border-b border-gray-100 pb-0.5">High Match Found!</span>
-                          <span className="text-[10px] text-gray-500">{topMatch.seats} seats • ${topMatch.price}</span>
-                      </div>
-                      <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                      </div>
-                  </div>
-              )}
-            </APIProvider>
-          ) : (
-            <div className="flex items-center justify-center h-full bg-gray-200">
-              <div className="text-center p-8 bg-white rounded-lg shadow-lg">
-                <h3 className="text-xl font-bold text-gray-800 mb-2">
-                  需要 Google Maps API Key
-                </h3>
-                <p className="text-sm text-gray-600">
-                  請在 .env 文件中添加：NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-                </p>
-              </div>
-              {/* Fallback SearchBox display if no API Key (functionality will be limited) */}
-               <SearchBox 
-                 onPickupChange={handlePickupChange} 
-                 onDropoffChange={handleDropoffChange}
-                 className={isSidebarOpen ? 'translate-x-[320px]' : ''}
-                 externalPickupCoords={pickupCoords}
-                 externalDropoffCoords={dropoffCoords}
-               />
+            setTimeout(() => {
+                // Step 3: Visual Slowdown - Matching
+                addLog("Matching with nearby carpool neighbors...");
+                setUi(<MatchingWithNeighbors />);
+
+                setTimeout(() => {
+                    // Step 4: Auth Check - Value-First Approach
+                    setPendingMatch(matchResult); // Store for auto-resume after login
+                    
+                    if (!user) {
+                        // This path shouldn't be reached if we force login at start, 
+                        // but keeping as fallback logic
+                        addLog("⚠️ Authentication required to proceed. Showing CommunityAuthCard...");
+                        setUi(
+                            <CommunityAuthCard
+                                savings={matchResult.savings}
+                                neighborCount={neighborCount}
+                                route={`${start} → ${end}`}
+                            />
+                        );
+                    } else {
+                        // Authenticated: Show payment directly
+                        addLog("✓ User authenticated. Rendering RideOptimizer Card with HITL Controls...");
+                        renderRideOptimizer(matchResult, start, end);
+                    }
+                }, 2000);
+            }, 1000);
+        }, 500);
+    }, 1000);
+  };
+
+  // Helper function to render RideOptimizer (used for both auth flows)
+  const renderRideOptimizer = (matchResult: MatchResult, start: string, end: string) => {
+    const handlePayment = async () => {
+        addLog("👆 User clicked 'Pay with x402'");
+        
+        const wallet = wallets[0];
+        if (!wallet) {
+            addLog("❌ No active wallet found. Please connect via Onboarding first.");
+            // For Demo continuity, we proceed with logging specific hailing message
+            // In real app, we return here
+        } else {
+            // Switch to Base Sepolia if needed
+            const chainId = '84532'; // Base Sepolia
+            if (wallet.chainId !== `caip154:eip155:${chainId}`) {
+                 try {
+                     await wallet.switchChain(Number(chainId));
+                 } catch (e) {
+                      addLog(`⚠️ Failed to switch chain: ${e}`);
+                 }
+            }
+
+            addLog("🔐 Requesting Transaction Signature on Base Sepolia (84532)...");
+            try {
+                const provider = await wallet.getEthereumProvider();
+                const viemWalletClient = createWalletClient({
+                  chain: baseSepolia,
+                  transport: custom(provider)
+                });
+
+
+                // @ts-expect-error - Privy provider types don't fully match viem's strict requirements
+                const txHash = await viemWalletClient.sendTransaction({
+                    to: '0x32eaca925bd351d5af34e10d944c20772ae8a25c' as `0x${string}`,
+                    value: parseEther('0.0001')
+                });
+
+                addLog(`✅ Transaction Sent! Hash: ${txHash}`);
+            } catch (error: any) {
+                 addLog(`❌ Transaction Rejected: ${error.message}`);
+                 return; // Stop if rejected
+            }
+        }
+
+        addLog("HITL: User Approval Signal Received.");
+        addLog("Funds Locked in Escrow Vault.");
+        addLog("Ride Dispatched! Driver [HailingAgent] arriving in 5 mins.");
+        addLog(`CALLING UBER SANDBOX API with Waypoints: ${JSON.stringify(matchResult.waypoints.map(w => w.name))}`);
+        setStep(4);
+    };
+    
+    setUi(
+        <RideOptimizer
+            savings={matchResult.savings}
+            originalFare={matchResult.originalFare}
+            optimizedFare={matchResult.optimizedFare}
+            waypoints={[]} // Legacy
+            structuredWaypoints={matchResult.waypoints}
+             rationale={matchResult.rationale}
+            onPayment={handlePayment}
+            flyToLocation={mapFlyTo}
+        />
+    );
+  };
+
+  // 🔒 Login Guard - Render login prompt if not authenticated
+  if (ready && !authenticated) {
+    return (
+        <div className="relative min-h-screen flex items-center justify-center font-sans overflow-hidden px-4 md:px-0">
+            {/* Bright Background */}
+            <BackgroundBeams />
+            
+            <div className="z-10 w-full max-w-md animate-in fade-in zoom-in duration-500">
+                <div className="bg-white/80 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-2xl border border-gray-100 text-center mx-auto">
+                    
+                    {/* Logo Area */}
+                    <div className="w-32 h-32 md:w-40 md:h-40 mx-auto mb-2 flex items-center justify-center">
+                         <img src="/pincher-v1.5.png" alt="Pincher Logo" className="w-full h-full object-contain" />
+                    </div>
+
+                    {/* Tagline */}
+                    <p className="text-gray-500 mb-6 md:mb-8 font-medium text-base md:text-lg">
+                        Share Rides. Smart Fares.
+                    </p>
+
+                    <button
+                        onClick={login}
+                        className="w-full bg-black text-white text-base md:text-lg font-bold py-3.5 md:py-4 px-6 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl hover:shadow-2xl flex items-center justify-center gap-2 group"
+                    >
+                        <span>Sign up / Log in</span>
+                        <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </button>
+                    
+                    <div className="mt-6 md:mt-8 text-xs text-gray-400 font-medium">
+                        © 2026 Pincher Inc.
+                    </div>
+                </div>
             </div>
-          )}
+        </div>
+    );
+  }
+
+  // Main UI (Only rendered if authenticated)
+  return (
+    <div className="relative min-h-screen p-4 md:p-8 font-sans pb-20 md:pb-8">
+      {/* Background Effects - Always persistent */}
+      <BackgroundBeams />
+      
+      {/* Wallet Display - Mobile Optimized Position */}
+      <div className="absolute top-4 right-4 md:right-8 z-50">
+        <WalletDisplay />
+      </div>
+      
+      <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 relative z-10 pt-16 md:pt-0">
+        
+        {/* Left: Control & Logs */}
+        <div className="space-y-4 md:space-y-6">
+            <h1 className="text-2xl md:text-3xl font-black text-black border-b border-gray-200 pb-4 hidden md:block">
+                Pincher
+            </h1>
+            
+            {/* Mobile Title */}
+            <h1 className="text-2xl font-black text-black md:hidden">
+                Pincher
+            </h1>
+            
+            <LocationInput 
+              onSubmit={handleLocationSubmit} 
+              onHotzoneSelect={handleHotzoneSelect}
+              disabled={step > 0 && step < 4} 
+            />
+
+            <div className={`bg-white rounded-xl border border-gray-200 p-4 h-64 md:h-96 overflow-y-auto font-mono text-xs text-black ${step === 0 ? 'hidden md:block' : 'block'}`}>
+                {logs.length === 0 && <span className="text-gray-400">Ready to start...</span>}
+                {logs.map((log, idx) => (
+                    <div key={idx} className="py-0.5 whitespace-pre-wrap break-all">
+                        {log}
+                    </div>
+                ))}
+            </div>
+        </div>
+
+        {/* Right: Generative UI Stream */}
+        <div className="space-y-4">
+            <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wide hidden md:block">Generative UI Stream</h2>
+            {matchCounter}
+            {ui || <div className="bg-white p-8 rounded-xl border border-gray-200 text-center text-gray-400 text-sm hidden md:block">Waiting for simulation...</div>}
         </div>
       </div>
-    </>
+    </div>
   );
 }

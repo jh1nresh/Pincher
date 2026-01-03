@@ -95,7 +95,7 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
           <h2 className="text-xl font-black text-black tracking-tight mb-1">
             Welcome to Pincher
           </h2>
-          <p className="text-xs font-medium text-gray-400 mb-6">
+          <p className="text-xs font-medium text-black mb-6">
             Share Rides. Smart Fares.
           </p>
 
@@ -105,7 +105,7 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
             {step === 1 && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Step 1/2</span>
+                  <span className="text-xs font-bold text-black uppercase tracking-widest">Step 1/2</span>
                   <span className="text-xs font-bold text-black uppercase tracking-widest">Identity</span>
                 </div>
                 
@@ -140,6 +140,19 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
                         </button>
                     )}
 
+                    {/* State 3: Authenticated AND Wallet Exists (Fallback if auto-redirect lags) */}
+                    {authenticated && user?.wallet && (
+                        <button
+                            onClick={() => {
+                                setStep(2);
+                                checkBalance(user.wallet!.address);
+                            }}
+                            className="w-full py-4 bg-black hover:bg-gray-800 rounded-xl text-white font-bold transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg active:scale-[0.98]"
+                        >
+                            Continue
+                        </button>
+                    )}
+
                     {/* Debug/Reset for stuck states */}
                     {authenticated && (
                         <div className="text-center">
@@ -148,7 +161,7 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
                                     await logout();
                                     window.location.reload();
                                 }}
-                                className="text-xs text-gray-400 hover:text-red-500 underline"
+                                className="text-xs text-black hover:text-red-500 underline"
                             >
                                 Reset Session
                             </button>
@@ -162,13 +175,13 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
             {step === 2 && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                  <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Step 2/2</span>
+                  <span className="text-xs font-bold text-black uppercase tracking-widest">Step 2/2</span>
                   <span className="text-xs font-bold text-black uppercase tracking-widest">Gas & Tokens</span>
                 </div>
                 
                 <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 mb-6">
                   <div className="flex justify-between items-center mb-4">
-                     <span className="text-xs text-gray-500 font-medium">Wallet Balance</span>
+                     <span className="text-xs text-black font-medium">Wallet Balance</span>
                      {loading ? (
                          <span className="text-xs text-gray-400 animate-pulse">Scanning...</span>
                      ) : (
@@ -193,7 +206,7 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
                          ) : faucetStatus === 'success' ? (
                              'Funds Received!'
                          ) : (
-                             'Claim 0.05 USDC & 0.0001 ETH'
+                             'Claim Base Sepolia USDC & ETH'
                          )}
                       </button>
                   )}
@@ -204,7 +217,6 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
                   )}
                 </div>
 
-                {/* Step 3 Action moved here */}
                 <button
                     onClick={onComplete}
                     disabled={balance ? parseFloat(balance.usdc) < 0.01 : true}
@@ -212,6 +224,18 @@ export default function UserOnboarding({ onComplete }: UserOnboardingProps) {
                 >
                     Start Ride
                 </button>
+                
+                <div className="mt-4 text-center">
+                    <button
+                        onClick={async () => {
+                            await logout();
+                            setStep(1);
+                        }}
+                        className="text-xs text-gray-400 hover:text-red-500 underline"
+                    >
+                        Sign Out
+                    </button>
+                </div>
               </div>
             )}
 
