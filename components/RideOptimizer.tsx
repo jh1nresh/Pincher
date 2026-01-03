@@ -36,7 +36,7 @@ interface RideOptimizerProps {
   structuredWaypoints?: Waypoint[]; // New structured data
   rationale?: string; // New AI Rationale
   flyToLocation?: { lat: number; lng: number; zoom?: number } | null;
-  onPayment: () => void;
+  onPayment?: () => void;
   onReorder?: (newOrder: string[]) => void;
 }
 
@@ -117,7 +117,9 @@ export function RideOptimizer({
       setShowPaymentChallenge(false);
       
       // Call parent onPayment callback
-      onPayment();
+      if (onPayment) {
+          onPayment();
+      }
       
       // Start driver simulation after payment confirmed
       setTimeout(() => {
