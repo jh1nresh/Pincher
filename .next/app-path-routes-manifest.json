@@ -9,6 +9,7 @@
   "/api/escrow/release/route": "/api/escrow/release",
   "/api/faucet/route": "/api/faucet",
   "/api/gen-ui/route": "/api/gen-ui",
+  "/api/mcp/orchestrator/route": "/api/mcp/orchestrator",
   "/api/mcp/route": "/api/mcp",
   "/api/rides/complete/route": "/api/rides/complete",
   "/api/rides/route": "/api/rides",

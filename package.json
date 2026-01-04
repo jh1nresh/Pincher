@@ -13,9 +13,11 @@
     "lint:check": "eslint . --ext .ts"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^0.0.60",
     "@heroicons/react": "^2.2.0",
     "@langchain/core": "^1.1.8",
     "@langchain/langgraph": "^1.0.7",
+    "@modelcontextprotocol/sdk": "^1.25.1",
     "@privy-io/react-auth": "^3.10.0",
     "@supabase/supabase-js": "^2.89.0",
     "@types/leaflet": "^1.9.21",
@@ -26,7 +28,7 @@
     "@x402/next": "latest",
     "@x402/paywall": "latest",
     "@x402/svm": "latest",
-    "ai": "^3.2.0",
+    "ai": "^3.4.0",
     "framer-motion": "^12.23.26",
     "leaflet": "^1.9.4",
     "next": "^16.0.10",

@@ -102,6 +102,7 @@
     --color-green-500: #00c758;
     --color-green-600: #00a544;
     --color-green-700: #008138;
+    --color-green-800: #016630;
     --color-green-900: #0d542b;
     --color-cyan-50: #ecfeff;
     --color-cyan-500: #00b7d7;
@@ -223,6 +224,7 @@
       --color-green-500: lab(70.5521% -66.5147 45.8073);
       --color-green-600: lab(59.0978% -58.6621 41.2579);
       --color-green-700: lab(47.0329% -47.0239 31.4788);
+      --color-green-800: lab(37.4616% -36.7971 22.9692);
       --color-green-900: lab(30.797% -29.6927 17.382);
       --color-cyan-50: lab(98.3304% -5.97432 -2.62108);
       --color-cyan-500: lab(67.805% -35.3952 -30.2018);
@@ -2454,6 +2456,10 @@
 
   .text-green-700 {
     color: var(--color-green-700);
+  }
+
+  .text-green-800 {
+    color: var(--color-green-800);
   }
 
   .text-green-900 {
