@@ -134,14 +134,14 @@ export async function matchNodes(start: string, end: string): Promise<MatchResul
         }
     ];
 
-    // Pricing Simulation
-    const baseFare = 45.00;
-    const distanceFactor = 1.1; // Demo factor
+    // Pricing Simulation (Demo Adjusted for Low-Cost Testing)
+    const baseFare = 6.00;
+    const distanceFactor = 1.1; 
     const originalFare = (baseFare * distanceFactor).toFixed(2);
     
     // Split logic: (Original / 2) + fee
     const splitFare = (parseFloat(originalFare) / 2).toFixed(2);
-    const aiFee = 2.50;
+    const aiFee = 0.50;
     const optimizedFare = (parseFloat(splitFare) + aiFee).toFixed(2);
     const savings = (parseFloat(originalFare) - parseFloat(optimizedFare)).toFixed(2);
     

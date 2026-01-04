@@ -7,9 +7,7 @@ import { MatchCounter } from '@/components/MatchCounter';
 import { MatchingWithNeighbors } from '@/components/MatchingWithNeighbors';
 import { CommunityAuthCard } from '@/components/CommunityAuthCard';
 import { BackgroundBeams } from '@/components/BackgroundBeams';
-import { DynamicGradient } from '@/components/DynamicGradient';
 import { WalletDisplay } from '@/components/WalletDisplay';
-import { ConnectWalletCard } from '@/components/ConnectWalletCard';
 import { matchNodes, MatchResult } from '@/lib/nodes/matcher';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { parseEther, createWalletClient, custom } from 'viem';
@@ -32,10 +30,15 @@ export default function HomePage() {
   const { wallets } = useWallets();
 
   // Simulation Logs
-  const [logs, setLogs] = useState<string[]>([]);
+  const [logs, setLogs] = useState<React.ReactNode[]>([]);
   const [step, setStep] = useState(0);
 
-  const addLog = (msg: string) => setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
+  const addLog = (msg: React.ReactNode) => setLogs(prev => [
+      ...prev, 
+      <div key={Date.now() + Math.random()}>
+          <span className="text-gray-400">[{new Date().toLocaleTimeString()}]</span> {msg}
+      </div>
+  ]);
   
   // Force Login on Load
   useEffect(() => {
@@ -170,12 +173,25 @@ export default function HomePage() {
                 // @ts-expect-error - Privy provider types don't fully match viem's strict requirements
                 const txHash = await viemWalletClient.sendTransaction({
                     to: '0x32eaca925bd351d5af34e10d944c20772ae8a25c' as `0x${string}`,
-                    value: parseEther('0.0001')
+                    // Send 0.001 ETH (~$3.30)
+                    value: parseEther('0.001')
                 });
 
-                addLog(`✅ Transaction Sent! Hash: ${txHash}`);
+                addLog(
+                    <span>
+                        ✅ Transaction Sent! Hash:{' '}
+                        <a 
+                            href={`https://sepolia.basescan.org/tx/${txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 underline hover:text-blue-800 font-bold"
+                        >
+                            View on BaseScan ↗
+                        </a>
+                    </span>
+                );
             } catch (error: any) {
-                 addLog(`❌ Transaction Rejected: ${error.message}`);
+                 addLog(<span className="text-red-500">❌ Transaction Rejected: {error.message}</span>);
                  return; // Stop if rejected
             }
         }
