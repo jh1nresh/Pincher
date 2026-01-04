@@ -44,7 +44,6 @@ export default function HomePage() {
   useEffect(() => {
     if (ready && !authenticated) {
         // Automatically show login modal or just rely on the full-screen blocker
-        // login(); // Optional: Auto-trigger login modal on load
     }
   }, [ready, authenticated, login]);
 
@@ -119,8 +118,6 @@ export default function HomePage() {
                     setPendingMatch(matchResult); // Store for auto-resume after login
                     
                     if (!user) {
-                        // This path shouldn't be reached if we force login at start, 
-                        // but keeping as fallback logic
                         addLog("⚠️ Authentication required to proceed. Showing CommunityAuthCard...");
                         setUi(
                             <CommunityAuthCard
@@ -148,8 +145,6 @@ export default function HomePage() {
         const wallet = wallets[0];
         if (!wallet) {
             addLog("❌ No active wallet found. Please connect via Onboarding first.");
-            // For Demo continuity, we proceed with logging specific hailing message
-            // In real app, we return here
         } else {
             // Switch to Base Sepolia if needed
             const chainId = '84532'; // Base Sepolia
@@ -162,6 +157,8 @@ export default function HomePage() {
             }
 
             addLog("🔐 Requesting Transaction Signature on Base Sepolia (84532)...");
+            addLog(`💱 Converting Quote ($${matchResult.optimizedFare}) to ETH...`);
+            
             try {
                 const provider = await wallet.getEthereumProvider();
                 const viemWalletClient = createWalletClient({
@@ -169,12 +166,10 @@ export default function HomePage() {
                   transport: custom(provider)
                 });
 
-
                 // @ts-expect-error - Privy provider types don't fully match viem's strict requirements
                 const txHash = await viemWalletClient.sendTransaction({
                     to: '0x32eaca925bd351d5af34e10d944c20772ae8a25c' as `0x${string}`,
-                    // Send 0.001 ETH (~$3.30)
-                    value: parseEther('0.001')
+                    value: parseEther('0.005') // ~$16-18 USD (Matches Realistic Optimized Fare)
                 });
 
                 addLog(

@@ -134,15 +134,15 @@ export async function matchNodes(start: string, end: string): Promise<MatchResul
         }
     ];
 
-    // Pricing Simulation (Demo Adjusted for Low-Cost Testing)
-    const baseFare = 6.00;
+    // Pricing Simulation (Realistic Testnet Values)
+    const baseFare = 30.00; // ~$90-$100 Real World, but simplified for Demo clarity
     const distanceFactor = 1.1; 
-    const originalFare = (baseFare * distanceFactor).toFixed(2);
+    const originalFare = (baseFare * distanceFactor).toFixed(2); // ~$33.00
     
     // Split logic: (Original / 2) + fee
     const splitFare = (parseFloat(originalFare) / 2).toFixed(2);
-    const aiFee = 0.50;
-    const optimizedFare = (parseFloat(splitFare) + aiFee).toFixed(2);
+    const aiFee = 2.00;
+    const optimizedFare = (parseFloat(splitFare) + aiFee).toFixed(2); // ~$18.50
     const savings = (parseFloat(originalFare) - parseFloat(optimizedFare)).toFixed(2);
     
     // Calculate total distance for rationale
