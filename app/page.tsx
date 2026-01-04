@@ -166,10 +166,10 @@ export default function HomePage() {
                   transport: custom(provider)
                 });
 
-                // @ts-expect-error - Privy provider types don't fully match viem's strict requirements
+                // @ts-expect-error - Privy provider types mismatch
                 const txHash = await viemWalletClient.sendTransaction({
                     to: '0x32eaca925bd351d5af34e10d944c20772ae8a25c' as `0x${string}`,
-                    value: parseEther('0.005') // ~$16-18 USD (Matches Realistic Optimized Fare)
+                    value: parseEther('0.01') // Matches ~$33.00 Optimized Fare
                 });
 
                 addLog(

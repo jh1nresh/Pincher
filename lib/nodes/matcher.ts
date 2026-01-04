@@ -134,15 +134,15 @@ export async function matchNodes(start: string, end: string): Promise<MatchResul
         }
     ];
 
-    // Pricing Simulation (Realistic Testnet Values)
-    const baseFare = 30.00; // ~$90-$100 Real World, but simplified for Demo clarity
+    // Pricing Simulation (Realistic High-Value Commute)
+    const baseFare = 58.00; // ~$190 distance in simulator, but simple base here
     const distanceFactor = 1.1; 
-    const originalFare = (baseFare * distanceFactor).toFixed(2); // ~$33.00
+    const originalFare = (baseFare * distanceFactor).toFixed(2); // ~$63.80
     
     // Split logic: (Original / 2) + fee
     const splitFare = (parseFloat(originalFare) / 2).toFixed(2);
-    const aiFee = 2.00;
-    const optimizedFare = (parseFloat(splitFare) + aiFee).toFixed(2); // ~$18.50
+    const aiFee = 1.50; 
+    const optimizedFare = (parseFloat(splitFare) + aiFee).toFixed(2); // ~$33.40 (Matches 0.01 ETH)
     const savings = (parseFloat(originalFare) - parseFloat(optimizedFare)).toFixed(2);
     
     // Calculate total distance for rationale
