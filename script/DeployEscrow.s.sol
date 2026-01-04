@@ -6,7 +6,7 @@ import "../contracts/PincherEscrow.sol";
 
 contract DeployEscrow is Script {
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        uint256 deployerPrivateKey = vm.envUint("FAUCET_PRIVATE_KEY");
         
         // Base Sepolia USDC Address (Native or Bridged)
         // If testing on local anvil, we might need to mock this or deploy a mock token first.

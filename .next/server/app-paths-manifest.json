@@ -8,9 +8,10 @@
   "/api/escrow/deposit/route": "app/api/escrow/deposit/route.js",
   "/api/escrow/release/route": "app/api/escrow/release/route.js",
   "/api/faucet/route": "app/api/faucet/route.js",
+  "/api/gen-ui/route": "app/api/gen-ui/route.js",
+  "/api/mcp/route": "app/api/mcp/route.js",
   "/api/rides/complete/route": "app/api/rides/complete/route.js",
   "/api/rides/route": "app/api/rides/route.js",
   "/page": "app/page.js",
-  "/protected/page": "app/protected/page.js",
-  "/test-map/page": "app/test-map/page.js"
+  "/protected/page": "app/protected/page.js"
 }

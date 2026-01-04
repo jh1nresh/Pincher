@@ -8,9 +8,10 @@
   "/api/escrow/deposit/route": "/api/escrow/deposit",
   "/api/escrow/release/route": "/api/escrow/release",
   "/api/faucet/route": "/api/faucet",
+  "/api/gen-ui/route": "/api/gen-ui",
+  "/api/mcp/route": "/api/mcp",
   "/api/rides/complete/route": "/api/rides/complete",
   "/api/rides/route": "/api/rides",
   "/page": "/",
-  "/protected/page": "/protected",
-  "/test-map/page": "/test-map"
+  "/protected/page": "/protected"
 }

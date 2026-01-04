@@ -8,13 +8,15 @@ import { baseSepolia } from 'viem/chains';
 interface PaymentChallengeProps {
   rideId: string;
   amount: string;
+  recipientAddress: string;
   onSignatureComplete: (signature: string, txHash: string) => void;
   onCancel: () => void;
 }
 
 export function PaymentChallenge({ 
   rideId, 
-  amount, 
+  amount,
+  recipientAddress,
   onSignatureComplete, 
   onCancel 
 }: PaymentChallengeProps) {
@@ -160,6 +162,16 @@ export function PaymentChallenge({
               <div className="flex items-center gap-2">
                 <span className="text-xl font-black text-black">${amount}</span>
                 <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">USDC</span>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-black text-gray-600 uppercase tracking-wide">Payment Target</span>
+              <div className="flex items-center gap-2">
+                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                 <span className="text-xs font-mono font-bold text-black border-b border-gray-300">
+                    {recipientAddress.slice(0, 6)}...{recipientAddress.slice(-4)}
+                 </span>
               </div>
             </div>
             

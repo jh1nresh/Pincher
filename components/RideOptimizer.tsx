@@ -37,6 +37,7 @@ interface RideOptimizerProps {
   rationale?: string; // New AI Rationale
   flyToLocation?: { lat: number; lng: number; zoom?: number } | null;
   onPayment?: () => Promise<void> | void;
+  recipientAddress?: string;
   onReorder?: (newOrder: string[]) => void;
 }
 
@@ -55,7 +56,8 @@ export function RideOptimizer({
   structuredWaypoints,
   rationale,
   flyToLocation,
-  onPayment 
+  onPayment,
+  recipientAddress
 }: RideOptimizerProps) {
   
   // Wallet Authentication
@@ -373,6 +375,7 @@ export function RideOptimizer({
         <PaymentChallenge
           rideId={`ride-${Date.now()}`}
           amount={currentFare}
+          recipientAddress={recipientAddress || '0x...'}
           onSignatureComplete={handleSignatureComplete}
           onCancel={handleCancelPayment}
         />

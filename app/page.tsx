@@ -14,6 +14,10 @@ import { parseEther, createWalletClient, custom, encodeFunctionData } from 'viem
 import { baseSepolia } from 'viem/chains';
 
 export default function HomePage() {
+  // AI Agent / Vault Address (From Env or Default)
+  // 優先使用環境變數中的地址，否則使用您指定的個人開發錢包
+  const AI_ADDRESS = process.env.NEXT_PUBLIC_AI_WALLET_ADDRESS as `0x${string}` || '0x872989F7fCd4048acA370161989d3904E37A3cB3';
+
   // Generative UI State
   const [ui, setUi] = useState<React.ReactNode>(null);
   const [matchCounter, setMatchCounter] = useState<React.ReactNode>(null);
@@ -195,10 +199,6 @@ export default function HomePage() {
                     ]
                 });
 
-                // AI Agent / Vault Address (From Env or Default)
-                // 優先使用環境變數中的地址，否則使用預設演示地址
-                const AI_ADDRESS = process.env.NEXT_PUBLIC_AI_WALLET_ADDRESS as `0x${string}` || '0x32eaca925bd351d5af34e10d944c20772ae8a25c';
-
                 // @ts-expect-error - Privy provider types mismatch
                 const txHash = await viemWalletClient.sendTransaction({
                     account: wallet.address as `0x${string}`,
@@ -207,7 +207,7 @@ export default function HomePage() {
                         abi: erc20Abi,
                         functionName: 'transfer',
                         args: [
-                            AI_ADDRESS, // Send to AI Agent
+                            AI_ADDRESS, // Send to AI Agent (Defined in component scope)
                             BigInt(10000) // 0.01 USDC
                         ]
                     }),
@@ -249,6 +249,7 @@ export default function HomePage() {
             structuredWaypoints={matchResult.waypoints}
              rationale={matchResult.rationale}
             onPayment={handlePayment}
+            recipientAddress={AI_ADDRESS} 
             flyToLocation={mapFlyTo}
         />
     );
