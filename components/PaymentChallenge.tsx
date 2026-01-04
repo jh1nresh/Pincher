@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { createWalletClient, custom } from 'viem';
+import { baseSepolia } from 'viem/chains';
 
 interface PaymentChallengeProps {
   rideId: string;
@@ -35,7 +37,7 @@ export function PaymentChallenge({
         name: 'Pincher Carpool',
         version: '1',
         chainId: 84532, // Base Sepolia
-        verifyingContract: '0x0000000000000000000000000000000000000000' // Replace with actual escrow contract
+        verifyingContract: '0x0000000000000000000000000000000000000000' as `0x${string}` // Replace with actual escrow contract
       };
 
       const types = {
@@ -56,12 +58,19 @@ export function PaymentChallenge({
         deadline
       };
 
-      // Sign with EIP-712
+      // Sign with EIP-712 using Viem
       const provider = await wallet.getEthereumProvider();
+      const client = createWalletClient({
+        chain: baseSepolia,
+        transport: custom(provider)
+      });
       
-      const signature = await provider.request({
-        method: 'eth_signTypedData_v4',
-        params: [wallet.address, JSON.stringify({ domain, types, message, primaryType: 'CarpoolPayment' })]
+      const signature = await client.signTypedData({
+        account: wallet.address as `0x${string}`,
+        domain,
+        types,
+        primaryType: 'CarpoolPayment',
+        message
       });
 
       setStatus('processing');
