@@ -10,7 +10,7 @@ import { BackgroundBeams } from '@/components/BackgroundBeams';
 import { WalletDisplay } from '@/components/WalletDisplay';
 import { matchNodes, MatchResult } from '@/lib/nodes/matcher';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { parseEther, createWalletClient, custom } from 'viem';
+import { parseEther, createWalletClient, custom, encodeFunctionData } from 'viem';
 import { baseSepolia } from 'viem/chains';
 
 export default function HomePage() {
@@ -159,7 +159,7 @@ export default function HomePage() {
             }
 
             addLog("🔐 Requesting Transaction Signature on Base Sepolia (84532)...");
-            addLog(`💱 Converting Quote ($${matchResult.optimizedFare}) to ETH...`);
+            addLog(`💱 Converting Quote ($${matchResult.optimizedFare}) to USDC Payment...`);
             
             try {
                 const provider = await wallet.getEthereumProvider();
@@ -168,11 +168,39 @@ export default function HomePage() {
                   transport: custom(provider)
                 });
 
+                // Base Sepolia USDC Address
+                const USDC_ADDRESS = '0x036CbD53842c5426634e7929541eC2318f3dCF7e'; 
+                
+                // ERC20 Transfer ABI
+                const erc20Abi = [
+                    {
+                        name: 'transfer',
+                        type: 'function',
+                        stateMutability: 'nonpayable',
+                        inputs: [
+                            { name: 'to', type: 'address' },
+                            { name: 'amount', type: 'uint256' }
+                        ],
+                        outputs: [{ name: '', type: 'bool' }]
+                    }
+                ] as const;
+
+                // Encode Token Transfer Data
+                const data = encodeFunctionData({
+                    abi: erc20Abi,
+                    functionName: 'transfer',
+                    args: [
+                        '0x32eaca925bd351d5af34e10d944c20772ae8a25c', // Vault Address
+                        BigInt(10000) // 0.01 USDC (6 decimals: 0.01 * 10^6)
+                    ]
+                });
+
                 // @ts-expect-error - Privy provider types mismatch
                 const txHash = await viemWalletClient.sendTransaction({
                     account: wallet.address as `0x${string}`,
-                    to: '0x32eaca925bd351d5af34e10d944c20772ae8a25c' as `0x${string}`,
-                    value: parseEther('0.0001') // Micro-payment for Demo (Display shows ~$33)
+                    to: USDC_ADDRESS,
+                    data: data,
+                    value: BigInt(0)
                 });
 
                 addLog(
