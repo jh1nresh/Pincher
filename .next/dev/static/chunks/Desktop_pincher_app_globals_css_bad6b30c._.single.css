@@ -2770,6 +2770,18 @@
   }
 
   @media (hover: hover) {
+    .group-hover\:border-gray-200:is(:where(.group):hover *) {
+      border-color: var(--color-gray-200);
+    }
+  }
+
+  @media (hover: hover) {
+    .group-hover\:bg-white:is(:where(.group):hover *) {
+      background-color: var(--color-white);
+    }
+  }
+
+  @media (hover: hover) {
     .group-hover\:text-black:is(:where(.group):hover *) {
       color: var(--color-black);
     }

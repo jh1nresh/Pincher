@@ -5,7 +5,11 @@ import { useWallets, usePrivy } from '@privy-io/react-auth';
 import { createPublicClient, http, formatEther } from 'viem';
 import { baseSepolia } from 'viem/chains';
 
-export function WalletDisplay() {
+interface WalletDisplayProps {
+  onHistoryClick?: () => void;
+}
+
+export function WalletDisplay({ onHistoryClick }: WalletDisplayProps) {
   const { wallets } = useWallets();
   const { logout, user } = usePrivy();
   const [balance, setBalance] = useState<string>('0.0000');
@@ -120,6 +124,34 @@ export function WalletDisplay() {
             </div>
           </div>
           
+          {/* History Button (If handler provided) */}
+          {onHistoryClick && (
+            <div className="p-4 border-b border-gray-100">
+               <button 
+                 onClick={() => {
+                   onHistoryClick();
+                   setIsDropdownOpen(false);
+                 }}
+                 className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors group"
+               >
+                 <div className="flex items-center gap-3">
+                   <div className="bg-gray-100 p-2 rounded-lg group-hover:bg-white border border-transparent group-hover:border-gray-200 transition-all">
+                     <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                     </svg>
+                   </div>
+                   <div className="text-left">
+                     <div className="text-sm font-black text-black">Ride History</div>
+                     <div className="text-[10px] font-bold text-gray-400">View past trips</div>
+                   </div>
+                 </div>
+                 <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                 </svg>
+               </button>
+            </div>
+          )}
+
           {/* Logout Button */}
           <div className="p-4">
             <button

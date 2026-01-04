@@ -309,19 +309,8 @@ export default function HomePage() {
       {/* Background Effects - Always persistent */}
       <BackgroundBeams />
       
-      {/* Wallet Display - Mobile Optimized Position */}
-      <div className="absolute top-4 right-4 md:right-8 z-50 flex items-center gap-3">
-        {/* History Toggle */}
-        <button
-           onClick={() => setHistoryOpen(true)}
-           className="bg-white/90 backdrop-blur-md shadow-lg border border-gray-200 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-50 transition-all active:scale-95 group"
-           title="View Ride History"
-         >
-           <svg className="w-5 h-5 text-gray-600 group-hover:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-           </svg>
-         </button>
-        <WalletDisplay />
+      <div className="absolute top-4 right-4 md:right-8 z-50">
+        <WalletDisplay onHistoryClick={() => setHistoryOpen(true)} />
       </div>
       
       {/* History Drawer */}
