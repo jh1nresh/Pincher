@@ -14,8 +14,33 @@ export interface RideLogData {
   tx_hash: string;
 }
 
+import { createPublicClient, http } from 'viem';
+import { baseSepolia } from 'viem/chains';
+
+const publicClient = createPublicClient({
+  chain: baseSepolia,
+  transport: http()
+});
+
 export async function logRide(data: RideLogData) {
   try {
+    // 1. Verify Transaction on Chain
+    if (!data.tx_hash) throw new Error("Missing Transaction Hash");
+    
+    // In a real production app, we would wait for 1 confirmation.
+    // Here we check if the transaction exists and succeeded.
+    const txReceipt = await publicClient.getTransactionReceipt({ 
+      hash: data.tx_hash as `0x${string}` 
+    });
+
+    if (txReceipt.status !== 'success') {
+       return { success: false, error: 'Transaction failed on-chain' };
+    }
+
+    // Optional: Verify Recipient (Needs parsing logs for ERC20 or checking 'to' for native)
+    // For now, confirm existence and success is sufficient for MVP security.
+
+    // 2. Log to Supabase
     const { error } = await supabase
       .from('rides')
       .insert([
@@ -39,8 +64,8 @@ export async function logRide(data: RideLogData) {
     }
 
     return { success: true };
-  } catch (err) {
-    console.error('Unexpected Supabase Error:', err);
-    return { success: false, error: 'Internal Server Error' };
+  } catch (err: any) {
+    console.error('Unexpected Logging Error:', err);
+    return { success: false, error: err.message || 'Internal Server Error' };
   }
 }

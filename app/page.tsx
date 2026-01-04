@@ -13,6 +13,7 @@ import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { parseEther, createWalletClient, custom, encodeFunctionData } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import { logRide } from '@/app/actions/logRide';
+import { HistoryDrawer } from '@/components/HistoryDrawer';
 
 export default function HomePage() {
   // AI Agent / Vault Address (From Env or Default)
@@ -29,6 +30,7 @@ export default function HomePage() {
   const [selectedPickup, setSelectedPickup] = useState<Hotzone | null>(null);
   const [selectedDropoff, setSelectedDropoff] = useState<Hotzone | null>(null);
   const [mapFlyTo, setMapFlyTo] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
   
   // Privy Hooks
   const { user, ready, authenticated, login } = usePrivy();
@@ -308,9 +310,26 @@ export default function HomePage() {
       <BackgroundBeams />
       
       {/* Wallet Display - Mobile Optimized Position */}
-      <div className="absolute top-4 right-4 md:right-8 z-50">
+      <div className="absolute top-4 right-4 md:right-8 z-50 flex items-center gap-3">
+        {/* History Toggle */}
+        <button
+           onClick={() => setHistoryOpen(true)}
+           className="bg-white/90 backdrop-blur-md shadow-lg border border-gray-200 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-50 transition-all active:scale-95 group"
+           title="View Ride History"
+         >
+           <svg className="w-5 h-5 text-gray-600 group-hover:text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+           </svg>
+         </button>
         <WalletDisplay />
       </div>
+      
+      {/* History Drawer */}
+      <HistoryDrawer 
+        isOpen={historyOpen} 
+        onClose={() => setHistoryOpen(false)}
+        walletAddress={user?.wallet?.address || ''} 
+      />
       
       <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 relative z-10 pt-16 md:pt-0">
         
