@@ -12,6 +12,7 @@ import { matchNodes, MatchResult } from '@/lib/nodes/matcher';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { parseEther, createWalletClient, custom, encodeFunctionData } from 'viem';
 import { baseSepolia } from 'viem/chains';
+import { logRide } from '@/app/actions/logRide';
 
 export default function HomePage() {
   // AI Agent / Vault Address (From Env or Default)
@@ -189,16 +190,6 @@ export default function HomePage() {
                     }
                 ] as const;
 
-                // Encode Token Transfer Data
-                const data = encodeFunctionData({
-                    abi: erc20Abi,
-                    functionName: 'transfer',
-                    args: [
-                        '0x32eaca925bd351d5af34e10d944c20772ae8a25c', // Vault Address
-                        BigInt(10000) // 0.01 USDC (6 decimals: 0.01 * 10^6)
-                    ]
-                });
-
                 // @ts-expect-error - Privy provider types mismatch
                 const txHash = await viemWalletClient.sendTransaction({
                     account: wallet.address as `0x${string}`,
@@ -212,6 +203,22 @@ export default function HomePage() {
                         ]
                     }),
                     value: BigInt(0)
+                });
+
+                // Log to Supabase (Async, don't block UI)
+                logRide({
+                    user_wallet: wallet.address,
+                    pickup_lat: matchResult.waypoints[0].lat,
+                    pickup_lng: matchResult.waypoints[0].lng,
+                    pickup_address: matchResult.waypoints[0].name,
+                    dropoff_lat: matchResult.waypoints[matchResult.waypoints.length - 1].lat,
+                    dropoff_lng: matchResult.waypoints[matchResult.waypoints.length - 1].lng,
+                    dropoff_address: matchResult.waypoints[matchResult.waypoints.length - 1].name,
+                    fare_amount: parseFloat(matchResult.optimizedFare),
+                    tx_hash: txHash
+                }).then(res => {
+                    if (res.success) addLog("📝 Ride data persisted to Cloud Database.");
+                    else addLog("⚠️ Failed to log ride data: " + res.error);
                 });
 
                 addLog(

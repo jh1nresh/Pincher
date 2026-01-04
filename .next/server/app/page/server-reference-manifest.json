@@ -1,4 +1,20 @@
 {
-  "node": {},
+  "node": {
+    "409093f9033cdac7247249d92fc3f65c640662d2fa": {
+      "workers": {
+        "app/page": {
+          "moduleId": 26137,
+          "async": false,
+          "exportedName": "logRide",
+          "filename": "Desktop/pincher/app/actions/logRide.ts"
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      },
+      "exportedName": "logRide",
+      "filename": "Desktop/pincher/app/actions/logRide.ts"
+    }
+  },
   "edge": {}
 }

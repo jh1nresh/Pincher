@@ -1,5 +1,21 @@
 {
-  "node": {},
+  "node": {
+    "401fc9770de5a7114ef17768592b919f31fcc19a52": {
+      "workers": {
+        "app/page": {
+          "moduleId": "[project]/Desktop/pincher/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Desktop/pincher/app/actions/logRide.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "logRide",
+          "filename": "Desktop/pincher/app/actions/logRide.ts"
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      },
+      "filename": "Desktop/pincher/app/actions/logRide.ts",
+      "exportedName": "logRide"
+    }
+  },
   "edge": {},
   "encryptionKey": "wPgNXRnRslb+sNAO10jnHWaCF3w3cpTmb5hkBlLY3E0="
 }
