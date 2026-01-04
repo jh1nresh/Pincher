@@ -24,7 +24,8 @@ export function PaymentChallenge({
   const [errorMessage, setErrorMessage] = useState('');
   const [txHash, setTxHash] = useState('');
 
-  const wallet = wallets[0];
+  // Prioritize Privy Embedded Wallet
+  const wallet = wallets.find(w => w.walletClientType === 'privy') || wallets[0];
 
   const handleSign = async () => {
     if (!wallet) return;

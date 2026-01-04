@@ -142,7 +142,9 @@ export default function HomePage() {
     const handlePayment = async () => {
         addLog("👆 User clicked 'Pay with x402'");
         
-        const wallet = wallets[0];
+        // Prioritize Privy Embedded Wallet
+        const wallet = wallets.find(w => w.walletClientType === 'privy') || wallets[0];
+        
         if (!wallet) {
             addLog("❌ No active wallet found. Please connect via Onboarding first.");
         } else {
