@@ -40,7 +40,8 @@ export function PaymentChallenge({
         name: 'Pincher Carpool',
         version: '1',
         chainId: 84532, // Base Sepolia
-        verifyingContract: '0x0000000000000000000000000000000000000000' as `0x${string}` // Replace with actual escrow contract
+        // Use USDC Address as the Verifying Contract for Demo purposes
+        verifyingContract: '0x036CbD53842c5426634e7929541eC2318f3dCF7e' as `0x${string}` 
       };
 
       const types = {
@@ -77,23 +78,16 @@ export function PaymentChallenge({
       });
 
       setStatus('processing');
-
-      // Simulate transaction submission
-      // In production, this would call the smart contract
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Mock transaction hash
-      const mockTxHash = '0x' + Array.from({ length: 64 }, () => 
-        Math.floor(Math.random() * 16).toString(16)
-      ).join('');
-
-      setTxHash(mockTxHash);
-      setStatus('success');
-
-      // Wait a moment before completing
-      setTimeout(() => {
-        onSignatureComplete(signature as string, mockTxHash);
-      }, 1500);
+      
+      // We do NOT generate a mock hash here anymore.
+      // We pass the signature back, and let the parent (RideOptimizer/HomePage) 
+      // handle the real transaction and reporting.
+      
+      // Wait a moment for UX
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      onSignatureComplete(signature as string, ''); 
+      // Passing empty string as hash, because the real hash comes later from the actual transaction
 
     } catch (error: any) {
       console.error('Signature error:', error);
