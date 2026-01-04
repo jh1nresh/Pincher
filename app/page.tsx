@@ -218,7 +218,7 @@ export default function HomePage() {
                 );
             } catch (error: any) {
                  addLog(<span className="text-red-500">❌ Transaction Rejected: {error.message}</span>);
-                 return; // Stop if rejected
+                 throw error; // Propagate error to stop RideOptimizer simulation
             }
         }
 

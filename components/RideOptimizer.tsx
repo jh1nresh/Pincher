@@ -36,7 +36,7 @@ interface RideOptimizerProps {
   structuredWaypoints?: Waypoint[]; // New structured data
   rationale?: string; // New AI Rationale
   flyToLocation?: { lat: number; lng: number; zoom?: number } | null;
-  onPayment?: () => void;
+  onPayment?: () => Promise<void> | void;
   onReorder?: (newOrder: string[]) => void;
 }
 
@@ -112,20 +112,23 @@ export function RideOptimizer({
       setShowPaymentChallenge(true);
   };
   
-  const handleSignatureComplete = (signature: string, transactionHash: string) => {
+  const handleSignatureComplete = async (signature: string, transactionHash: string) => {
       setTxHash(transactionHash);
       setShowPaymentChallenge(false);
       
-      // Call parent onPayment callback
-      if (onPayment) {
-          onPayment();
-      }
-      
-      // Start driver simulation after payment confirmed
-      setTimeout(() => {
+      try {
+          // Call parent onPayment callback and WAIT for it (Real Transaction)
+          if (onPayment) {
+              await onPayment();
+          }
+          
+          // Start driver simulation ONLY after payment confirmed
           setTrackingMode(true);
           startDriverSimulation();
-      }, 1000);
+      } catch (error) {
+          console.error("Payment failed or rejected:", error);
+          // Do not start simulation
+      }
   };
   
   const handleCancelPayment = () => {
