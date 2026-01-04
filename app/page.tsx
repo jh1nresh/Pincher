@@ -195,11 +195,22 @@ export default function HomePage() {
                     ]
                 });
 
+                // AI Agent / Vault Address (From Env or Default)
+                // 優先使用環境變數中的地址，否則使用預設演示地址
+                const AI_ADDRESS = process.env.NEXT_PUBLIC_AI_WALLET_ADDRESS as `0x${string}` || '0x32eaca925bd351d5af34e10d944c20772ae8a25c';
+
                 // @ts-expect-error - Privy provider types mismatch
                 const txHash = await viemWalletClient.sendTransaction({
                     account: wallet.address as `0x${string}`,
                     to: USDC_ADDRESS,
-                    data: data,
+                    data: encodeFunctionData({
+                        abi: erc20Abi,
+                        functionName: 'transfer',
+                        args: [
+                            AI_ADDRESS, // Send to AI Agent
+                            BigInt(10000) // 0.01 USDC
+                        ]
+                    }),
                     value: BigInt(0)
                 });
 
