@@ -3,7 +3,7 @@
     "401fc9770de5a7114ef17768592b919f31fcc19a52": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/Desktop/pincher/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Desktop/pincher/app/actions/logRide.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/Desktop/pincher/app/actions/getRides.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/Desktop/pincher/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Desktop/pincher/app/actions/logRide.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/Desktop/pincher/app/actions/gen-ui.tsx [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/Desktop/pincher/app/actions/getRides.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "logRide",
           "filename": "Desktop/pincher/app/actions/logRide.ts"
@@ -15,10 +15,25 @@
       "filename": "Desktop/pincher/app/actions/logRide.ts",
       "exportedName": "logRide"
     },
+    "782cdd90eb933215e31285f60e0b94eb99922b9a98": {
+      "workers": {
+        "app/page": {
+          "moduleId": "[project]/Desktop/pincher/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Desktop/pincher/app/actions/logRide.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/Desktop/pincher/app/actions/gen-ui.tsx [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/Desktop/pincher/app/actions/getRides.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "streamRideOptimization",
+          "filename": "Desktop/pincher/app/actions/gen-ui.tsx"
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      },
+      "filename": "Desktop/pincher/app/actions/gen-ui.tsx",
+      "exportedName": "streamRideOptimization"
+    },
     "409097c497c0eeb9f71889c9561e2ae482884cba2f": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/Desktop/pincher/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Desktop/pincher/app/actions/logRide.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/Desktop/pincher/app/actions/getRides.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/Desktop/pincher/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Desktop/pincher/app/actions/logRide.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/Desktop/pincher/app/actions/gen-ui.tsx [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/Desktop/pincher/app/actions/getRides.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "getUserRides",
           "filename": "Desktop/pincher/app/actions/getRides.ts"

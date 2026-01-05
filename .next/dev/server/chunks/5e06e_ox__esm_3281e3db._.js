@@ -1675,8 +1675,8 @@ __turbopack_context__.s([
     "getSignatureHash",
     ()=>getSignatureHash
 ]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/abitype/dist/esm/human-readable/formatAbiItem.js [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$parseAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/abitype/dist/esm/human-readable/parseAbiItem.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/abitype/dist/esm/human-readable/formatAbiItem.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$parseAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/abitype/dist/esm/human-readable/parseAbiItem.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$Errors$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/ox/_esm/core/Errors.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$Hash$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/ox/_esm/core/Hash.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$Hex$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/ox/_esm/core/Hex.js [app-route] (ecmascript)");
@@ -1687,13 +1687,13 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_m
 ;
 ;
 function format(abiItem) {
-    return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["formatAbiItem"](abiItem);
+    return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["formatAbiItem"](abiItem);
 }
 function from(abiItem, options = {}) {
     const { prepare = true } = options;
     const item = (()=>{
-        if (Array.isArray(abiItem)) return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$parseAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["parseAbiItem"](abiItem);
-        if (typeof abiItem === 'string') return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$parseAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["parseAbiItem"](abiItem);
+        if (Array.isArray(abiItem)) return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$parseAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["parseAbiItem"](abiItem);
+        if (typeof abiItem === 'string') return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$parseAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["parseAbiItem"](abiItem);
         return abiItem;
     })();
     return {
@@ -1798,7 +1798,7 @@ function getSignature(...parameters) {
     })();
     const signature = (()=>{
         if (typeof abiItem === 'string') return abiItem;
-        return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["formatAbiItem"](abiItem);
+        return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["formatAbiItem"](abiItem);
     })();
     return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$internal$2f$abiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["normalizeSignature"](signature);
 }
@@ -1818,8 +1818,8 @@ class AmbiguityError extends __TURBOPACK__imported__module__$5b$project$5d2f$Des
         super('Found ambiguous types in overloaded ABI Items.', {
             metaMessages: [
                 // TODO: abitype to add support for signature-formatted ABI items.
-                `\`${x.type}\` in \`${__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$internal$2f$abiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["normalizeSignature"](__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["formatAbiItem"](x.abiItem))}\`, and`,
-                `\`${y.type}\` in \`${__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$internal$2f$abiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["normalizeSignature"](__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["formatAbiItem"](y.abiItem))}\``,
+                `\`${x.type}\` in \`${__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$internal$2f$abiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["normalizeSignature"](__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["formatAbiItem"](x.abiItem))}\`, and`,
+                `\`${y.type}\` in \`${__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$internal$2f$abiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["normalizeSignature"](__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["formatAbiItem"](y.abiItem))}\``,
                 '',
                 'These types encode differently and cannot be distinguished at runtime.',
                 'Remove one of the ambiguous items in the ABI.'
@@ -2951,8 +2951,8 @@ __turbopack_context__.s([
     "from",
     ()=>from
 ]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiParameters$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/abitype/dist/esm/human-readable/formatAbiParameters.js [app-route] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$parseAbiParameters$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/abitype/dist/esm/human-readable/parseAbiParameters.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiParameters$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/abitype/dist/esm/human-readable/formatAbiParameters.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$parseAbiParameters$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/abitype/dist/esm/human-readable/parseAbiParameters.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$Address$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/ox/_esm/core/Address.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$Bytes$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/ox/_esm/core/Bytes.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$Errors$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/ox/_esm/core/Errors.js [app-route] (ecmascript)");
@@ -3066,18 +3066,18 @@ function encodePacked(types, values) {
     encodePacked.encode = encode;
 })(encodePacked || (encodePacked = {}));
 function format(parameters) {
-    return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiParameters$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["formatAbiParameters"](parameters);
+    return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiParameters$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["formatAbiParameters"](parameters);
 }
 function from(parameters) {
-    if (Array.isArray(parameters) && typeof parameters[0] === 'string') return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$parseAbiParameters$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["parseAbiParameters"](parameters);
-    if (typeof parameters === 'string') return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$parseAbiParameters$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["parseAbiParameters"](parameters);
+    if (Array.isArray(parameters) && typeof parameters[0] === 'string') return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$parseAbiParameters$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["parseAbiParameters"](parameters);
+    if (typeof parameters === 'string') return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$parseAbiParameters$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["parseAbiParameters"](parameters);
     return parameters;
 }
 class DataSizeTooSmallError extends __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$Errors$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["BaseError"] {
     constructor({ data, parameters, size }){
         super(`Data size of ${size} bytes is too small for given parameters.`, {
             metaMessages: [
-                `Params: (${__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiParameters$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["formatAbiParameters"](parameters)})`,
+                `Params: (${__TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiParameters$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["formatAbiParameters"](parameters)})`,
                 `Data:   ${data} (${size} bytes)`
             ]
         });
@@ -3175,7 +3175,7 @@ __turbopack_context__.s([
     "fromAbi",
     ()=>fromAbi
 ]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/abitype/dist/esm/human-readable/formatAbiItem.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/abitype/dist/esm/human-readable/formatAbiItem.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$AbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/ox/_esm/core/AbiItem.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$AbiParameters$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/ox/_esm/core/AbiParameters.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$Hex$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/ox/_esm/core/Hex.js [app-route] (ecmascript)");
@@ -3214,7 +3214,7 @@ function encode(...parameters) {
     return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$Hex$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["concat"](bytecode, abiConstructor.inputs?.length && args?.length ? __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$AbiParameters$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["encode"](abiConstructor.inputs, args) : '0x');
 }
 function format(abiConstructor) {
-    return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["formatAbiItem"](abiConstructor);
+    return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["formatAbiItem"](abiConstructor);
 }
 function from(abiConstructor) {
     return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$AbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["from"](abiConstructor);
@@ -3248,7 +3248,7 @@ __turbopack_context__.s([
     "getSelector",
     ()=>getSelector
 ]);
-var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/abitype/dist/esm/human-readable/formatAbiItem.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/abitype/dist/esm/human-readable/formatAbiItem.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$AbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/ox/_esm/core/AbiItem.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$AbiParameters$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/ox/_esm/core/AbiParameters.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$Hex$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/Desktop/pincher/node_modules/viem/node_modules/ox/_esm/core/Hex.js [app-route] (ecmascript)");
@@ -3353,7 +3353,7 @@ function encodeResult(...parameters) {
     return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$AbiParameters$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["encode"](abiFunction.outputs, values);
 }
 function format(abiFunction) {
-    return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["formatAbiItem"](abiFunction);
+    return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$abitype$2f$dist$2f$esm$2f$human$2d$readable$2f$formatAbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["formatAbiItem"](abiFunction);
 }
 function from(abiFunction, options = {}) {
     return __TURBOPACK__imported__module__$5b$project$5d2f$Desktop$2f$pincher$2f$node_modules$2f$viem$2f$node_modules$2f$ox$2f$_esm$2f$core$2f$AbiItem$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["from"](abiFunction, options);

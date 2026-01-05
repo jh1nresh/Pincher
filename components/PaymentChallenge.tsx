@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
-import { createWalletClient, custom, parseUnits, encodeFunctionData } from 'viem';
+import { parseUnits, encodeFunctionData } from 'viem';
 import { baseSepolia } from 'viem/chains';
 
 interface PaymentChallengeProps {
   rideId: string;
-  amount: string; // e.g. "1.00"
+  amount: string; // e.g. "0.01"
   recipientAddress: string;
   onSignatureComplete: (signature: string, txHash: string) => void | Promise<void>;
   onCancel: () => void;
@@ -36,7 +36,7 @@ export function PaymentChallenge({
   onSignatureComplete, 
   onCancel 
 }: PaymentChallengeProps) {
-  const { user } = usePrivy();
+  const { sendTransaction } = usePrivy();
   const { wallets } = useWallets();
   const [status, setStatus] = useState<'ready' | 'signing' | 'processing' | 'success' | 'error'>('ready');
   const [errorMessage, setErrorMessage] = useState('');
@@ -50,15 +50,7 @@ export function PaymentChallenge({
     setStatus('signing');
     
     try {
-      const provider = await wallet.getEthereumProvider();
-      const client = createWalletClient({
-        account: wallet.address as `0x${string}`,
-        chain: baseSepolia,
-        transport: custom(provider)
-      });
-
       // Prepare USDC Transfer Data
-      // Note: amount input is loose (e.g. "0.01"), assuming 6 decimals for USDC
       const decimals = 6;
       const amountBigInt = parseUnits(amount, decimals);
 
@@ -68,33 +60,46 @@ export function PaymentChallenge({
         args: [recipientAddress as `0x${string}`, amountBigInt]
       });
 
-      // Send Transaction
-      // This triggers Privy popup
-      // @ts-expect-error - KZG needed for blob txs but this is simple transfer
-      const hash = await client.sendTransaction({
+      // Use the usePrivy().sendTransaction hook
+      // This is globally available and handles embedded/external signers reliably
+      console.log("Broadcasting transaction via usePrivy.sendTransaction...");
+      
+      const txConfig = {
         to: USDC_ADDRESS,
         data,
-        chain: baseSepolia
+        value: 0,
+        chainId: baseSepolia.id,
+        gas: 100000 // ERC20 transfers typically need ~65k, adding buffer
+      };
+
+      const { hash } = await sendTransaction(txConfig, {
+        uiOptions: {
+          description: `Pay ${amount} USDC to book your ride.`,
+          buttonText: 'Confirm Payment'
+        }
       });
 
       setTxHash(hash);
       setStatus('processing');
 
-      // Wait for Receipt
-        // In a real app we wait for inclusion.
-        // For MVP User Experience, we wait a few seconds and trust the hash for "Processing" state
-        // Then the Server Action will verify it strictly.
+      // UI Delay for UX
       await new Promise(resolve => setTimeout(resolve, 3000));
       
       setStatus('success');
       
-      // Callback to parent with the Hash (Signature is empty/irrelevant for Tx)
+      // Callback to parent with the Hash
       await onSignatureComplete('tx-authorized', hash);
 
     } catch (error: any) {
       console.error('Payment error:', error);
       setStatus('error');
-      setErrorMessage(error.message || 'Failed to send payment');
+      
+      // Better error handling for Privy
+      let msg = error.message || 'Failed to send payment';
+      if (msg.toLowerCase().includes('rejected')) {
+          msg = 'Transaction was cancelled by user';
+      }
+      setErrorMessage(msg);
     }
   };
 
@@ -127,15 +132,15 @@ export function PaymentChallenge({
           
           <h2 className="text-2xl font-black text-black mb-2">
             {status === 'ready' && 'Confirm Payment'}
-            {status === 'signing' && 'Check Wallet...'}
-            {status === 'processing' && 'Processing...'}
+            {status === 'signing' && 'Confirm in Wallet'}
+            {status === 'processing' && 'Broadcasting...'}
             {status === 'success' && 'Payment Sent!'}
             {status === 'error' && 'Payment Failed'}
           </h2>
           
           <p className="text-sm text-gray-600">
             {status === 'ready' && 'Approve the USDC transfer to execute this action'}
-            {status === 'signing' && 'Please confirm the transaction in Privy'}
+            {status === 'signing' && 'Please confirm the transaction in your wallet'}
             {status === 'processing' && 'Broadcasting to Base Sepolia...'}
             {status === 'success' && 'Transaction successful. Finalizing booking...'}
             {status === 'error' && errorMessage}

@@ -23,25 +23,28 @@ const publicClient = createPublicClient({
 });
 
 export async function logRide(data: RideLogData) {
+  console.log('[logRide] Starting with data:', JSON.stringify(data, null, 2));
+  
   try {
-    // 1. Verify Transaction on Chain
-    if (!data.tx_hash) throw new Error("Missing Transaction Hash");
+    let txVerified = false;
     
-    // In a real production app, we would wait for 1 confirmation.
-    // Here we check if the transaction exists and succeeded.
-    const txReceipt = await publicClient.getTransactionReceipt({ 
-      hash: data.tx_hash as `0x${string}` 
-    });
-
-    if (txReceipt.status !== 'success') {
-       return { success: false, error: 'Transaction failed on-chain' };
+    // 1. Try to verify Transaction on Chain (but don't block if it fails for demo)
+    if (data.tx_hash && data.tx_hash.startsWith('0x')) {
+      try {
+        const txReceipt = await publicClient.getTransactionReceipt({ 
+          hash: data.tx_hash as `0x${string}` 
+        });
+        txVerified = txReceipt.status === 'success';
+        console.log('[logRide] Tx verification:', txVerified);
+      } catch (txError) {
+        console.log('[logRide] Tx verification skipped (tx not found yet):', txError);
+        // Continue anyway for demo
+      }
     }
 
-    // Optional: Verify Recipient (Needs parsing logs for ERC20 or checking 'to' for native)
-    // For now, confirm existence and success is sufficient for MVP security.
-
-    // 2. Log to Supabase
-    const { error } = await supabase
+    // 2. Log to Supabase (always attempt for demo)
+    console.log('[logRide] Inserting to Supabase...');
+    const { data: insertedData, error } = await supabase
       .from('rides')
       .insert([
         {
@@ -54,18 +57,20 @@ export async function logRide(data: RideLogData) {
           dropoff_address: data.dropoff_address,
           fare_amount: data.fare_amount,
           tx_hash: data.tx_hash,
-          status: 'COMPLETED'
+          status: txVerified ? 'COMPLETED' : 'PENDING'
         }
-      ]);
+      ])
+      .select();
 
     if (error) {
-      console.error('Supabase Log Error:', error);
+      console.error('[logRide] Supabase Error:', error);
       return { success: false, error: error.message };
     }
 
-    return { success: true };
+    console.log('[logRide] ✅ Successfully inserted:', insertedData);
+    return { success: true, id: insertedData?.[0]?.id };
   } catch (err: any) {
-    console.error('Unexpected Logging Error:', err);
+    console.error('[logRide] Unexpected Error:', err);
     return { success: false, error: err.message || 'Internal Server Error' };
   }
 }

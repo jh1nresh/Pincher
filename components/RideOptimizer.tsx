@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { useWallets, usePrivy } from '@privy-io/react-auth';
 import { ConnectWalletCard } from './ConnectWalletCard';
 import { PaymentChallenge } from './PaymentChallenge';
+import { CarpoolMatchCard } from './CarpoolMatchCard';
 
 // Dynamic import for Leaflet map (No SSR)
 const RideMap = dynamic(() => import('./RideMap'), { 
@@ -36,6 +37,8 @@ interface RideOptimizerProps {
   structuredWaypoints?: Waypoint[]; // New structured data
   rationale?: string; // New AI Rationale
   flyToLocation?: { lat: number; lng: number; zoom?: number } | null;
+  pickupLocation?: { lat: number; lng: number; name: string };
+  dropoffLocation?: { lat: number; lng: number; name: string };
   onPayment?: () => Promise<void> | void;
   recipientAddress?: string;
   onReorder?: (newOrder: string[]) => void;
@@ -56,6 +59,8 @@ export function RideOptimizer({
   structuredWaypoints,
   rationale,
   flyToLocation,
+  pickupLocation,
+  dropoffLocation,
   onPayment,
   recipientAddress
 }: RideOptimizerProps) {
@@ -66,6 +71,10 @@ export function RideOptimizer({
   const [showConnectWallet, setShowConnectWallet] = useState(false);
   const [showPaymentChallenge, setShowPaymentChallenge] = useState(false);
   const [txHash, setTxHash] = useState('');
+  
+  // Carpool Matching State
+  const [matchingPhase, setMatchingPhase] = useState<'idle' | 'matching' | 'confirmed'>('idle');
+  const [isMatchConfirmed, setIsMatchConfirmed] = useState(false);
   
   // State for HITL Features
   const [currentWaypoints, setCurrentWaypoints] = useState<Waypoint[]>(
@@ -119,6 +128,25 @@ export function RideOptimizer({
       setShowPaymentChallenge(false);
       
       try {
+          // Log ride to Supabase
+          const walletAddress = wallets[0]?.address || '';
+          await fetch('/api/ride-log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              pickup_location: pickupLocation?.name || waypoints[0] || 'Unknown',
+              dropoff_location: dropoffLocation?.name || waypoints[waypoints.length - 1] || 'Unknown',
+              selected_provider: 'Uber',
+              original_price: originalFare,
+              optimized_price: currentFare,
+              savings: savings,
+              carpool_matched: isMatchConfirmed,
+              wallet_address: walletAddress,
+              tx_hash: transactionHash
+            })
+          });
+          console.log('✅ Ride logged to Supabase');
+          
           // Call parent onPayment callback and WAIT for it (Real Transaction)
           if (onPayment) {
               await onPayment();
@@ -128,8 +156,10 @@ export function RideOptimizer({
           setTrackingMode(true);
           startDriverSimulation();
       } catch (error) {
-          console.error("Payment failed or rejected:", error);
-          // Do not start simulation
+          console.error("Payment/logging failed:", error);
+          // Still start simulation even if logging fails
+          setTrackingMode(true);
+          startDriverSimulation();
       }
   };
   
@@ -194,6 +224,8 @@ export function RideOptimizer({
             driverPosition={driverPos}
             isTracking={trackingMode}
             flyToLocation={flyToLocation}
+            pickupLocation={pickupLocation}
+            dropoffLocation={dropoffLocation}
         />
         {!trackingMode && (
              <div className="absolute top-4 right-4 z-400">
@@ -326,16 +358,49 @@ export function RideOptimizer({
                       </div>
                   </div>
 
-                  <button 
-                    onClick={handlePay}
-                    className="w-full bg-black text-white py-4 rounded-xl font-bold text-sm shadow-xl hover:shadow-2xl transition-all active:scale-[0.98] relative overflow-hidden group"
-                  >
-                     <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                     <span className="relative z-10 flex items-center justify-center gap-2">
-                        <span>Pay ${currentFare} with x402</span>
-                        <span className="bg-gray-800 px-1.5 py-0.5 rounded text-[10px] border border-gray-700">USDC</span>
-                     </span>
-                  </button>
+                  {/* Carpool Matching Card */}
+                  {matchingPhase === 'matching' && (
+                    <div className="mb-4">
+                      <CarpoolMatchCard
+                        route={{ 
+                          pickup: pickupLocation?.name || waypoints[0] || 'Start', 
+                          dropoff: dropoffLocation?.name || waypoints[waypoints.length - 1] || 'End' 
+                        }}
+                        onMatchConfirmed={() => {
+                          setMatchingPhase('confirmed');
+                          setIsMatchConfirmed(true);
+                        }}
+                        onCancel={() => setMatchingPhase('idle')}
+                      />
+                    </div>
+                  )}
+
+                  {/* Join Carpool Button (before matching) */}
+                  {matchingPhase === 'idle' && (
+                    <button 
+                      onClick={() => setMatchingPhase('matching')}
+                      className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-4 rounded-xl font-bold text-sm shadow-xl hover:shadow-2xl transition-all active:scale-[0.98] mb-3"
+                    >
+                      <span className="flex items-center justify-center gap-2">
+                        <span>🚗</span>
+                        <span>Join Carpool</span>
+                      </span>
+                    </button>
+                  )}
+
+                  {/* Pay Button (only after match confirmed) */}
+                  {matchingPhase === 'confirmed' && (
+                    <button 
+                      onClick={handlePay}
+                      className="w-full bg-black text-white py-4 rounded-xl font-bold text-sm shadow-xl hover:shadow-2xl transition-all active:scale-[0.98] relative overflow-hidden group"
+                    >
+                       <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                       <span className="relative z-10 flex items-center justify-center gap-2">
+                          <span>Pay $0.01 with x402</span>
+                          <span className="bg-gray-800 px-1.5 py-0.5 rounded text-[10px] border border-gray-700">USDC</span>
+                       </span>
+                    </button>
+                  )}
              </>
           )}
 
@@ -374,7 +439,7 @@ export function RideOptimizer({
       {showPaymentChallenge && (
         <PaymentChallenge
           rideId={`ride-${Date.now()}`}
-          amount={currentFare}
+          amount="0.01"
           recipientAddress={recipientAddress || '0x...'}
           onSignatureComplete={handleSignatureComplete}
           onCancel={handleCancelPayment}

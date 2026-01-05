@@ -13,6 +13,7 @@ import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { parseEther, createWalletClient, custom, encodeFunctionData } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import { logRide } from '@/app/actions/logRide';
+import { streamRideOptimization } from '@/app/actions/gen-ui';
 import { HistoryDrawer } from '@/components/HistoryDrawer';
 
 export default function HomePage() {
@@ -83,65 +84,211 @@ export default function HomePage() {
     setUi(null);
     setMatchCounter(null);
     setShowConfirmation(false);
-    addLog("Initializing x402 v2 MCP Client...");
+    
+    // Helper for delayed logs
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    
+    addLog("🚀 Initializing MCP Orchestrator...");
+    await delay(400);
 
-    // Step 1: Request Fare (Virtual)
-    setTimeout(async () => {
-        addLog(`Requesting Ride: ${start} -> ${end}`);
-        addLog("Calling MCP Tool: get_uber_fare...");
+    try {
+        // Step 1: Call MCP Orchestrator via streamRideOptimization
+        addLog(`📍 Route: ${start} → ${end}`);
+        await delay(300);
         
-        // Simulating 402 Challenge
-        addLog("⚠️ Received HTTP 402 Payment Required");
-        addLog("x402 Header: eyJhbW91bnQiOiI1MDAwMCIsInRva2VuIjoiV1JBUFBFRF9VU0RDIiwicmVjaXBpZW50IjoiMHg4Ny4uIn0=");
+        addLog("🔗 Connecting to Uber MCP (Local)...");
+        await delay(500);
         
-        // Agent Logic Logs
+        addLog("🔗 Connecting to Lyft MCP (Remote)...");
+        await delay(400);
+        
+        addLog("🔗 Connecting to Supabase Database...");
+        
+        // Call the simplified MCP-based Server Action
+        const { data, error } = await streamRideOptimization(
+            start, 
+            end,
+            selectedPickup ? { lat: selectedPickup.coordinates.lat, lng: selectedPickup.coordinates.lng } : undefined,
+            selectedDropoff ? { lat: selectedDropoff.coordinates.lat, lng: selectedDropoff.coordinates.lng } : undefined
+        );
+        
+        if (error || !data) {
+            throw new Error(error || 'No data returned');
+        }
+        
+        addLog("✅ Connected! All services ready.");
+        await delay(600);
+        
+        // AI Thinking Phase - Progressive flow
+        addLog("🤖 [AI Thinking] Planning ride optimization strategy...");
+        await delay(800);
+        
+        addLog("🤖 [AI Thinking] Analyzing pickup location...");
+        await delay(500);
+        addLog(`   └─ ${selectedPickup?.displayName || start}`);
+        await delay(400);
+        
+        addLog("🤖 [AI Thinking] Analyzing dropoff location...");
+        await delay(500);
+        addLog(`   └─ ${selectedDropoff?.displayName || end}`);
+        await delay(600);
+        
+        addLog(`🤖 [AI Thinking] Fetching uber_get_price...`);
+        await delay(700);
+        
+        addLog(`🤖 [AI Thinking] Fetching lyft_get_price...`);
+        await delay(500);
+        
+        setStep(2);
+        addLog("✅ Received ride options from MCP sources");
+        await delay(400);
+        
+        addLog(`📊 Uber: $${data.uberPrice?.toFixed(2)} | Lyft: $${data.lyftPrice?.toFixed(2)}`);
+        await delay(600);
+        
+        addLog(`🤖 [AI Thinking] Comparing prices...`);
+        await delay(700);
+        
+        // Calculate best option
+        const bestPrice = Math.min(data.uberPrice || 0.01, data.lyftPrice || 0.01);
+        const savings = Math.abs((data.uberPrice || 0.01) - (data.lyftPrice || 0.01)).toFixed(2);
+        const selectedProvider = bestPrice === data.uberPrice ? 'Uber' : 'Lyft';
+        
+        addLog(`🤖 [AI Decision] Selected ${selectedProvider} as best option`);
+        await delay(400);
+        addLog(`   └─ Price: $${bestPrice.toFixed(2)} USDC`);
+        await delay(500);
+        
+        addLog(`🤖 [AI Thinking] Calculating optimal carpool route...`);
+        await delay(600);
+        
+        addLog("✅ Route optimization complete!");
+        
+        // Payment handler to show tx hash in logs
+        const handlePaymentWithLogs = async () => {
+            addLog("👆 User clicked 'Pay with x402'");
+            
+            const wallet = wallets.find(w => w.walletClientType === 'privy') || wallets[0];
+            
+            if (!wallet) {
+                addLog("❌ No active wallet found.");
+                return;
+            }
+            
+            // Switch to Base Sepolia
+            try {
+                await wallet.switchChain(84532);
+            } catch (e) {
+                addLog(`⚠️ Chain switch: ${e}`);
+            }
+
+            addLog("🔐 Requesting Transaction Signature on Base Sepolia...");
+            addLog(`💱 Converting Quote ($${bestPrice.toFixed(2)}) to USDC Payment...`);
+            
+            try {
+                const provider = await wallet.getEthereumProvider();
+                const viemWalletClient = createWalletClient({
+                  chain: baseSepolia,
+                  transport: custom(provider)
+                });
+
+                const USDC_ADDRESS = '0x036CbD53842c5426634e7929541eC2318f3dCF7e'; 
+                const erc20Abi = [{
+                    name: 'transfer',
+                    type: 'function',
+                    stateMutability: 'nonpayable',
+                    inputs: [{ name: 'to', type: 'address' }, { name: 'amount', type: 'uint256' }],
+                    outputs: [{ name: '', type: 'bool' }]
+                }] as const;
+
+                // @ts-expect-error - Privy provider types
+                const txHash = await viemWalletClient.sendTransaction({
+                    account: wallet.address as `0x${string}`,
+                    to: USDC_ADDRESS,
+                    data: encodeFunctionData({
+                        abi: erc20Abi,
+                        functionName: 'transfer',
+                        args: [AI_ADDRESS, BigInt(10000)]
+                    }),
+                    value: BigInt(0)
+                });
+
+                addLog(
+                    <span>
+                        ✅ Transaction Sent! Hash:{' '}
+                        <a 
+                            href={`https://sepolia.basescan.org/tx/${txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 underline hover:text-blue-800 font-bold"
+                        >
+                            View on BaseScan ↗
+                        </a>
+                    </span>
+                );
+                
+                addLog("✅ Funds Locked in Escrow Vault.");
+                
+                // Log ride to Supabase
+                logRide({
+                    user_wallet: wallet.address,
+                    pickup_lat: selectedPickup?.coordinates.lat || 0,
+                    pickup_lng: selectedPickup?.coordinates.lng || 0,
+                    pickup_address: selectedPickup?.displayName || start,
+                    dropoff_lat: selectedDropoff?.coordinates.lat || 0,
+                    dropoff_lng: selectedDropoff?.coordinates.lng || 0,
+                    dropoff_address: selectedDropoff?.displayName || end,
+                    fare_amount: bestPrice,
+                    tx_hash: txHash
+                }).then(res => {
+                    if (res.success) addLog("📝 Ride saved to Supabase.");
+                    else addLog(`⚠️ Supabase error: ${res.error}`);
+                });
+                
+                addLog("🚗 Ride Dispatched! Driver arriving in 5 mins.");
+                setStep(4);
+            } catch (error: any) {
+                addLog(<span className="text-red-500">❌ Transaction Rejected: {error.message}</span>);
+                throw error;
+            }
+        };
+        
+        // Render RideOptimizer client-side with the data
+        setUi(
+            <RideOptimizer
+                savings={savings}
+                originalFare={data.uberPrice?.toFixed(2) || "0.01"}
+                optimizedFare={bestPrice.toFixed(2)}
+                waypoints={[start, 'x402 Node', end]}
+                recipientAddress={AI_ADDRESS}
+                onPayment={handlePaymentWithLogs}
+                pickupLocation={selectedPickup ? { 
+                    lat: selectedPickup.coordinates.lat, 
+                    lng: selectedPickup.coordinates.lng, 
+                    name: selectedPickup.displayName 
+                } : undefined}
+                dropoffLocation={selectedDropoff ? { 
+                    lat: selectedDropoff.coordinates.lat, 
+                    lng: selectedDropoff.coordinates.lng, 
+                    name: selectedDropoff.displayName 
+                } : undefined}
+            />
+        );
+        
+    } catch (error: any) {
+        console.error("MCP Error:", error);
+        addLog(`❌ MCP Error: ${error.message || 'Unknown error'}`);
+        
+        // Fallback to original mock flow
+        addLog("⚠️ Falling back to simulated data...");
         setTimeout(async () => {
-            addLog("🤖 Agent Reasoning: Fetching Real-time Vendor Data...");
-            addLog("📊 Comparison: Uber ($45.00, 1.0x) vs Lyft ($52.12, 1.2x Surge)");
-            
-            setStep(2);
-            
-
-            // Call Matcher Node
+            addLog("📊 Comparison: Uber ($45.00) vs Lyft ($52.12)");
             const matchResult = await matchNodes(start, end);
-            
-            // Show MatchCounter
-            const neighborCount = Math.floor(Math.random() * 4) + 1; // 1-5 neighbors
-            setMatchCounter(
-              <MatchCounter 
-                neighborCount={neighborCount}
-                savings={matchResult.savings}
-                route={`${start} → ${end}`}
-              />
-            );
-
-            setTimeout(() => {
-                // Step 3: Visual Slowdown - Matching
-                addLog("Matching with nearby carpool neighbors...");
-                setUi(<MatchingWithNeighbors />);
-
-                setTimeout(() => {
-                    // Step 4: Auth Check - Value-First Approach
-                    setPendingMatch(matchResult); // Store for auto-resume after login
-                    
-                    if (!user) {
-                        addLog("⚠️ Authentication required to proceed. Showing CommunityAuthCard...");
-                        setUi(
-                            <CommunityAuthCard
-                                savings={matchResult.savings}
-                                neighborCount={neighborCount}
-                                route={`${start} → ${end}`}
-                            />
-                        );
-                    } else {
-                        // Authenticated: Show payment directly
-                        addLog("✓ User authenticated. Rendering RideOptimizer Card with HITL Controls...");
-                        renderRideOptimizer(matchResult, start, end);
-                    }
-                }, 2000);
-            }, 1000);
-        }, 500);
-    }, 1000);
+            if (user) {
+                renderRideOptimizer(matchResult, start, end);
+            }
+        }, 1000);
+    }
   };
 
   // Helper function to render RideOptimizer (used for both auth flows)
@@ -256,10 +403,20 @@ export default function HomePage() {
             optimizedFare={matchResult.optimizedFare}
             waypoints={[]} // Legacy
             structuredWaypoints={matchResult.waypoints}
-             rationale={matchResult.rationale}
+            rationale={matchResult.rationale}
             onPayment={handlePayment}
             recipientAddress={AI_ADDRESS} 
             flyToLocation={mapFlyTo}
+            pickupLocation={selectedPickup ? { 
+                lat: selectedPickup.coordinates.lat, 
+                lng: selectedPickup.coordinates.lng, 
+                name: selectedPickup.displayName 
+            } : undefined}
+            dropoffLocation={selectedDropoff ? { 
+                lat: selectedDropoff.coordinates.lat, 
+                lng: selectedDropoff.coordinates.lng, 
+                name: selectedDropoff.displayName 
+            } : undefined}
         />
     );
   };

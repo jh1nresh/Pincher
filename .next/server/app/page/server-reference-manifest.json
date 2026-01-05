@@ -3,7 +3,7 @@
     "409093f9033cdac7247249d92fc3f65c640662d2fa": {
       "workers": {
         "app/page": {
-          "moduleId": 90373,
+          "moduleId": 25170,
           "async": false,
           "exportedName": "logRide",
           "filename": "Desktop/pincher/app/actions/logRide.ts"
@@ -15,10 +15,25 @@
       "exportedName": "logRide",
       "filename": "Desktop/pincher/app/actions/logRide.ts"
     },
+    "781665c6f3c12f72b64934800db7029ac6cbdc042f": {
+      "workers": {
+        "app/page": {
+          "moduleId": 25170,
+          "async": false,
+          "exportedName": "streamRideOptimization",
+          "filename": "Desktop/pincher/app/actions/gen-ui.tsx"
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      },
+      "exportedName": "streamRideOptimization",
+      "filename": "Desktop/pincher/app/actions/gen-ui.tsx"
+    },
     "40c0936784c83af382f6d6c6f9ccc9dc72316d2ba8": {
       "workers": {
         "app/page": {
-          "moduleId": 90373,
+          "moduleId": 25170,
           "async": false,
           "exportedName": "getUserRides",
           "filename": "Desktop/pincher/app/actions/getRides.ts"

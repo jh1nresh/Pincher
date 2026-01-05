@@ -2,7 +2,7 @@
   "[project]/Desktop/pincher/app/providers.tsx [app-client] (ecmascript, next/dynamic entry)": {
     "id": "[project]/Desktop/pincher/app/providers.tsx [app-client] (ecmascript, next/dynamic entry)",
     "files": [
-      "static/chunks/cb648_0e1cb117._.js",
+      "static/chunks/cb648_4751104a._.js",
       "static/chunks/cb648_@privy-io_js-sdk-core_dist_esm_eae9f5b2._.js",
       "static/chunks/cb648_@privy-io_8568022b._.js",
       "static/chunks/cb648_viem__esm_utils_b825c208._.js",
@@ -19,7 +19,7 @@
       "static/chunks/daac2_@walletconnect_core_dist_index_01ee35ab.js",
       "static/chunks/daac2_@walletconnect_sign-client_dist_index_caf4dc26.js",
       "static/chunks/cb648_x402_dist_esm_f9bde2dd._.js",
-      "static/chunks/9d2f0_zod_v3_0b610a24._.js",
+      "static/chunks/cb648_zod_v3_7ba9154a._.js",
       "static/chunks/cb648_6a1daf3b._.js",
       "static/chunks/9d2f0_@solana-program_token_dist_src_index_mjs_6ca4bd54._.js",
       "static/chunks/9d2f0_@solana-program_token-2022_dist_src_index_mjs_be4dd087._.js",

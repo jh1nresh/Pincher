@@ -27,6 +27,8 @@ interface RideMapProps {
   driverPosition?: { lat: number; lng: number } | null;
   isTracking?: boolean;
   flyToLocation?: { lat: number; lng: number; zoom?: number } | null;
+  pickupLocation?: { lat: number; lng: number; name: string };
+  dropoffLocation?: { lat: number; lng: number; name: string };
 }
 
 // Component to fly map to specific location
@@ -43,6 +45,24 @@ function MapFlyController({ location }: { location: { lat: number; lng: number; 
   return null;
 }
 
+// Component to fit map bounds to route
+function MapBoundsController({ route, pickup, dropoff }: { route: [number, number][], pickup?: {lat: number, lng: number; name: string}, dropoff?: {lat: number, lng: number; name: string} }) {
+  const map = useMap();
+  useEffect(() => {
+    if (route.length > 0) {
+      const bounds = L.latLngBounds(route.map(p => [p[0], p[1]]));
+      map.fitBounds(bounds, { padding: [50, 50] });
+    } else if (pickup && dropoff) {
+      const bounds = L.latLngBounds([
+        [pickup.lat, pickup.lng],
+        [dropoff.lat, dropoff.lng]
+      ]);
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [route, pickup, dropoff, map]);
+  return null;
+}
+
 // Component to update map center when driver moves
 function MapUpdater({ center }: { center: [number, number] }) {
   const map = useMap();
@@ -52,7 +72,116 @@ function MapUpdater({ center }: { center: [number, number] }) {
   return null;
 }
 
-export default function RideMap({ waypoints, driverPosition, isTracking, flyToLocation }: RideMapProps) {
+export default function RideMap({ waypoints, driverPosition, isTracking, flyToLocation, pickupLocation, dropoffLocation }: RideMapProps) {
+  // Google Maps route state
+  const [googleRoute, setGoogleRoute] = useState<[number, number][]>([]);
+  const [routeLoading, setRouteLoading] = useState(false);
+
+  // Fetch Google Maps Directions when pickup/dropoff changes
+  useEffect(() => {
+    if (!pickupLocation || !dropoffLocation) {
+      setGoogleRoute([]);
+      return;
+    }
+
+    // Immediately set a straight line as fallback (ensures route always shows)
+    const straightLine: [number, number][] = [
+      [pickupLocation.lat, pickupLocation.lng], 
+      [dropoffLocation.lat, dropoffLocation.lng]
+    ];
+    setGoogleRoute(straightLine);
+    console.log('📍 Set fallback straight line route');
+
+    const fetchRoute = async () => {
+      setRouteLoading(true);
+      try {
+        const origin = `${pickupLocation.lat},${pickupLocation.lng}`;
+        const destination = `${dropoffLocation.lat},${dropoffLocation.lng}`;
+        
+        // Call our API proxy for Google Directions
+        const response = await fetch(
+          `/api/directions?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`
+        );
+        
+        if (!response.ok) {
+          console.warn('Directions API returned error, keeping straight line');
+          return;
+        }
+
+        const data = await response.json();
+        
+        if (data.routes && data.routes.length > 0 && data.routes[0].overview_polyline?.points) {
+          // Decode polyline from Google Maps
+          const polylineStr = data.routes[0].overview_polyline.points;
+          if (polylineStr && polylineStr.length > 0) {
+            const points = decodePolyline(polylineStr);
+            if (points.length >= 2) {
+              setGoogleRoute(points);
+              console.log('✅ Google Maps route loaded with', points.length, 'points');
+            }
+          }
+        } else {
+          console.log('No Google route found, using straight line');
+        }
+      } catch (error) {
+        console.error('Route fetch error:', error);
+        // Keep the straight line fallback
+      } finally {
+        setRouteLoading(false);
+      }
+    };
+
+    fetchRoute();
+  }, [pickupLocation, dropoffLocation]);
+
+  // Decode Google Maps polyline encoding
+  function decodePolyline(encoded: string): [number, number][] {
+    const points: [number, number][] = [];
+    let index = 0, lat = 0, lng = 0;
+
+    while (index < encoded.length) {
+      let b, shift = 0, result = 0;
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      const dlat = (result & 1) ? ~(result >> 1) : (result >> 1);
+      lat += dlat;
+
+      shift = 0;
+      result = 0;
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      const dlng = (result & 1) ? ~(result >> 1) : (result >> 1);
+      lng += dlng;
+
+      points.push([lat / 1e5, lng / 1e5]);
+    }
+    return points;
+  }
+
+  // Custom Pickup Icon (Green with pulse)
+  const pickupIcon = new L.DivIcon({
+    html: `<div style="position: relative;">
+      <div style="position: absolute; inset: -8px; background-color: rgba(34, 197, 94, 0.3); border-radius: 50%; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+      <div style="background-color: #22c55e; color: white; font-weight: bold; padding: 8px 12px; border-radius: 12px; font-size: 12px; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.5); white-space: nowrap; border: 3px solid white;">📍 Pickup</div>
+    </div>`,
+    className: 'bg-transparent',
+    iconSize: [100, 40],
+    iconAnchor: [50, 40]
+  });
+
+  // Custom Dropoff Icon (Red with flag)
+  const dropoffIcon = new L.DivIcon({
+    html: `<div style="background-color: #ef4444; color: white; font-weight: bold; padding: 8px 12px; border-radius: 12px; font-size: 12px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5); white-space: nowrap; border: 3px solid white;">🏁 Dropoff</div>`,
+    className: 'bg-transparent',
+    iconSize: [100, 40],
+    iconAnchor: [50, 40]
+  });
   // Default center (Irvine/OC area)
   const defaultCenter: [number, number] = [33.684, -117.826];
   
@@ -75,6 +204,13 @@ export default function RideMap({ waypoints, driverPosition, isTracking, flyToLo
         
         {/* Fly to hotzone when selected */}
         {flyToLocation && <MapFlyController location={flyToLocation} />}
+        
+        {/* Fit Bounds Controller */}
+        <MapBoundsController 
+            route={googleRoute} 
+            pickup={pickupLocation} 
+            dropoff={dropoffLocation} 
+        />
         
         {/* Hotzone Virtual Pickup Markers */}
         {[
@@ -103,6 +239,38 @@ export default function RideMap({ waypoints, driverPosition, isTracking, flyToLo
             </Marker>
           );
         })}
+        
+        {/* Selected Pickup Marker */}
+        {pickupLocation && (
+          <Marker position={[pickupLocation.lat, pickupLocation.lng]} icon={pickupIcon}>
+            <Popup>
+              <div className="text-xs">
+                <div className="font-bold text-green-600">上車點 Pickup</div>
+                <div className="text-gray-800">{pickupLocation.name}</div>
+              </div>
+            </Popup>
+          </Marker>
+        )}
+        
+        {/* Selected Dropoff Marker */}
+        {dropoffLocation && (
+          <Marker position={[dropoffLocation.lat, dropoffLocation.lng]} icon={dropoffIcon}>
+            <Popup>
+              <div className="text-xs">
+                <div className="font-bold text-red-600">下車點 Dropoff</div>
+                <div className="text-gray-800">{dropoffLocation.name}</div>
+              </div>
+            </Popup>
+          </Marker>
+        )}
+        
+        {/* Route Line between Pickup and Dropoff (Google Maps) */}
+        {googleRoute.length >= 2 && (
+          <Polyline 
+            positions={googleRoute} 
+            pathOptions={{ color: '#3b82f6', weight: 5, opacity: 0.8 }} 
+          />
+        )}
         
         {/* Route Line */}
         <Polyline 
