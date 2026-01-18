@@ -648,7 +648,23 @@ export default function TripsPage() {
         <div className="px-5 py-3 flex items-center justify-end pointer-events-auto">
           {/* Theme Toggle + Filter + Avatar */}
           <div className="flex items-center gap-2">
-            <ThemeToggle />
+            {/* Simple Direct Dark Mode Toggle */}
+            <button
+              onClick={() => {
+                const html = document.documentElement;
+                const isDark = html.classList.contains('dark');
+                if (isDark) {
+                  html.classList.remove('dark');
+                  localStorage.setItem('pincher_theme', 'light');
+                } else {
+                  html.classList.add('dark');
+                  localStorage.setItem('pincher_theme', 'dark');
+                }
+              }}
+              className="w-10 h-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur rounded-full shadow-md flex items-center justify-center active:scale-95 transition-all border border-gray-100 dark:border-gray-700"
+            >
+              <span className="text-lg">🌓</span>
+            </button>
             <button
               onClick={() => setShowFilter(true)}
               className="w-10 h-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur rounded-full shadow-md flex items-center justify-center hover:scale-105 active:scale-95 transition-transform border border-gray-100 dark:border-gray-700"

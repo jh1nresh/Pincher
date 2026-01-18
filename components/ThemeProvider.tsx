@@ -78,11 +78,29 @@ export function useTheme() {
 
 // Theme toggle button component
 export function ThemeToggle({ className = '' }: { className?: string }) {
+  const [mounted, setMounted] = useState(false);
   const { resolvedTheme, toggleTheme } = useTheme();
+  
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Show placeholder during SSR/initial render
+  if (!mounted) {
+    return (
+      <div className={`w-10 h-10 rounded-full bg-white/90 dark:bg-gray-800 backdrop-blur shadow-md flex items-center justify-center border border-gray-100 dark:border-gray-700 ${className}`}>
+        <span className="text-lg">☀️</span>
+      </div>
+    );
+  }
   
   return (
     <button
-      onClick={toggleTheme}
+      onClick={() => {
+        console.log('Theme toggle clicked, current:', resolvedTheme);
+        toggleTheme();
+      }}
       className={`w-10 h-10 rounded-full bg-white/90 dark:bg-gray-800 backdrop-blur shadow-md flex items-center justify-center hover:scale-105 active:scale-95 transition-all border border-gray-100 dark:border-gray-700 ${className}`}
       aria-label="Toggle theme"
     >
