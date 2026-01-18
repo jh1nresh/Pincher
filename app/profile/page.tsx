@@ -139,7 +139,7 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-32 relative overflow-hidden">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-32 relative overflow-hidden transition-colors duration-300">
              <BackgroundBeams />
              
              {/* Floating Header - Forced Safe Position */}
@@ -147,15 +147,15 @@ export default function ProfilePage() {
                 {/* Safe Area Spacer */}
                 <div className="w-full" style={{ height: 'max(env(safe-area-inset-top), 48px)' }}></div>
                 <div className="w-full max-w-lg pointer-events-auto flex justify-between items-center">
-                    <div className="bg-white/90 backdrop-blur-md rounded-full shadow-sm px-4 py-2 border border-gray-100">
-                        <span className="font-bold text-xs uppercase tracking-wider">👤 Profile</span>
+                    <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-full shadow-sm px-4 py-2 border border-gray-100 dark:border-gray-700">
+                        <span className="font-bold text-xs uppercase tracking-wider dark:text-white">👤 Profile</span>
                     </div>
                     <button
                         onClick={() => isEditing ? saveProfile() : setIsEditing(true)}
                         className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
                             isEditing 
                                 ? 'bg-green-500 text-white' 
-                                : 'bg-white/90 backdrop-blur-md border border-gray-100'
+                                : 'bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border border-gray-100 dark:border-gray-700 dark:text-white'
                         }`}
                     >
                         {saving ? '...' : isEditing ? '✓ Save' : '✏️ Edit'}
@@ -168,7 +168,7 @@ export default function ProfilePage() {
                 <div className="text-center mb-8 relative">
                     {/* Gradient Ring Avatar */}
                     <div className="w-28 h-28 bg-linear-to-tr from-violet-500 via-pink-500 to-orange-400 rounded-full mx-auto mb-4 p-[4px] shadow-xl animate-pulse">
-                        <div className="w-full h-full bg-white rounded-full flex items-center justify-center text-5xl font-bold text-gray-800 overflow-hidden">
+                        <div className="w-full h-full bg-white dark:bg-gray-800 rounded-full flex items-center justify-center text-5xl font-bold text-gray-800 dark:text-white overflow-hidden">
                              {displayName?.charAt(0).toUpperCase() || user?.email?.address?.charAt(0).toUpperCase() || '👤'}
                         </div>
                     </div>
@@ -181,7 +181,7 @@ export default function ProfilePage() {
                                 value={displayName}
                                 onChange={(e) => setDisplayName(e.target.value)}
                                 placeholder="Display Name"
-                                className="w-full px-4 py-2.5 bg-white rounded-xl border border-gray-200 text-center font-bold focus:outline-none focus:ring-2 focus:ring-violet-500"
+                                className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 text-center font-bold dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
                             />
                             <input
                                 type="text"
@@ -191,7 +191,7 @@ export default function ProfilePage() {
                                     setUsernameError('');
                                 }}
                                 placeholder="@username"
-                                className={`w-full px-4 py-2.5 bg-white rounded-xl border text-center text-gray-600 focus:outline-none focus:ring-2 focus:ring-violet-500 ${usernameError ? 'border-red-400' : 'border-gray-200'}`}
+                                className={`w-full px-4 py-2.5 bg-white dark:bg-gray-800 rounded-xl border text-center text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 ${usernameError ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'}`}
                             />
                             {usernameError && (
                                 <div className="text-red-500 text-xs font-medium">{usernameError}</div>
@@ -200,13 +200,13 @@ export default function ProfilePage() {
                     ) : (
                         <>
                             {/* Name Badge */}
-                            <div className="inline-block px-4 py-1.5 bg-white/80 backdrop-blur rounded-full border border-gray-200 shadow-sm mb-2">
-                                <h1 className="text-lg font-black text-gray-900 tracking-tight">
+                            <div className="inline-block px-4 py-1.5 bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-full border border-gray-200 dark:border-gray-700 shadow-sm mb-2">
+                                <h1 className="text-lg font-black text-gray-900 dark:text-white tracking-tight">
                                     {displayName || user?.email?.address?.split('@')[0] || 'User'}
                                 </h1>
                             </div>
                             {username && (
-                                <div className="text-gray-500 text-sm font-medium mb-2">@{username}</div>
+                                <div className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2">@{username}</div>
                             )}
                         </>
                     )}
@@ -241,9 +241,9 @@ export default function ProfilePage() {
 
                 {/* Trip History */}
                 <div className="space-y-4">
-                    <h2 className="font-bold text-sm text-gray-400 uppercase tracking-wider px-2">Trip History</h2>
+                    <h2 className="font-bold text-sm text-gray-400 dark:text-gray-500 uppercase tracking-wider px-2">Trip History</h2>
                     {myTrips.length === 0 ? (
-                        <div className="bg-white p-8 rounded-3xl text-center text-gray-400 border border-gray-100 border-dashed text-xs">
+                        <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl text-center text-gray-400 border border-gray-100 dark:border-gray-700 border-dashed text-xs">
                             No trips yet.
                         </div>
                     ) : (
@@ -251,10 +251,10 @@ export default function ProfilePage() {
                             <Link 
                                 key={trip.id} 
                                 href={`/trips/room?id=${trip.id}`}
-                                className="block bg-white rounded-3xl p-4 shadow-sm border border-gray-100 hover:border-gray-200 transition-all active:scale-[0.98]"
+                                className="block bg-white dark:bg-gray-800 rounded-3xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 transition-all active:scale-[0.98]"
                             >
                                 <div className="flex justify-between items-center mb-1">
-                                    <div className="font-bold text-sm text-gray-900 tracking-tight">
+                                    <div className="font-bold text-sm text-gray-900 dark:text-white tracking-tight">
                                         {trip.origin} <span className="text-gray-300 mx-1">→</span> {trip.destination}
                                     </div>
                                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide ${
@@ -275,7 +275,7 @@ export default function ProfilePage() {
                 {/* Logout */}
                 <button 
                     onClick={logout}
-                    className="w-full mt-12 bg-white border border-gray-200 text-gray-400 font-bold py-4 rounded-2xl hover:bg-gray-50 hover:text-red-500 transition-colors text-sm"
+                    className="w-full mt-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-400 font-bold py-4 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-red-500 transition-colors text-sm"
                 >
                     Sign Out
                 </button>

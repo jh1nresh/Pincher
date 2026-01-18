@@ -9,6 +9,8 @@ import { HOTZONES } from '@/lib/constants';
 import { motion, AnimatePresence, PanInfo, useMotionValue, useTransform } from 'framer-motion';
 import WalletBadge from '@/components/WalletBadge';
 import { useRouter } from 'next/navigation';
+import { TripCardSkeleton } from '@/components/Skeleton';
+import { ThemeToggle } from '@/components/ThemeProvider';
 
 interface TripRoom {
   id: string;
@@ -24,7 +26,7 @@ interface TripRoom {
   creator_id?: string;
 }
 
-// Swipeable Card Component
+// Enhanced Swipeable Card Component with 3D Effects
 function SwipeCard({
   trip,
   onSwipe,
@@ -37,12 +39,18 @@ function SwipeCard({
   formatTime: (dateStr: string) => string;
 }) {
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-200, 200], [-25, 25]);
+  const rotate = useTransform(x, [-200, 200], [-18, 18]);
+  const rotateY = useTransform(x, [-200, 200], [8, -8]);
   const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0.5, 1, 1, 1, 0.5]);
-
+  
+  // Dynamic shadow based on drag
+  const shadowX = useTransform(x, [-200, 0, 200], [20, 0, -20]);
+  
   // Overlay indicators
-  const joinOpacity = useTransform(x, [0, 100], [0, 1]);
-  const skipOpacity = useTransform(x, [-100, 0], [1, 0]);
+  const joinOpacity = useTransform(x, [0, 80], [0, 1]);
+  const skipOpacity = useTransform(x, [-80, 0], [1, 0]);
+  const joinScale = useTransform(x, [0, 100], [0.8, 1.1]);
+  const skipScale = useTransform(x, [-100, 0], [1.1, 0.8]);
 
   const originZone = HOTZONES.find(h => h.id === trip.origin_hotzone_id);
   const destZone = HOTZONES.find(h => h.id === trip.destination_hotzone_id);
@@ -55,102 +63,147 @@ function SwipeCard({
     }
   };
 
+  const spotsLeft = trip.min_passengers - (trip.passenger_count || 0);
+  const isFilling = spotsLeft <= 2 && spotsLeft > 0;
+
   return (
     <motion.div
-      className={`absolute w-full ${isTop ? 'z-10' : 'z-0'}`}
-      style={{ x, rotate, opacity }}
+      className={`absolute w-full ${isTop ? 'z-10 cursor-grab active:cursor-grabbing' : 'z-0'}`}
+      style={{ 
+        x, 
+        rotate, 
+        rotateY,
+        opacity,
+        perspective: 1000,
+        transformStyle: 'preserve-3d'
+      }}
       drag={isTop ? 'x' : false}
       dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.1}
       onDragEnd={handleDragEnd}
-      initial={{ scale: isTop ? 1 : 0.95, y: isTop ? 0 : 10 }}
-      animate={{ scale: isTop ? 1 : 0.95, y: isTop ? 0 : 10 }}
+      initial={{ scale: isTop ? 1 : 0.92, y: isTop ? 0 : 15, opacity: isTop ? 1 : 0.7 }}
+      animate={{ scale: isTop ? 1 : 0.92, y: isTop ? 0 : 15, opacity: isTop ? 1 : 0.7 }}
       exit={{
-        x: x.get() > 0 ? 300 : -300,
+        x: x.get() > 0 ? 400 : -400,
+        rotate: x.get() > 0 ? 20 : -20,
         opacity: 0,
-        transition: { duration: 0.2 }
+        transition: { duration: 0.3, ease: 'easeOut' }
       }}
+      whileHover={isTop ? { scale: 1.02 } : {}}
+      whileTap={isTop ? { scale: 0.98 } : {}}
     >
-      <div className="bg-white rounded-4xl shadow-2xl border border-gray-200 overflow-hidden">
-        {/* Card Header with VIBRANT gradient */}
-        <div className="relative h-44 bg-linear-to-br from-violet-600 via-pink-500 to-orange-400 p-6">
-          {/* Animated glow effect */}
-          <div className="absolute inset-0 bg-white/10 animate-pulse"></div>
+      <div className="bg-white dark:bg-gray-800 rounded-4xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden relative">
+        {/* Gradient glow behind card */}
+        <div className="absolute -inset-1 bg-linear-to-r from-violet-500 via-pink-500 to-orange-400 rounded-4xl blur-xl opacity-20 -z-10" />
+        
+        {/* Card Header with animated gradient */}
+        <div className="relative h-48 bg-linear-to-br from-violet-600 via-pink-500 to-orange-400 p-6 overflow-hidden">
+          {/* Animated shine effect */}
+          <motion.div 
+            className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent skew-x-12"
+            animate={{ x: ['-200%', '200%'] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+          />
           
-          {/* Swipe Indicators */}
+          {/* Swipe Indicators with scale animation */}
           <motion.div
-            className="absolute top-5 right-5 bg-emerald-400 text-white px-4 py-1.5 rounded-full font-black text-sm shadow-lg shadow-emerald-400/50"
-            style={{ opacity: joinOpacity }}
+            className="absolute top-4 right-4 bg-emerald-400 text-white px-5 py-2 rounded-2xl font-black text-base shadow-xl shadow-emerald-500/40 flex items-center gap-2"
+            style={{ opacity: joinOpacity, scale: joinScale }}
           >
-            JOIN! 🎉
+            <span className="text-xl">🎉</span> JOIN!
           </motion.div>
           <motion.div
-            className="absolute top-5 left-5 bg-rose-400 text-white px-4 py-1.5 rounded-full font-black text-sm shadow-lg shadow-rose-400/50"
-            style={{ opacity: skipOpacity }}
+            className="absolute top-4 left-4 bg-rose-400 text-white px-5 py-2 rounded-2xl font-black text-base shadow-xl shadow-rose-500/40 flex items-center gap-2"
+            style={{ opacity: skipOpacity, scale: skipScale }}
           >
-            SKIP ✕
+            SKIP <span className="text-xl">✕</span>
           </motion.div>
 
-          {/* Route Display */}
-          <div className="absolute bottom-5 left-6 right-6">
+          {/* Route Display with enhanced styling */}
+          <div className="absolute bottom-4 left-5 right-5">
             <div className="flex items-center gap-3 text-white">
-              <div className="text-3xl drop-shadow-lg">{originZone?.icon || '📍'}</div>
+              <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl">
+                {originZone?.icon || '📍'}
+              </div>
               <div className="flex-1">
-                <div className="font-black text-xl truncate drop-shadow">{trip.origin}</div>
+                <div className="font-black text-xl truncate drop-shadow-lg">{trip.origin}</div>
+                <div className="text-white/70 text-xs font-medium">Pickup Point</div>
               </div>
             </div>
-            <div className="flex items-center gap-3 text-white/90 mt-2">
-              <div className="w-8 flex justify-center text-sm font-bold">↓</div>
-              <div className="flex-1 border-l-2 border-white/40 pl-4 py-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl drop-shadow-lg">{destZone?.icon || '📍'}</span>
-                  <span className="font-bold text-lg truncate">{trip.destination}</span>
-                </div>
+            
+            <div className="ml-6 my-1 border-l-2 border-white/30 h-3" />
+            
+            <div className="flex items-center gap-3 text-white">
+              <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl">
+                {destZone?.icon || '📍'}
+              </div>
+              <div className="flex-1">
+                <div className="font-black text-xl truncate drop-shadow-lg">{trip.destination}</div>
+                <div className="text-white/70 text-xs font-medium">Destination</div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Card Body */}
-        <div className="p-6">
+        <div className="p-5">
           {/* Time & Price Row */}
-          <div className="flex justify-between items-center mb-5">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="font-black text-lg text-gray-900">{formatTime(trip.departure_time)}</span>
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+                <span className="text-lg">🕐</span>
+              </div>
+              <div>
+                <div className="font-black text-lg text-gray-900">{formatTime(trip.departure_time)}</div>
+                <div className="text-xs text-gray-400 font-medium">Departure</div>
+              </div>
             </div>
-            <div className="bg-linear-to-r from-violet-600 to-pink-500 text-white px-4 py-2 rounded-2xl font-black text-lg shadow-lg">
-              ${(trip.estimated_cost / 100 / trip.min_passengers).toFixed(0)}<span className="text-sm font-medium opacity-80">/person</span>
-            </div>
+            <motion.div 
+              className="bg-linear-to-r from-violet-600 to-pink-500 text-white px-5 py-2.5 rounded-2xl font-black text-xl shadow-lg"
+              whileHover={{ scale: 1.05 }}
+            >
+              ${(trip.estimated_cost / 100 / trip.min_passengers).toFixed(0)}
+              <span className="text-xs font-medium opacity-80 ml-1">/person</span>
+            </motion.div>
           </div>
 
           {/* Passenger Progress */}
-          <div className="mb-5">
+          <div className="mb-4">
             <div className="flex justify-between text-sm text-gray-600 mb-2 font-medium">
-              <span>Riders Joined</span>
-              <span className="font-bold">{trip.passenger_count || 0} / {trip.min_passengers}</span>
+              <span className="flex items-center gap-2">
+                <span className="text-lg">👥</span> Riders
+              </span>
+              <span className="font-black text-gray-900">{trip.passenger_count || 0} / {trip.min_passengers}</span>
             </div>
             <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
-              <div
-                className="bg-linear-to-r from-violet-500 to-pink-500 h-full transition-all duration-500 rounded-full"
-                style={{ width: `${((trip.passenger_count || 0) / trip.min_passengers) * 100}%` }}
+              <motion.div
+                className="bg-linear-to-r from-violet-500 via-pink-500 to-orange-400 h-full rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${((trip.passenger_count || 0) / trip.min_passengers) * 100}%` }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
               />
             </div>
-            {trip.min_passengers - (trip.passenger_count || 0) === 1 && (
-              <div className="text-orange-500 text-sm font-black mt-2 text-right animate-pulse">
-                🔥 Only 1 spot left!
-              </div>
+            {isFilling && (
+              <motion.div 
+                className="text-orange-500 text-sm font-black mt-2 text-right flex items-center justify-end gap-1"
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 0.5, repeat: Infinity }}
+              >
+                <span className="text-lg">🔥</span> Only {spotsLeft} spot{spotsLeft > 1 ? 's' : ''} left!
+              </motion.div>
             )}
           </div>
 
           {/* Swipe Hint */}
-          <div className="text-center text-sm text-gray-400 font-medium">
-            ← Swipe to skip | Swipe to join →
+          <div className="text-center text-sm text-gray-400 font-medium pt-2 border-t border-gray-100">
+            👈 Swipe to skip • Swipe to join 👉
           </div>
         </div>
       </div>
     </motion.div>
   );
 }
+
 
 // Join Confirmation Modal
 function JoinModal({
@@ -585,7 +638,7 @@ export default function TripsPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-linear-to-b from-gray-100 to-gray-50 pb-24">
+    <div className="relative min-h-screen bg-linear-to-b from-gray-100 to-gray-50 dark:from-gray-900 dark:to-gray-800 pb-24 transition-colors duration-300">
       <BackgroundBeams />
 
       {/* Minimal Header - Just Filter & Avatar */}
@@ -593,11 +646,12 @@ export default function TripsPage() {
         {/* Safe Area Spacer */}
         <div className="w-full" style={{ height: 'max(env(safe-area-inset-top), 20px)' }}></div>
         <div className="px-5 py-3 flex items-center justify-end pointer-events-auto">
-          {/* Filter + Avatar */}
-          <div className="flex items-center gap-3">
+          {/* Theme Toggle + Filter + Avatar */}
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
             <button
               onClick={() => setShowFilter(true)}
-              className="w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md flex items-center justify-center hover:scale-105 active:scale-95 transition-transform border border-gray-100"
+              className="w-10 h-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur rounded-full shadow-md flex items-center justify-center hover:scale-105 active:scale-95 transition-transform border border-gray-100 dark:border-gray-700"
             >
               {activeFiltersCount > 0 ? (
                 <span className="text-sm font-bold text-pink-500">{activeFiltersCount}</span>
@@ -625,26 +679,54 @@ export default function TripsPage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-20 text-gray-400">
-            <div className="text-4xl mb-4 animate-bounce">🚗</div>
-            Loading rides...
+          /* Skeleton Loading */
+          <div className="space-y-4">
+            <TripCardSkeleton />
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center text-gray-400 text-sm mt-4"
+            >
+              Finding rides near you...
+            </motion.div>
           </div>
         ) : filteredTrips.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-6">🛣️</div>
-            <p className="text-gray-900 font-bold text-xl mb-2">No rides found</p>
-            <p className="text-gray-500 text-sm mb-6">
-              {activeFiltersCount > 0 ? 'Try adjusting your filters' : 'Be the first to create a ride!'}
+          /* Enhanced Empty State */
+          <motion.div 
+            className="text-center py-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <motion.div 
+              className="text-7xl mb-6"
+              animate={{ y: [0, -10, 0], rotate: [0, 5, -5, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              �
+            </motion.div>
+            <h3 className="text-gray-900 font-black text-2xl mb-3">No rides yet</h3>
+            <p className="text-gray-500 text-sm mb-8 max-w-xs mx-auto">
+              {activeFiltersCount > 0 
+                ? 'No rides match your filters. Try adjusting them!' 
+                : 'Be the first to create a ride and save money!'}
             </p>
-            {activeFiltersCount > 0 && (
-              <button
-                onClick={() => setFilters({ origin: null, destination: null, timeRange: 'all' })}
-                className="px-6 py-3 bg-linear-to-r from-violet-500 to-pink-500 text-white font-bold rounded-full shadow-lg"
+            <div className="space-y-3">
+              {activeFiltersCount > 0 && (
+                <button
+                  onClick={() => setFilters({ origin: null, destination: null, timeRange: 'all' })}
+                  className="block w-full max-w-xs mx-auto px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-2xl"
+                >
+                  Clear Filters
+                </button>
+              )}
+              <Link
+                href="/trips/create"
+                className="block w-full max-w-xs mx-auto px-6 py-4 bg-linear-to-r from-violet-500 via-pink-500 to-orange-400 text-white font-bold rounded-2xl shadow-lg text-center"
               >
-                Clear Filters
-              </button>
-            )}
-          </div>
+                + Create First Ride
+              </Link>
+            </div>
+          </motion.div>
         ) : (
           /* Swipe Cards View */
           <div className="relative h-[420px] w-full">

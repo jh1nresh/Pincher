@@ -17,7 +17,7 @@ export function Skeleton({
   height,
   count = 1
 }: SkeletonProps) {
-  const baseClass = 'bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 animate-shimmer bg-[length:200%_100%]';
+  const baseClass = 'bg-linear-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 animate-shimmer bg-[length:200%_100%]';
   
   const variantClasses = {
     text: 'h-4 rounded',
@@ -49,7 +49,7 @@ export function CardSkeleton() {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="h-44 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 animate-pulse" />
+      <div className="h-44 bg-linear-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 animate-pulse" />
       
       {/* Content */}
       <div className="p-6 space-y-4">

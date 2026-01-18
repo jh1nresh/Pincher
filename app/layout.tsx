@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import DynamicProviders from "@/components/DynamicProviders";
 import BottomNav from "@/components/BottomNav";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 
 const geistSans = Geist({
@@ -37,14 +38,28 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Pincher" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const theme = localStorage.getItem('pincher_theme');
+                if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark');
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gray-50`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300`}
       >
-        <DynamicProviders>
-          {children}
-          <BottomNav />
-        </DynamicProviders>
+        <ThemeProvider>
+          <DynamicProviders>
+            {children}
+            <BottomNav />
+          </DynamicProviders>
+        </ThemeProvider>
       </body>
     </html>
   );

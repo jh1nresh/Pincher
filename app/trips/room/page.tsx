@@ -184,9 +184,9 @@ function TripRoomContent() {
   const perPerson = trip.actual_cost ? (trip.actual_cost / 100 / passengers.length) : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-10 transition-colors duration-300">
       {/* Header */}
-      <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white p-6 pb-10 rounded-b-[2rem]">
+      <div className="bg-linear-to-br from-gray-900 to-gray-800 text-white p-6 pb-10 rounded-b-4xl">
         <div className="flex justify-between items-center mb-6">
           <Link href="/trips" className="text-white/70 text-sm font-medium">← Back</Link>
           <span className={`px-3 py-1 rounded-full text-xs font-bold ${
@@ -204,18 +204,18 @@ function TripRoomContent() {
 
       <main className="max-w-lg mx-auto px-4 -mt-6 space-y-4">
         {/* Passengers Card */}
-        <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
-          <div className="font-bold text-sm mb-4 text-gray-900">
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="font-bold text-sm mb-4 text-gray-900 dark:text-white">
             Passengers ({passengers.length}/{trip.min_passengers})
           </div>
           <div className="space-y-2">
             {passengers.map(p => (
-              <div key={p.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-xl">
+              <div key={p.id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 p-3 rounded-xl">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center font-bold text-sm">
+                  <div className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center font-bold text-sm dark:text-white">
                     {p.user_name.charAt(0).toUpperCase()}
                   </div>
-                  <span className="font-medium text-sm">{p.user_name}</span>
+                  <span className="font-medium text-sm dark:text-white">{p.user_name}</span>
                   {p.user_id === trip.creator_id && <span className="text-[10px] bg-black text-white px-2 py-0.5 rounded-full">HOST</span>}
                 </div>
                 {trip.status === 'splitting' && (
@@ -237,9 +237,9 @@ function TripRoomContent() {
 
         {/* Split - Volunteer to Pay */}
         {trip.status === 'open' && isFull && isJoined && (
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h3 className="font-black text-lg mb-3">💳 Ready to Split?</h3>
-            <p className="text-sm text-gray-500 mb-4">The first person to enter the cost becomes the payer.</p>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <h3 className="font-black text-lg mb-3 dark:text-white">💳 Ready to Split?</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">The first person to enter the cost becomes the payer.</p>
             
             {!splitting ? (
               <button 
@@ -252,12 +252,12 @@ function TripRoomContent() {
               <div className="space-y-5">
                 {/* Cost Input */}
                 <div>
-                  <label className="block text-xs font-bold mb-2 uppercase text-gray-500">Total Uber Cost</label>
+                  <label className="block text-xs font-bold mb-2 uppercase text-gray-500 dark:text-gray-400">Total Uber Cost</label>
                   <input 
                     type="number" 
                     value={actualCostInput}
                     onChange={e => setActualCostInput(e.target.value)}
-                    className="w-full p-4 rounded-xl border border-gray-200 font-bold text-lg text-gray-900"
+                    className="w-full p-4 rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 font-bold text-lg text-gray-900 dark:text-white"
                     placeholder="e.g. 82.50"
                   />
                 </div>

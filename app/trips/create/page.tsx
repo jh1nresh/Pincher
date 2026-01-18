@@ -147,7 +147,7 @@ export default function CreateTripPage() {
 
     return (
       <motion.div
-        className="fixed inset-0 z-50 bg-white flex flex-col pt-[env(safe-area-inset-top)]"
+        className="fixed inset-0 z-50 bg-white dark:bg-gray-900 flex flex-col pt-[env(safe-area-inset-top)]"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
@@ -245,19 +245,19 @@ export default function CreateTripPage() {
 
   // 2. Main Form
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col transition-colors duration-300">
       {/* Header - Fixed & Safe for Dynamic Island */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         {/* Safe Area Spacer - 48px minimum for Dynamic Island */}
-        <div className="bg-white" style={{ height: 'max(env(safe-area-inset-top, 0px), 48px)' }}></div>
+        <div className="bg-white dark:bg-gray-800" style={{ height: 'max(env(safe-area-inset-top, 0px), 48px)' }}></div>
         <div className="px-4 py-3 flex items-center relative min-h-[52px]">
           <Link
             href="/trips"
-            className="w-11 h-11 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 active:scale-90 transition-all text-xl font-bold text-gray-900"
+            className="w-11 h-11 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 active:scale-90 transition-all text-xl font-bold text-gray-900 dark:text-white"
           >
             ←
           </Link>
-          <h1 className="text-lg font-black absolute left-1/2 -translate-x-1/2 uppercase tracking-wide text-gray-900">Create Ride</h1>
+          <h1 className="text-lg font-black absolute left-1/2 -translate-x-1/2 uppercase tracking-wide text-gray-900 dark:text-white">Create Ride</h1>
         </div>
       </div>
 
@@ -266,11 +266,11 @@ export default function CreateTripPage() {
         <div className="max-w-lg mx-auto p-4 space-y-4">
 
           {/* Step 1: Route Selection */}
-          <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 relative overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden">
             {/* Step Label */}
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-6 h-6 rounded-full bg-black text-white text-xs font-bold flex items-center justify-center">1</div>
-              <span className="text-sm font-bold text-gray-900">Select Route</span>
+              <div className="w-6 h-6 rounded-full bg-black dark:bg-white text-white dark:text-black text-xs font-bold flex items-center justify-center">1</div>
+              <span className="text-sm font-bold text-gray-900 dark:text-white">Select Route</span>
             </div>
 
             {/* Connecting Line */}
