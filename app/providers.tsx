@@ -1,8 +1,6 @@
-'use client';
-
 import {PrivyProvider} from '@privy-io/react-auth';
 import {useEffect} from 'react';
-import {baseSepolia} from 'viem/chains';
+import {base, baseSepolia} from 'viem/chains';
 
 export default function Providers({children}: {children: React.ReactNode}) {
   useEffect(() => {
@@ -38,7 +36,7 @@ export default function Providers({children}: {children: React.ReactNode}) {
       appId={appId}
       clientId={clientId}
       config={{
-        supportedChains: [baseSepolia],
+        supportedChains: [base, baseSepolia],
         // Create embedded wallets for users who don't have a wallet
         embeddedWallets: {
           ethereum: {
@@ -50,7 +48,7 @@ export default function Providers({children}: {children: React.ReactNode}) {
           accentColor: '#000000',
           logo: '/pincher-v1.5.png',
         },
-        defaultChain: baseSepolia,
+        defaultChain: base,
       }}
     >
       {children}

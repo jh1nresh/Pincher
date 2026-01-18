@@ -27,3 +27,74 @@ body {
   width: unset;
   margin-left: unset;
 }
+
+@utility pt-safe-top {
+  padding-top: max(env(safe-area-inset-top), 48px);
+}
+
+@utility pb-safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 34px);
+}
+
+@utility h-safe-top {
+  height: max(env(safe-area-inset-top), 48px);
+}
+
+@utility mt-safe-top {
+    margin-top: max(env(safe-area-inset-top), 48px);
+}
+
+@utility mb-safe-bottom {
+    margin-bottom: max(env(safe-area-inset-bottom), 34px);
+}
+
+@utility pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 34px);
+}
+
+/* Shimmer animation for skeleton loading */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@utility animate-shimmer {
+  animation: shimmer 1.5s infinite linear;
+}
+
+/* Dark mode utilities */
+@utility dark-bg {
+  @media (prefers-color-scheme: dark) {
+    background-color: #1a1a2e;
+  }
+}
+
+@utility dark-card {
+  @media (prefers-color-scheme: dark) {
+    background-color: #252540;
+    border-color: #3a3a5c;
+  }
+}
+
+/* Glow effects for cards */
+@utility glow-violet {
+  box-shadow: 0 0 40px rgba(139, 92, 246, 0.3);
+}
+
+@utility glow-pink {
+  box-shadow: 0 0 40px rgba(236, 72, 153, 0.3);
+}
+
+@utility glow-green {
+  box-shadow: 0 0 40px rgba(34, 197, 94, 0.3);
+}
+
+/* Card hover effects - use this class on elements */
+.card-hover {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}

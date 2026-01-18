@@ -1,6 +1,5 @@
 {
-  "/api/directions/route": "app/api/directions/route.js",
-  "/api/mcp/orchestrator/route": "app/api/mcp/orchestrator/route.js",
-  "/api/ride-log/route": "app/api/ride-log/route.js",
-  "/page": "app/page.js"
+  "/trips/create/page": "app/trips/create/page.js",
+  "/trips/page": "app/trips/page.js",
+  "/trips/room/page": "app/trips/room/page.js"
 }

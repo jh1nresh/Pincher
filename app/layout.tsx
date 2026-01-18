@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import DynamicProviders from "@/components/DynamicProviders";
+import BottomNav from "@/components/BottomNav";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pincher",
-  description: "Web3 Carpooling on Base",
+  title: "Pincher 拼車神器",
+  description: "Sharing Rides, Splitting Costs.",
   icons: {
     icon: "/pincher-v1.png",
     apple: "/pincher-v1.png",
@@ -29,14 +31,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="zh-TW" suppressHydrationWarning>
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
         <meta name="apple-mobile-web-app-title" content="Pincher" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gray-50`}
       >
-        <DynamicProviders>{children}</DynamicProviders>
+        <DynamicProviders>
+          {children}
+          <BottomNav />
+        </DynamicProviders>
       </body>
     </html>
   );
