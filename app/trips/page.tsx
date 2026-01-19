@@ -11,6 +11,7 @@ import WalletBadge from '@/components/WalletBadge';
 import { useRouter } from 'next/navigation';
 import { TripCardSkeleton } from '@/components/Skeleton';
 import { ThemeToggle } from '@/components/ThemeProvider';
+import { safeReload } from '@/lib/platform';
 
 interface TripRoom {
   id: string;
@@ -648,6 +649,7 @@ export default function TripsPage() {
         <div className="px-5 py-3 flex items-center justify-end pointer-events-auto">
           {/* Theme Toggle + Filter + Avatar */}
           <div className="flex items-center gap-2">
+
             {/* Simple Direct Dark Mode Toggle */}
             <button
               onClick={() => {
@@ -660,6 +662,7 @@ export default function TripsPage() {
                   html.classList.add('dark');
                   localStorage.setItem('pincher_theme', 'dark');
                 }
+                safeReload();
               }}
               className="w-10 h-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur rounded-full shadow-md flex items-center justify-center active:scale-95 transition-all border border-gray-100 dark:border-gray-700"
             >

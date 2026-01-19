@@ -6,6 +6,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import ChatRoom from '@/components/ChatRoom';
+import { RatingModal } from '@/components/RatingModal';
 
 interface PaymentMethods {
   venmo?: string;
@@ -61,6 +62,9 @@ function TripRoomContent() {
   const [actualCostInput, setActualCostInput] = useState('');
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethods>({});
   const [enabledMethods, setEnabledMethods] = useState<Set<string>>(new Set(['venmo']));
+  
+  // Rating Modal
+  const [showRatingModal, setShowRatingModal] = useState(false);
 
   useEffect(() => {
     if (!tripId) return;
@@ -199,6 +203,16 @@ function TripRoomContent() {
         <div className="font-black text-2xl mb-2">{trip.origin} → {trip.destination}</div>
         <div className="text-white/70 text-sm">
           {new Date(trip.departure_time).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at {new Date(trip.departure_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+        </div>
+        
+        {/* Rating Button */}
+        <div className="mt-4 flex justify-end">
+           <button 
+             onClick={() => setShowRatingModal(true)}
+             className="text-xs bg-white/20 backdrop-blur px-3 py-1.5 rounded-full font-bold hover:bg-white/30 transition-colors"
+           >
+             ⭐️ Rate Trip
+           </button>
         </div>
       </div>
 
@@ -440,6 +454,17 @@ function TripRoomContent() {
         )}
 
       </main>
+      
+      {trip && user && (
+        <RatingModal
+          isOpen={showRatingModal}
+          onClose={() => setShowRatingModal(false)}
+          tripId={trip.id}
+          currentUserId={user.id}
+          participants={passengers}
+          onSuccess={() => alert('Thanks for rating!')}
+        />
+      )}
     </div>
   );
 }

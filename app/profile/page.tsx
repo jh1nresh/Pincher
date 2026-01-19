@@ -6,6 +6,9 @@ import { supabase } from '@/lib/supabase';
 import { BackgroundBeams } from '@/components/BackgroundBeams';
 import WalletBadge from '@/components/WalletBadge';
 import Link from 'next/link';
+import { registerPushNotifications } from '@/lib/push';
+import { PushNotifications } from '@capacitor/push-notifications';
+import { Capacitor } from '@capacitor/core';
 
 interface TripSummary {
     id: string;
@@ -26,14 +29,31 @@ export default function ProfilePage() {
     const [isEditing, setIsEditing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [usernameError, setUsernameError] = useState('');
+    
+    // New Features state
+    const [avgRating, setAvgRating] = useState<number | null>(null);
+    const [pushEnabled, setPushEnabled] = useState(false);
 
     // Load profile from Supabase on mount
     useEffect(() => {
         if (user?.id) {
             fetchProfileData();
             loadUserProfile();
+            checkPushStatus();
         }
     }, [user]);
+
+    async function checkPushStatus() {
+        if (!Capacitor.isNativePlatform()) return;
+        const perm = await PushNotifications.checkPermissions();
+        setPushEnabled(perm.receive === 'granted');
+    }
+
+    async function handleEnablePush() {
+        if (!user?.id) return;
+        await registerPushNotifications(user.id);
+        checkPushStatus();
+    }
 
     async function loadUserProfile() {
         if (!user?.id) return;
@@ -77,11 +97,23 @@ export default function ProfilePage() {
                 )
             `)
             .eq('user_id', user.id)
+            .eq('user_id', user.id)
             .order('joined_at', { ascending: false });
 
         if (tripData) {
             const trips = tripData.map(t => Array.isArray(t.trip_rooms) ? t.trip_rooms[0] : t.trip_rooms).filter(Boolean) as unknown as TripSummary[];
             setMyTrips(trips);
+        }
+
+        // 3. Fetch Ratings (Robust calculation)
+        const { data: ratings } = await supabase
+            .from('user_ratings')
+            .select('score')
+            .eq('rated_id', user.id);
+        
+        if (ratings && ratings.length > 0) {
+            const sum = ratings.reduce((a, b) => a + b.score, 0);
+            setAvgRating(sum / ratings.length);
         }
     }
 
@@ -205,6 +237,15 @@ export default function ProfilePage() {
                                     {displayName || user?.email?.address?.split('@')[0] || 'User'}
                                 </h1>
                             </div>
+                            {/* Rating Badge */}
+                            {avgRating && (
+                                <div className="flex justify-center mb-2">
+                                    <div className="bg-yellow-400/20 backdrop-blur px-2 py-0.5 rounded-md border border-yellow-400/30 flex items-center gap-1">
+                                        <span className="text-xs">⭐️</span>
+                                        <span className="text-xs font-bold text-yellow-600 dark:text-yellow-400">{avgRating.toFixed(1)}</span>
+                                    </div>
+                                </div>
+                            )}
                             {username && (
                                 <div className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2">@{username}</div>
                             )}
@@ -238,6 +279,20 @@ export default function ProfilePage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Notification Banner */}
+                {!pushEnabled && Capacitor.isNativePlatform() && (
+                    <button
+                        onClick={handleEnablePush}
+                        className="w-full bg-linear-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-2xl shadow-lg mb-8 flex items-center justify-between"
+                    >
+                        <div className="text-left">
+                            <div className="font-bold text-sm">Enable Notifications</div>
+                            <div className="text-xs opacity-80">Get alerts when rides start</div>
+                        </div>
+                        <div className="bg-white/20 p-2 rounded-full">🔔</div>
+                    </button>
+                )}
 
                 {/* Trip History */}
                 <div className="space-y-4">

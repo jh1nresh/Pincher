@@ -5,11 +5,23 @@
   --color-foreground: #171717;
 }
 
+/* System preference */
 @media (prefers-color-scheme: dark) {
-  @theme {
+  :root {
     --color-background: #1a1a2e;
     --color-foreground: #ededed;
   }
+}
+
+/* Manual Toggle Overrides */
+:root.dark {
+  --color-background: #1a1a2e;
+  --color-foreground: #ededed;
+}
+
+:root.light {
+  --color-background: #ffffff;
+  --color-foreground: #171717;
 }
 
 body {
