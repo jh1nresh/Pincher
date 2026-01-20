@@ -235,7 +235,7 @@ function JoinModal({
       onClick={onCancel}
     >
       <motion.div
-        className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl"
+        className="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl"
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
@@ -253,31 +253,31 @@ function JoinModal({
           <div className="flex items-center gap-3">
             <div className="text-2xl">{originZone?.icon || '📍'}</div>
             <div className="flex-1">
-              <div className="font-bold text-gray-900">{trip.origin}</div>
-              <div className="text-gray-500 text-sm">→ {trip.destination}</div>
+              <div className="font-bold text-gray-900 dark:text-white">{trip.origin}</div>
+              <div className="text-gray-500 dark:text-gray-400 text-sm">→ {trip.destination}</div>
             </div>
             <div className="text-2xl">{destZone?.icon || '📍'}</div>
           </div>
 
           {/* Details */}
-          <div className="bg-gray-50 rounded-2xl p-4 space-y-2">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-2xl p-4 space-y-2">
             <div className="flex justify-between">
-              <span className="text-gray-600">🕐 Time</span>
-              <span className="font-bold text-gray-900">{formatTime(trip.departure_time)}</span>
+              <span className="text-gray-600 dark:text-gray-400">🕐 Time</span>
+              <span className="font-bold text-gray-900 dark:text-white">{formatTime(trip.departure_time)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">💰 Cost</span>
-              <span className="font-bold text-gray-900">${pricePerPerson}/person</span>
+              <span className="text-gray-600 dark:text-gray-400">💰 Cost</span>
+              <span className="font-bold text-gray-900 dark:text-white">${pricePerPerson}/person</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">👥 Riders</span>
-              <span className="font-bold text-gray-900">{(trip.passenger_count || 0) + 1} / {trip.min_passengers}</span>
+              <span className="text-gray-600 dark:text-gray-400">👥 Riders</span>
+              <span className="font-bold text-gray-900 dark:text-white">{(trip.passenger_count || 0) + 1} / {trip.min_passengers}</span>
             </div>
           </div>
 
           {/* Wallet */}
-          <div className="border border-gray-200 rounded-2xl p-4">
-            <div className="text-xs text-gray-500 mb-1">Your Wallet</div>
+          <div className="border border-gray-200 dark:border-gray-600 rounded-2xl p-4">
+            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Your Wallet</div>
             <WalletBadge address={walletAddress} className="w-full text-center justify-center" />
           </div>
         </div>
@@ -286,14 +286,14 @@ function JoinModal({
         <div className="p-6 pt-0 flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 py-4 rounded-2xl border-2 border-gray-200 font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+            className="flex-1 py-4 rounded-2xl border-2 border-gray-200 dark:border-gray-600 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             disabled={loading}
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 py-4 rounded-2xl bg-black text-white font-bold hover:bg-gray-800 transition-colors disabled:opacity-50"
+            className="flex-1 py-4 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-bold hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:opacity-50"
             disabled={loading}
           >
             {loading ? 'Joining...' : 'Confirm Join'}
@@ -333,15 +333,15 @@ function FilterModal({
       onClick={onClose}
     >
       <motion.div
-        className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[80vh] overflow-y-auto pb-safe-bottom"
+        className="absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-800 rounded-t-3xl max-h-[80vh] overflow-y-auto pb-safe-bottom"
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         onClick={e => e.stopPropagation()}
       >
-        <div className="sticky top-0 bg-white z-10 px-5 py-4 border-b border-gray-100">
+        <div className="sticky top-0 bg-white dark:bg-gray-800 z-10 px-5 py-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-bold">篩選行程</h2>
+            <h2 className="text-lg font-bold dark:text-white">篩選行程</h2>
             <button onClick={onClose} className="text-2xl text-gray-400">✕</button>
           </div>
         </div>
@@ -349,12 +349,12 @@ function FilterModal({
         <div className="p-5 space-y-6">
           {/* Origin Filter */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">出發地</label>
+            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">出發地</label>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setLocalFilters({ ...localFilters, origin: null })}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  !localFilters.origin ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'
+                  !localFilters.origin ? 'bg-black dark:bg-white text-white dark:text-black' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                 }`}
               >
                 全部
@@ -364,7 +364,7 @@ function FilterModal({
                   key={zone.id}
                   onClick={() => setLocalFilters({ ...localFilters, origin: zone.id })}
                   className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1 ${
-                    localFilters.origin === zone.id ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'
+                    localFilters.origin === zone.id ? 'bg-black dark:bg-white text-white dark:text-black' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                   }`}
                 >
                   <span>{zone.icon}</span>
@@ -376,12 +376,12 @@ function FilterModal({
 
           {/* Destination Filter */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">目的地</label>
+            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">目的地</label>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setLocalFilters({ ...localFilters, destination: null })}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  !localFilters.destination ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'
+                  !localFilters.destination ? 'bg-black dark:bg-white text-white dark:text-black' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                 }`}
               >
                 全部
@@ -391,7 +391,7 @@ function FilterModal({
                   key={zone.id}
                   onClick={() => setLocalFilters({ ...localFilters, destination: zone.id })}
                   className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1 ${
-                    localFilters.destination === zone.id ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'
+                    localFilters.destination === zone.id ? 'bg-black dark:bg-white text-white dark:text-black' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                   }`}
                 >
                   <span>{zone.icon}</span>
@@ -403,7 +403,7 @@ function FilterModal({
 
           {/* Time Filter */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">出發時間</label>
+            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">出發時間</label>
             <div className="flex flex-wrap gap-2">
               {[
                 { label: '全部', value: 'all' },
@@ -415,7 +415,7 @@ function FilterModal({
                   key={opt.value}
                   onClick={() => setLocalFilters({ ...localFilters, timeRange: opt.value as any })}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                    localFilters.timeRange === opt.value ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'
+                    localFilters.timeRange === opt.value ? 'bg-black dark:bg-white text-white dark:text-black' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                   }`}
                 >
                   {opt.label}
@@ -426,13 +426,13 @@ function FilterModal({
         </div>
 
         {/* Apply Button */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-100 p-4 pb-safe-bottom">
+        <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 p-4 pb-safe-bottom">
           <div className="flex gap-3">
             <button
               onClick={() => {
                 setLocalFilters({ origin: null, destination: null, timeRange: 'all' });
               }}
-              className="flex-1 py-3 rounded-xl border border-gray-200 font-bold text-gray-600"
+              className="flex-1 py-3 rounded-xl border border-gray-200 dark:border-gray-600 font-bold text-gray-600 dark:text-gray-300"
             >
               重設
             </button>
@@ -441,7 +441,7 @@ function FilterModal({
                 setFilters(localFilters);
                 onClose();
               }}
-              className="flex-1 py-3 rounded-xl bg-black text-white font-bold"
+              className="flex-1 py-3 rounded-xl bg-black dark:bg-white text-white dark:text-black font-bold"
             >
               套用篩選
             </button>

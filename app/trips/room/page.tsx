@@ -189,9 +189,9 @@ function TripRoomContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-10 transition-colors duration-300">
-      {/* Header */}
-      <div className="bg-linear-to-br from-gray-900 to-gray-800 text-white p-6 pb-10 rounded-b-4xl">
-        <div className="flex justify-between items-center mb-6">
+      {/* Header with Safe Area */}
+      <div className="bg-linear-to-br from-gray-900 to-gray-800 text-white pt-safe-top px-6 pb-10 rounded-b-4xl">
+        <div className="pt-4 flex justify-between items-center mb-6">
           <Link href="/trips" className="text-white/70 text-sm font-medium">← Back</Link>
           <span className={`px-3 py-1 rounded-full text-xs font-bold ${
             trip.status === 'open' ? 'bg-blue-500' :
@@ -329,17 +329,17 @@ function TripRoomContent() {
 
         {/* Payment Section */}
         {trip.status === 'splitting' && trip.payer_id && (
-          <div className="bg-white p-6 rounded-3xl shadow-lg border-2 border-green-500/10">
-            <h3 className="font-black text-xl mb-6 text-center">💸 Split Time</h3>
-            
-            <div className="flex justify-between items-center mb-6 p-5 bg-gray-50 rounded-2xl">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-lg border-2 border-green-500/10 dark:border-green-500/20">
+            <h3 className="font-black text-xl mb-6 text-center dark:text-white">💸 Split Time</h3>
+
+            <div className="flex justify-between items-center mb-6 p-5 bg-gray-50 dark:bg-gray-700 rounded-2xl">
               <div>
                 <div className="text-xs font-bold text-gray-400 uppercase">Total</div>
-                <div className="font-bold text-gray-900 text-lg">${(trip.actual_cost! / 100).toFixed(2)}</div>
+                <div className="font-bold text-gray-900 dark:text-white text-lg">${(trip.actual_cost! / 100).toFixed(2)}</div>
               </div>
               <div className="text-right">
                 <div className="text-xs font-bold text-gray-400 uppercase">Per Person</div>
-                <div className="text-3xl font-black text-green-600">
+                <div className="text-3xl font-black text-green-600 dark:text-green-400">
                   ${perPerson.toFixed(2)}
                 </div>
               </div>
@@ -350,8 +350,8 @@ function TripRoomContent() {
               <div className="space-y-3 mb-6">
                 <div className="font-bold text-xs text-gray-400 uppercase tracking-widest mb-2">Collection Status</div>
                 {passengers.filter(p => p.user_id !== trip.payer_id).map(p => (
-                  <div key={p.id} className="flex items-center justify-between bg-gray-50 p-4 rounded-xl">
-                    <span className="font-medium">{p.user_name}</span>
+                  <div key={p.id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 p-4 rounded-xl">
+                    <span className="font-medium dark:text-white">{p.user_name}</span>
                     {p.payment_status === 'confirmed' ? (
                       <span className="text-green-600 font-bold text-sm">✓ Confirmed</span>
                     ) : p.payment_status === 'paid' ? (
@@ -436,9 +436,9 @@ function TripRoomContent() {
                   )}
                 </div>
 
-                <button 
+                <button
                   onClick={markAsPaid}
-                  className="w-full bg-gray-100 text-gray-900 font-bold py-4 rounded-xl hover:bg-gray-200 transition-colors mt-4"
+                  className="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-bold py-4 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors mt-4"
                 >
                   I've Paid
                 </button>
@@ -446,7 +446,7 @@ function TripRoomContent() {
             )}
 
             {currentUserPassenger?.payment_status === 'paid' && user?.id !== trip.payer_id && (
-               <div className="bg-green-50 text-green-700 font-bold py-4 rounded-xl text-center border border-green-100">
+               <div className="bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-bold py-4 rounded-xl text-center border border-green-100 dark:border-green-800">
                  ✅ Marked as Paid - Waiting for confirmation
                </div>
             )}

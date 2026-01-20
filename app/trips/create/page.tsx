@@ -153,21 +153,21 @@ export default function CreateTripPage() {
         exit={{ opacity: 0, y: 20 }}
       >
         {/* Header */}
-        <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-white">
+        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-gray-800">
           <button
             onClick={() => setActiveField(null)}
-            className="w-10 h-10 flex items-center justify-center text-xl rounded-full hover:bg-gray-100 active:scale-90 transition-all"
+            className="w-10 h-10 flex items-center justify-center text-xl rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 active:scale-90 transition-all dark:text-white"
           >
             ←
           </button>
-          <h2 className="font-bold text-base">
+          <h2 className="font-bold text-base dark:text-white">
             {activeField === 'origin' ? '選擇出發地' : '選擇目的地'}
           </h2>
           <div className="w-10"></div>
         </div>
 
         {/* Map Section (35% height) */}
-        <div className="h-[35%] w-full relative border-b border-gray-200 bg-gray-100">
+        <div className="h-[35%] w-full relative border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
           <MapPicker
             onSelect={(id) => {
               if (activeField === 'origin') setOriginId(id);
@@ -179,17 +179,17 @@ export default function CreateTripPage() {
           />
           {/* Map Overlay Hint */}
           <div className="absolute bottom-3 left-3 right-3">
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl px-3 py-2 text-xs text-gray-600 text-center shadow-sm">
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl px-3 py-2 text-xs text-gray-600 dark:text-gray-300 text-center shadow-sm">
               點擊地圖上的標記或從下方列表選擇
             </div>
           </div>
         </div>
 
         {/* List Section (65% height) */}
-        <div className="flex-1 flex flex-col bg-gray-50 overflow-hidden">
+        <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900 overflow-hidden">
           {/* Section Header */}
-          <div className="px-4 py-3 bg-white border-b border-gray-100">
-            <h3 className="font-bold text-sm text-gray-900">熱門地點</h3>
+          <div className="px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+            <h3 className="font-bold text-sm text-gray-900 dark:text-white">熱門地點</h3>
             <p className="text-xs text-gray-400">選擇您的{activeField === 'origin' ? '出發' : '到達'}位置</p>
           </div>
 
@@ -213,7 +213,7 @@ export default function CreateTripPage() {
                   className={`w-full flex items-center gap-3 p-3 rounded-2xl border transition-all text-left ${
                     isSelected
                       ? 'bg-black text-white border-black shadow-lg'
-                      : 'bg-white border-gray-100 hover:border-gray-300 shadow-sm'
+                      : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 shadow-sm'
                   }`}
                 >
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0 ${
@@ -222,10 +222,10 @@ export default function CreateTripPage() {
                     {zone.icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className={`font-bold truncate ${isSelected ? 'text-white' : 'text-gray-900'}`}>
+                    <div className={`font-bold truncate ${isSelected ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
                       {zone.displayName}
                     </div>
-                    <div className={`text-xs truncate ${isSelected ? 'text-white/70' : 'text-gray-500'}`}>
+                    <div className={`text-xs truncate ${isSelected ? 'text-white/70' : 'text-gray-500 dark:text-gray-400'}`}>
                       {zone.virtualPickup}
                     </div>
                   </div>
@@ -315,56 +315,56 @@ export default function CreateTripPage() {
           <AnimatePresence>
             {originId && destinationId && (
               <motion.div
-                className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100"
+                className="bg-white dark:bg-gray-800 rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-700"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
               >
                 {/* Step Label */}
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-6 h-6 rounded-full bg-black text-white text-xs font-bold flex items-center justify-center">2</div>
-                  <span className="text-sm font-bold text-gray-900">選擇時間與人數</span>
+                  <div className="w-6 h-6 rounded-full bg-black dark:bg-white text-white dark:text-black text-xs font-bold flex items-center justify-center">2</div>
+                  <span className="text-sm font-bold text-gray-900 dark:text-white">選擇時間與人數</span>
                 </div>
 
                 {/* Date & Time */}
                 <div className="flex gap-3 mb-5">
                   <div className="flex-1">
-                    <label className="block text-xs font-bold text-gray-500 mb-2">日期</label>
+                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2">日期</label>
                     <input
                       type="date"
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full bg-gray-50 p-3 rounded-xl text-sm font-bold text-gray-900 outline-none border-2 border-transparent focus:border-black focus:bg-white transition-all"
+                      className="w-full bg-gray-50 dark:bg-gray-700 p-3 rounded-xl text-sm font-bold text-gray-900 dark:text-white outline-none border-2 border-transparent focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-gray-600 transition-all"
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-xs font-bold text-gray-500 mb-2">時間</label>
+                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2">時間</label>
                     <input
                       type="time"
                       value={time}
                       onChange={(e) => setTime(e.target.value)}
-                      className="w-full bg-gray-50 p-3 rounded-xl text-sm font-bold text-gray-900 outline-none border-2 border-transparent focus:border-black focus:bg-white transition-all"
+                      className="w-full bg-gray-50 dark:bg-gray-700 p-3 rounded-xl text-sm font-bold text-gray-900 dark:text-white outline-none border-2 border-transparent focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-gray-600 transition-all"
                     />
                   </div>
                 </div>
 
                 {/* Passengers */}
-                <div className="border-t border-gray-100 pt-5">
+                <div className="border-t border-gray-100 dark:border-gray-700 pt-5">
                   <div className="flex justify-between items-center">
                     <div>
-                      <span className="text-sm font-bold block">分攤人數</span>
+                      <span className="text-sm font-bold block dark:text-white">分攤人數</span>
                       <span className="text-xs text-gray-400">包含你自己</span>
                     </div>
-                    <div className="flex bg-gray-100 rounded-xl p-1">
+                    <div className="flex bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
                       {[3, 4, 5, 6].map(n => (
                         <button
                           key={n}
                           onClick={() => setMinPassengers(n)}
                           className={`w-10 h-10 rounded-lg text-sm font-bold transition-all ${
                             minPassengers === n
-                              ? 'bg-black text-white shadow-md'
-                              : 'text-gray-400 hover:text-gray-600'
+                              ? 'bg-black dark:bg-white text-white dark:text-black shadow-md'
+                              : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                           }`}
                         >
                           {n}
@@ -424,27 +424,27 @@ export default function CreateTripPage() {
       </main>
 
       {/* Fixed Bottom Submit Button - Always visible */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
         <div className="max-w-lg mx-auto p-4 pb-safe-bottom">
           <button
             onClick={handleSubmit}
             disabled={loading || !isFormComplete}
             className={`w-full font-bold text-base py-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 ${
               isFormComplete
-                ? 'bg-black text-white active:scale-[0.98]'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                ? 'bg-black dark:bg-white text-white dark:text-black active:scale-[0.98]'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
             }`}
           >
             {loading ? (
               <>
-                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                <span className="w-5 h-5 border-2 border-white/30 dark:border-black/30 border-t-white dark:border-t-black rounded-full animate-spin"></span>
                 <span>創建中...</span>
               </>
             ) : isFormComplete ? (
               <>
                 <span>發起拼車</span>
-                <span className="text-white/60">|</span>
-                <span className="text-white/80">${estimatedTotal} 總費用</span>
+                <span className="text-white/60 dark:text-black/60">|</span>
+                <span className="text-white/80 dark:text-black/80">${estimatedTotal} 總費用</span>
               </>
             ) : (
               <span>請完成上方所有欄位</span>

@@ -18,6 +18,31 @@ interface TripSummary {
     departure_time: string;
 }
 
+// Helper: Check if trip is expired (12 hours past departure)
+function getTripDisplayStatus(trip: TripSummary): { status: string; label: string } {
+    const departureTime = new Date(trip.departure_time);
+    const now = new Date();
+    const hoursPastDeparture = (now.getTime() - departureTime.getTime()) / (1000 * 60 * 60);
+
+    // If status is 'open' but >12 hours past departure, show as expired
+    if (trip.status === 'open' && hoursPastDeparture > 12) {
+        return { status: 'expired', label: '已過期' };
+    }
+
+    // If departure time has passed but within 12 hours, show as "進行中"
+    if (trip.status === 'open' && hoursPastDeparture > 0 && hoursPastDeparture <= 12) {
+        return { status: 'in_progress', label: '進行中' };
+    }
+
+    // Standard statuses
+    if (trip.status === 'open') return { status: 'open', label: 'Active' };
+    if (trip.status === 'completed') return { status: 'completed', label: '已完成' };
+    if (trip.status === 'expired') return { status: 'expired', label: '已過期' };
+    if (trip.status === 'cancelled') return { status: 'cancelled', label: '已取消' };
+
+    return { status: trip.status, label: trip.status };
+}
+
 export default function ProfilePage() {
     const { user, ready, authenticated, logout } = usePrivy();
     const [myTrips, setMyTrips] = useState<TripSummary[]>([]);
@@ -33,20 +58,25 @@ export default function ProfilePage() {
     // New Features state
     const [avgRating, setAvgRating] = useState<number | null>(null);
     const [pushEnabled, setPushEnabled] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     // Load profile from Supabase on mount
     useEffect(() => {
         if (user?.id) {
-            fetchProfileData();
-            loadUserProfile();
-            checkPushStatus();
+            setLoading(true);
+            Promise.all([fetchProfileData(), loadUserProfile(), checkPushStatus()])
+                .finally(() => setLoading(false));
         }
     }, [user]);
 
     async function checkPushStatus() {
         if (!Capacitor.isNativePlatform()) return;
-        const perm = await PushNotifications.checkPermissions();
-        setPushEnabled(perm.receive === 'granted');
+        try {
+            const perm = await PushNotifications.checkPermissions();
+            setPushEnabled(perm.receive === 'granted');
+        } catch (e) {
+            console.error('Failed to check push status:', e);
+        }
     }
 
     async function handleEnablePush() {
@@ -96,7 +126,6 @@ export default function ProfilePage() {
                     id, origin, destination, status, departure_time
                 )
             `)
-            .eq('user_id', user.id)
             .eq('user_id', user.id)
             .order('joined_at', { ascending: false });
 
@@ -170,8 +199,32 @@ export default function ProfilePage() {
         );
     }
 
+    // Loading skeleton
+    if (loading && !displayName) {
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-28 relative overflow-hidden">
+                <div className="max-w-lg mx-auto px-4 pt-28">
+                    {/* Avatar skeleton */}
+                    <div className="flex flex-col items-center mb-8">
+                        <div className="w-28 h-28 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse mb-4" />
+                        <div className="w-32 h-6 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse mb-2" />
+                        <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+                    </div>
+                    {/* Points card skeleton */}
+                    <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-3xl animate-pulse mb-8" />
+                    {/* Trip history skeleton */}
+                    <div className="space-y-3">
+                        <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                        <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded-3xl animate-pulse" />
+                        <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded-3xl animate-pulse" />
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-32 relative overflow-hidden transition-colors duration-300">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-28 relative overflow-hidden transition-colors duration-300">
              <BackgroundBeams />
              
              {/* Floating Header - Forced Safe Position */}
@@ -302,28 +355,34 @@ export default function ProfilePage() {
                             No trips yet.
                         </div>
                     ) : (
-                        myTrips.map(trip => (
-                            <Link 
-                                key={trip.id} 
-                                href={`/trips/room?id=${trip.id}`}
-                                className="block bg-white dark:bg-gray-800 rounded-3xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 transition-all active:scale-[0.98]"
-                            >
-                                <div className="flex justify-between items-center mb-1">
-                                    <div className="font-bold text-sm text-gray-900 dark:text-white tracking-tight">
-                                        {trip.origin} <span className="text-gray-300 mx-1">→</span> {trip.destination}
+                        myTrips.map(trip => {
+                            const displayStatus = getTripDisplayStatus(trip);
+                            return (
+                                <Link
+                                    key={trip.id}
+                                    href={`/trips/room?id=${trip.id}`}
+                                    className="block bg-white dark:bg-gray-800 rounded-3xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 transition-all active:scale-[0.98]"
+                                >
+                                    <div className="flex justify-between items-center mb-1">
+                                        <div className="font-bold text-sm text-gray-900 dark:text-white tracking-tight">
+                                            {trip.origin} <span className="text-gray-300 mx-1">→</span> {trip.destination}
+                                        </div>
+                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide ${
+                                            displayStatus.status === 'completed' ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400' :
+                                            displayStatus.status === 'expired' ? 'bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400' :
+                                            displayStatus.status === 'cancelled' ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-500 dark:text-orange-400' :
+                                            displayStatus.status === 'in_progress' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
+                                            'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+                                        }`}>
+                                            {displayStatus.label}
+                                        </span>
                                     </div>
-                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide ${
-                                        trip.status === 'completed' ? 'bg-gray-100 text-gray-500' : 
-                                        trip.status === 'open' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'
-                                    }`}>
-                                        {trip.status === 'open' ? 'Active' : trip.status}
-                                    </span>
-                                </div>
-                                <div className="text-[10px] text-gray-400 font-medium">
-                                    {new Date(trip.departure_time).toLocaleDateString()}
-                                </div>
-                            </Link>
-                        ))
+                                    <div className="text-[10px] text-gray-400 font-medium">
+                                        {new Date(trip.departure_time).toLocaleDateString()}
+                                    </div>
+                                </Link>
+                            );
+                        })
                     )}
                 </div>
 
