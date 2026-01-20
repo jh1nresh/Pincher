@@ -6,6 +6,8 @@ import BottomNav from "@/components/BottomNav";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 
+import ErrorBoundary from "@/components/ErrorBoundary";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -30,6 +32,7 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
+  
 }>) {
   return (
     <html lang="zh-TW" suppressHydrationWarning>
@@ -55,10 +58,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300`}
       >
         <ThemeProvider>
-          <DynamicProviders>
-            {children}
-            <BottomNav />
-          </DynamicProviders>
+          <ErrorBoundary>
+            <DynamicProviders>
+              {children}
+              <BottomNav />
+            </DynamicProviders>
+          </ErrorBoundary>
         </ThemeProvider>
       </body>
     </html>
