@@ -173,8 +173,7 @@ export default function ProfilePage() {
             .upsert({
                 user_id: user.id,
                 display_name: displayName || null,
-                username: username || null,
-                updated_at: new Date().toISOString()
+                username: username || null
             }, {
                 onConflict: 'user_id'
             });
