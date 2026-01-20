@@ -248,12 +248,12 @@ export default function ProfilePage() {
                 </div>
              </div>
 
-             <div className="relative z-10 max-w-lg mx-auto px-4 pt-28">
-                {/* Avatar Section */}
-                <div className="text-center mb-8 relative">
+             <div className="relative z-10 max-w-lg mx-auto px-4 pt-24">
+                {/* Avatar Section - Compact for iOS */}
+                <div className="text-center mb-6 relative">
                     {/* Gradient Ring Avatar */}
-                    <div className="w-28 h-28 bg-linear-to-tr from-violet-500 via-pink-500 to-orange-400 rounded-full mx-auto mb-4 p-[4px] shadow-xl animate-pulse">
-                        <div className="w-full h-full bg-white dark:bg-gray-800 rounded-full flex items-center justify-center text-5xl font-bold text-gray-800 dark:text-white overflow-hidden">
+                    <div className="w-24 h-24 bg-linear-to-tr from-violet-500 via-pink-500 to-orange-400 rounded-full mx-auto mb-3 p-[3px] shadow-xl">
+                        <div className="w-full h-full bg-white dark:bg-gray-800 rounded-full flex items-center justify-center text-4xl font-bold text-gray-800 dark:text-white overflow-hidden">
                              {displayName?.charAt(0).toUpperCase() || user?.email?.address?.charAt(0).toUpperCase() || '👤'}
                         </div>
                     </div>
@@ -311,8 +311,8 @@ export default function ProfilePage() {
                     </div>
                 </div>
 
-                {/* Premium Points Card - Compact */}
-                <div className="relative overflow-hidden bg-[#0A0A0A] text-white rounded-4xl p-6 shadow-xl mb-8 border border-gray-800 group">
+                {/* Premium Points Card - Compact for iOS */}
+                <div className="relative overflow-hidden bg-[#0A0A0A] text-white rounded-3xl p-5 shadow-xl mb-6 border border-gray-800 group">
                     <div className="absolute -top-12 -right-12 w-48 h-48 bg-linear-to-br from-blue-600 to-purple-600 rounded-full blur-[60px] opacity-40 group-hover:opacity-60 transition-opacity duration-500"></div>
                     
                     <div className="relative z-10 flex justify-between items-end">
@@ -347,15 +347,33 @@ export default function ProfilePage() {
                     </button>
                 )}
 
-                {/* Trip History */}
+                {/* Trip History - Only show completed trips (hide expired) */}
                 <div className="space-y-4">
                     <h2 className="font-bold text-sm text-gray-400 dark:text-gray-500 uppercase tracking-wider px-2">Trip History</h2>
-                    {myTrips.length === 0 ? (
-                        <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl text-center text-gray-400 border border-gray-100 dark:border-gray-700 border-dashed text-xs">
-                            No trips yet.
-                        </div>
-                    ) : (
-                        myTrips.map(trip => {
+                    {(() => {
+                        // Filter trips: only show completed trips, hide expired ones
+                        const visibleTrips = myTrips.filter(trip => {
+                            const displayStatus = getTripDisplayStatus(trip);
+                            // Hide expired trips, show completed trips only
+                            if (displayStatus.status === 'expired') return false;
+                            // Show completed trips
+                            if (displayStatus.status === 'completed') return true;
+                            // Show active/in_progress trips (ongoing)
+                            if (displayStatus.status === 'open' || displayStatus.status === 'in_progress') return true;
+                            // Hide cancelled
+                            if (displayStatus.status === 'cancelled') return false;
+                            return true;
+                        });
+
+                        if (visibleTrips.length === 0) {
+                            return (
+                                <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl text-center text-gray-400 border border-gray-100 dark:border-gray-700 border-dashed text-xs">
+                                    No trips yet.
+                                </div>
+                            );
+                        }
+
+                        return visibleTrips.map(trip => {
                             const displayStatus = getTripDisplayStatus(trip);
                             return (
                                 <Link
@@ -368,11 +386,9 @@ export default function ProfilePage() {
                                             {trip.origin} <span className="text-gray-300 mx-1">→</span> {trip.destination}
                                         </div>
                                         <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide ${
-                                            displayStatus.status === 'completed' ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400' :
-                                            displayStatus.status === 'expired' ? 'bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400' :
-                                            displayStatus.status === 'cancelled' ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-500 dark:text-orange-400' :
+                                            displayStatus.status === 'completed' ? 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
                                             displayStatus.status === 'in_progress' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
-                                            'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+                                            'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400'
                                         }`}>
                                             {displayStatus.label}
                                         </span>
@@ -382,8 +398,8 @@ export default function ProfilePage() {
                                     </div>
                                 </Link>
                             );
-                        })
-                    )}
+                        });
+                    })()}
                 </div>
 
                 {/* Logout */}

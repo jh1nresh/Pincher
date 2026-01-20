@@ -188,7 +188,7 @@ function TripRoomContent() {
   const perPerson = trip.actual_cost ? (trip.actual_cost / 100 / passengers.length) : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-10 transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-safe-bottom transition-colors duration-300">
       {/* Header with Safe Area */}
       <div className="bg-linear-to-br from-gray-900 to-gray-800 text-white pt-safe-top px-6 pb-10 rounded-b-4xl">
         <div className="pt-4 flex justify-between items-center mb-6">

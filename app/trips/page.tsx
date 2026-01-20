@@ -97,8 +97,8 @@ function SwipeCard({
         {/* Gradient glow behind card */}
         <div className="absolute -inset-1 bg-linear-to-r from-violet-500 via-pink-500 to-orange-400 rounded-4xl blur-xl opacity-20 -z-10" />
         
-        {/* Card Header with animated gradient */}
-        <div className="relative h-48 bg-linear-to-br from-violet-600 via-pink-500 to-orange-400 p-6 overflow-hidden">
+        {/* Card Header with animated gradient - Compact for iOS */}
+        <div className="relative h-40 bg-linear-to-br from-violet-600 via-pink-500 to-orange-400 p-5 overflow-hidden">
           {/* Animated shine effect */}
           <motion.div 
             className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent skew-x-12"
@@ -120,63 +120,63 @@ function SwipeCard({
             SKIP <span className="text-xl">✕</span>
           </motion.div>
 
-          {/* Route Display with enhanced styling */}
-          <div className="absolute bottom-4 left-5 right-5">
-            <div className="flex items-center gap-3 text-white">
-              <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl">
+          {/* Route Display with enhanced styling - Compact */}
+          <div className="absolute bottom-3 left-4 right-4">
+            <div className="flex items-center gap-2 text-white">
+              <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center text-xl">
                 {originZone?.icon || '📍'}
               </div>
-              <div className="flex-1">
-                <div className="font-black text-xl truncate drop-shadow-lg">{trip.origin}</div>
-                <div className="text-white/70 text-xs font-medium">Pickup Point</div>
+              <div className="flex-1 min-w-0">
+                <div className="font-black text-lg truncate drop-shadow-lg">{trip.origin}</div>
+                <div className="text-white/70 text-[10px] font-medium">Pickup</div>
               </div>
             </div>
-            
-            <div className="ml-6 my-1 border-l-2 border-white/30 h-3" />
-            
-            <div className="flex items-center gap-3 text-white">
-              <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl">
+
+            <div className="ml-5 my-0.5 border-l-2 border-white/30 h-2" />
+
+            <div className="flex items-center gap-2 text-white">
+              <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center text-xl">
                 {destZone?.icon || '📍'}
               </div>
-              <div className="flex-1">
-                <div className="font-black text-xl truncate drop-shadow-lg">{trip.destination}</div>
-                <div className="text-white/70 text-xs font-medium">Destination</div>
+              <div className="flex-1 min-w-0">
+                <div className="font-black text-lg truncate drop-shadow-lg">{trip.destination}</div>
+                <div className="text-white/70 text-[10px] font-medium">Destination</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Card Body */}
-        <div className="p-5">
+        {/* Card Body - Compact for iOS */}
+        <div className="p-4">
           {/* Time & Price Row */}
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-                <span className="text-lg">🕐</span>
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                <span className="text-base">🕐</span>
               </div>
               <div>
-                <div className="font-black text-lg text-gray-900">{formatTime(trip.departure_time)}</div>
-                <div className="text-xs text-gray-400 font-medium">Departure</div>
+                <div className="font-black text-base text-gray-900 dark:text-white">{formatTime(trip.departure_time)}</div>
+                <div className="text-[10px] text-gray-400 font-medium">Departure</div>
               </div>
             </div>
-            <motion.div 
-              className="bg-linear-to-r from-violet-600 to-pink-500 text-white px-5 py-2.5 rounded-2xl font-black text-xl shadow-lg"
+            <motion.div
+              className="bg-linear-to-r from-violet-600 to-pink-500 text-white px-4 py-2 rounded-xl font-black text-lg shadow-lg"
               whileHover={{ scale: 1.05 }}
             >
               ${(trip.estimated_cost / 100 / trip.min_passengers).toFixed(0)}
-              <span className="text-xs font-medium opacity-80 ml-1">/person</span>
+              <span className="text-[10px] font-medium opacity-80 ml-1">/人</span>
             </motion.div>
           </div>
 
-          {/* Passenger Progress */}
-          <div className="mb-4">
-            <div className="flex justify-between text-sm text-gray-600 mb-2 font-medium">
-              <span className="flex items-center gap-2">
-                <span className="text-lg">👥</span> Riders
+          {/* Passenger Progress - Compact */}
+          <div className="mb-3">
+            <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1.5 font-medium">
+              <span className="flex items-center gap-1">
+                <span>👥</span> Riders
               </span>
-              <span className="font-black text-gray-900">{trip.passenger_count || 0} / {trip.min_passengers}</span>
+              <span className="font-black text-gray-900 dark:text-white">{trip.passenger_count || 0} / {trip.min_passengers}</span>
             </div>
-            <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
+            <div className="w-full bg-gray-100 dark:bg-gray-700 h-2.5 rounded-full overflow-hidden">
               <motion.div
                 className="bg-linear-to-r from-violet-500 via-pink-500 to-orange-400 h-full rounded-full"
                 initial={{ width: 0 }}
@@ -185,19 +185,19 @@ function SwipeCard({
               />
             </div>
             {isFilling && (
-              <motion.div 
-                className="text-orange-500 text-sm font-black mt-2 text-right flex items-center justify-end gap-1"
+              <motion.div
+                className="text-orange-500 text-xs font-black mt-1.5 text-right flex items-center justify-end gap-1"
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ duration: 0.5, repeat: Infinity }}
               >
-                <span className="text-lg">🔥</span> Only {spotsLeft} spot{spotsLeft > 1 ? 's' : ''} left!
+                <span>🔥</span> Only {spotsLeft} left!
               </motion.div>
             )}
           </div>
 
-          {/* Swipe Hint */}
-          <div className="text-center text-sm text-gray-400 font-medium pt-2 border-t border-gray-100">
-            👈 Swipe to skip • Swipe to join 👉
+          {/* Swipe Hint - Compact */}
+          <div className="text-center text-xs text-gray-400 font-medium pt-2 border-t border-gray-100 dark:border-gray-700">
+            👈 Skip • Join 👉
           </div>
         </div>
       </div>
@@ -644,13 +644,13 @@ export default function TripsPage() {
 
       {/* Minimal Header - Just Filter & Avatar */}
       <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none">
-        {/* Safe Area Spacer */}
-        <div className="w-full" style={{ height: 'max(env(safe-area-inset-top), 20px)' }}></div>
+        {/* Safe Area Spacer - 48px minimum for Dynamic Island */}
+        <div className="w-full" style={{ height: 'max(env(safe-area-inset-top), 48px)' }}></div>
         <div className="px-5 py-3 flex items-center justify-end pointer-events-auto">
           {/* Theme Toggle + Filter + Avatar */}
           <div className="flex items-center gap-2">
 
-            {/* Simple Direct Dark Mode Toggle */}
+            {/* Simple Direct Dark Mode Toggle - NO RELOAD for iOS stability */}
             <button
               onClick={() => {
                 const html = document.documentElement;
@@ -662,7 +662,8 @@ export default function TripsPage() {
                   html.classList.add('dark');
                   localStorage.setItem('pincher_theme', 'dark');
                 }
-                safeReload();
+                // DO NOT reload - Tailwind dark mode works instantly via class toggle
+                // safeReload() causes iOS WebView crash/white screen
               }}
               className="w-10 h-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur rounded-full shadow-md flex items-center justify-center active:scale-95 transition-all border border-gray-100 dark:border-gray-700"
             >
@@ -747,8 +748,8 @@ export default function TripsPage() {
             </div>
           </motion.div>
         ) : (
-          /* Swipe Cards View */
-          <div className="relative h-[420px] w-full">
+          /* Swipe Cards View - Compact for iOS */
+          <div className="relative h-[340px] w-full">
             <AnimatePresence>
               {filteredTrips.slice(currentIndex, currentIndex + 2).map((trip, index) => (
                 <SwipeCard
