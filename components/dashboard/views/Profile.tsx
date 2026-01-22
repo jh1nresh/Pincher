@@ -31,7 +31,7 @@ const Profile: React.FC = () => {
         
       if (data) {
         setHistory(data.map((item: any) => ({
-          id: item.trip_id.slice(0, 6),
+          id: item.id,
           date: new Date(item.joined_at).toISOString().split('T')[0],
           dest: item.trip_rooms?.destination || 'Unknown Station',
           saved: '$12.50' // Placeholder calculation
