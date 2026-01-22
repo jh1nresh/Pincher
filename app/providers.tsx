@@ -2,53 +2,51 @@ import {PrivyProvider} from '@privy-io/react-auth';
 import {useEffect} from 'react';
 import {base, baseSepolia} from 'viem/chains';
 
-export default function Providers({children}: {children: React.ReactNode}) {
+// Privy configuration constants
+const PRIVY_CONFIG = {
+  appId: process.env.NEXT_PUBLIC_PRIVY_APP_ID?.trim() || 'clw7229m108m7di52v0iya2qc',
+  clientId: process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID?.trim() || 'client-WY2mABYxPWCherPBzKMW4HXRTghZMjhjNTTCfrDvn3PMT',
+};
+
+// Suppress known Privy console warnings that don't affect functionality
+function useSuppressPrivyWarnings() {
   useEffect(() => {
-    // Suppress hydration warnings from Privy
     const originalError = console.error;
-    console.error = (...args: any[]) => {
-      const msg = args[0];
-      if (typeof msg === 'string') {
-           if (msg.includes('Hydration') || msg.includes("origins don't match") || msg.includes('isActive')) return;
-           if (msg.includes('prop on a DOM element') && args.some(a => typeof a === 'string' && a.includes('isActive'))) return;
-      }
-      // Also check arg[1] directly which is often the prop name in React warnings
-      if (args.length > 1 && typeof args[1] === 'string' && args[1] === 'isActive') return;
-      originalError.call(console, ...args);
+    console.error = (...args: unknown[]) => {
+      const msg = String(args[0] ?? '');
+      const suppressPatterns = [
+        'Hydration',
+        "origins don't match",
+        'isActive',
+        'cannot be a descendant',
+        'cannot contain',
+      ];
+      if (suppressPatterns.some(pattern => msg.includes(pattern))) return;
+      if (msg.includes('prop on a DOM element') && args.some(a => String(a).includes('isActive'))) return;
+      originalError.apply(console, args);
     };
-    return () => {
-      console.error = originalError;
-    };
+    return () => { console.error = originalError; };
   }, []);
+}
 
-  const appId = (process.env.NEXT_PUBLIC_PRIVY_APP_ID || '').trim() || 'clw7229m108m7di52v0iya2qc';
-  const clientId = (process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID || '').trim() || 'client-WY2mABYxPWCherPBzKMW4HXRTghZMjhjNTTCfrDvn3PMT';
+export default function Providers({children}: {children: React.ReactNode}) {
+  useSuppressPrivyWarnings();
 
-  // Debug logging (can be removed after verification)
-  if (typeof window !== 'undefined') {
-    console.log("Privy ID (Sanitized):", appId);
-    console.log("Privy Client ID (Sanitized):", clientId);
-  }
-
-  // Always render PrivyProvider to prevent hook errors
   return (
     <PrivyProvider
-      appId={appId}
-      clientId={clientId}
+      appId={PRIVY_CONFIG.appId}
+      clientId={PRIVY_CONFIG.clientId}
       config={{
         supportedChains: [base, baseSepolia],
-        // Create embedded wallets for users who don't have a wallet
+        defaultChain: base,
         embeddedWallets: {
-          ethereum: {
-            createOnLogin: 'users-without-wallets'
-          }
+          ethereum: { createOnLogin: 'users-without-wallets' }
         },
         appearance: {
-          theme: 'light',
-          accentColor: '#000000',
+          theme: 'dark',
+          accentColor: '#00FF00',
           logo: '/pincher-v1.5.png',
         },
-        defaultChain: base,
       }}
     >
       {children}

@@ -37,3 +37,5 @@ pnpm-debug.log*
 /cache
 /out
 /broadcast
+
+certificates.next

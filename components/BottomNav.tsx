@@ -9,7 +9,7 @@ export default function BottomNav() {
   const { authenticated, ready } = usePrivy();
 
   // Hide on: login page, create page (has its own submit), or when not authenticated
-  if (pathname === '/' || pathname === '/trips/create') return null;
+  if (pathname === '/' || pathname === '/trips/create' || pathname === '/trips' || pathname.startsWith('/trips/')) return null;
 
   // Hide when not authenticated (login screens on other pages)
   if (ready && !authenticated) return null;
