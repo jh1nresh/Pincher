@@ -1,18 +1,42 @@
-'use client';
-
 import React from 'react';
+import { supabase } from '@/lib/supabase';
 
 interface ActiveTripProps {
+  tripId: string;
   onEnd: () => void;
 }
 
-const ActiveTrip: React.FC<ActiveTripProps> = ({ onEnd }) => {
+const ActiveTrip: React.FC<ActiveTripProps> = ({ tripId, onEnd }) => {
+  const [isEnding, setIsEnding] = React.useState(false);
+
   const passengers = [
     { name: 'Jordan', role: 'Driver', avatar: 'directions_car', status: 'Active' },
     { name: 'You', role: 'Peer', avatar: 'person', status: 'Active' },
     { name: 'Sarah L.', role: 'Peer', avatar: 'person', status: 'Active' },
     { name: 'Mike D.', role: 'Peer', avatar: 'person', status: 'Active' },
   ];
+
+  const handleEndStats = async () => {
+    if (!tripId) {
+      onEnd();
+      return;
+    }
+    
+    setIsEnding(true);
+    
+    // Update trip status to completed
+    const { error } = await supabase
+      .from('trip_rooms')
+      .update({ status: 'completed' })
+      .eq('id', tripId);
+
+    if (error) {
+      console.error('Error ending trip:', error);
+    }
+    
+    setIsEnding(false);
+    onEnd();
+  };
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden page-transition">
@@ -29,7 +53,7 @@ const ActiveTrip: React.FC<ActiveTripProps> = ({ onEnd }) => {
             </div>
             <div className="text-right">
               <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Relay Hash</p>
-              <p className="text-xs font-mono font-bold text-white tracking-widest">0x88...B24</p>
+              <p className="text-xs font-mono font-bold text-white tracking-widest">{tripId.slice(0, 8)}</p>
             </div>
           </div>
 
@@ -86,11 +110,12 @@ const ActiveTrip: React.FC<ActiveTripProps> = ({ onEnd }) => {
           {/* End Button */}
           <div className="pt-8 flex flex-col items-center">
             <button 
-              onClick={onEnd}
-              className="w-full bg-white text-black py-8 rounded-[2.5rem] font-black font-display text-2xl tracking-[0.2em] uppercase hover:scale-[1.02] active:scale-95 transition-all shadow-[0_20px_50px_rgba(255,255,255,0.1)] flex items-center justify-center gap-5 group"
+              onClick={handleEndStats}
+              disabled={isEnding}
+              className="w-full bg-white text-black py-8 rounded-[2.5rem] font-black font-display text-2xl tracking-[0.2em] uppercase hover:scale-[1.02] active:scale-95 transition-all shadow-[0_20px_50px_rgba(255,255,255,0.1)] flex items-center justify-center gap-5 group disabled:opacity-50"
             >
-              End Journey
-              <span className="material-symbols-outlined font-black group-hover:translate-x-2 transition-transform text-3xl">logout</span>
+              {isEnding ? 'Finalizing...' : 'End Journey'}
+              {!isEnding && <span className="material-symbols-outlined font-black group-hover:translate-x-2 transition-transform text-3xl">logout</span>}
             </button>
             <p className="text-[9px] font-black text-slate-700 uppercase tracking-widest mt-6">Protocol will finalize on exit.</p>
           </div>

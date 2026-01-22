@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'payment',
-      success_url: `${request.nextUrl.origin}/trips?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${request.nextUrl.origin}/trips?payment=success&session_id={CHECKOUT_SESSION_ID}&trip_id=${matchId}`,
       cancel_url: `${request.nextUrl.origin}/trips?payment=cancelled`,
     });
 

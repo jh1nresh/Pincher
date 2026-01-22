@@ -2,29 +2,29 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 
-interface SyncDeckProps {
-  onInitiate: () => void;
-  onSkip: () => void;
-}
+
 
 interface Candidate {
   id: string;
-  name: string;
-  match: number;
-  savings: string;
-  seats: string;
-  waitTime: string;
-  target: string;
-  avatar: string;
+  creator_id: string;
+  origin: string;
+  destination: string;
+  departure_time: string;
+  min_passengers: number;
+  max_passengers: number;
+  // Computed/Mocked for UI
+  match?: number;
+  savings?: string;
+  waitTime?: string;
 }
 
-const SyncDeck: React.FC<SyncDeckProps> = ({ onInitiate, onSkip }) => {
-  const candidates: Candidate[] = [
-    { id: '1', name: 'Jordan B.', match: 92, savings: '$130', seats: '3/4', waitTime: '4 MIN', target: 'LAX Terminal 5', avatar: 'pinch' },
-    { id: '2', name: 'Sarah L.', match: 88, savings: '$95', seats: '2/4', waitTime: '7 MIN', target: 'LAX Terminal 2', avatar: 'pinch' },
-    { id: '3', name: 'Mike D.', match: 85, savings: '$110', seats: '1/4', waitTime: '2 MIN', target: 'LAX International', avatar: 'pinch' },
-  ];
+interface SyncDeckProps {
+  candidates: Candidate[];
+  onInitiate: (tripId: string) => void;
+  onSkip: () => void;
+}
 
+const SyncDeck: React.FC<SyncDeckProps> = ({ candidates, onInitiate, onSkip }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -32,6 +32,16 @@ const SyncDeck: React.FC<SyncDeckProps> = ({ onInitiate, onSkip }) => {
   
   const startX = useRef(0);
   const currentCandidate = candidates[currentIndex];
+  // Helper to format display data
+  const getDisplayData = (candidate: Candidate) => ({
+    name: `User ${candidate.creator_id.slice(0, 4)}`,
+    match: candidate.match || 95,
+    savings: candidate.savings || '$120',
+    seats: `1/${candidate.max_passengers}`,
+    waitTime: '5 MIN',
+    target: candidate.destination,
+  });
+
   const nextCandidate = candidates[currentIndex + 1];
 
   const SWIPE_THRESHOLD = 150;
@@ -70,7 +80,9 @@ const SyncDeck: React.FC<SyncDeckProps> = ({ onInitiate, onSkip }) => {
     setDragOffset(direction === 'right' ? 800 : -800);
     setTimeout(() => {
       if (direction === 'right') {
-        onInitiate();
+        if (currentCandidate) {
+          onInitiate(currentCandidate.id);
+        }
       } else {
         if (currentIndex < candidates.length - 1) {
           setCurrentIndex(prev => prev + 1);
@@ -100,6 +112,17 @@ const SyncDeck: React.FC<SyncDeckProps> = ({ onInitiate, onSkip }) => {
 
   const rotation = dragOffset / 20;
   const opacity = Math.min(Math.abs(dragOffset) / SWIPE_THRESHOLD, 1);
+
+  if (!currentCandidate) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-500">
+        <p>No more candidates.</p>
+        <button onClick={onSkip} className="mt-4 text-action-green">Back to Search</button>
+      </div>
+    );
+  }
+
+  const displayData = getDisplayData(currentCandidate);
 
   return (
     <section className="flex-1 flex flex-col items-center justify-center p-6 select-none overflow-hidden relative">
@@ -153,12 +176,12 @@ const SyncDeck: React.FC<SyncDeckProps> = ({ onInitiate, onSkip }) => {
                     <div className="size-20 rounded-3xl glass-panel flex items-center justify-center text-action-green border-action-green/30 bg-action-green/5">
                       <span className="material-symbols-outlined text-4xl">pinch</span>
                     </div>
-                    <span className="text-[9px] font-black text-slate-500 tracking-widest uppercase">NODE ID: {currentCandidate.id}</span>
+                    <span className="text-[9px] font-black text-slate-500 tracking-widest uppercase">NODE ID: {currentCandidate.id.slice(0, 8)}</span>
                   </div>
                   
                   <div className="flex flex-col items-center space-y-4">
                     <div className="bg-action-green text-black px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-[0_0_30px_rgba(0,255,0,0.3)]">
-                      {currentCandidate.match}% MATCH
+                      {displayData.match}% MATCH
                     </div>
                   </div>
                 </div>
@@ -168,12 +191,12 @@ const SyncDeck: React.FC<SyncDeckProps> = ({ onInitiate, onSkip }) => {
                 <div className="flex justify-between items-start mb-6">
                   <div className="space-y-1">
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Est. Saving</p>
-                    <p className="text-5xl font-black text-white italic tracking-tighter neon-text-green">{currentCandidate.savings}</p>
+                    <p className="text-5xl font-black text-white italic tracking-tighter neon-text-green">{displayData.savings}</p>
                   </div>
                   <div className="text-right space-y-1">
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Seats Available</p>
                     <div className="flex items-center gap-2 justify-end">
-                      <span className="text-2xl font-black text-action-green italic">{currentCandidate.seats}</span>
+                      <span className="text-2xl font-black text-action-green italic">{displayData.seats}</span>
                       <span className="material-symbols-outlined text-action-green text-xl fill-icon">group</span>
                     </div>
                   </div>
@@ -187,12 +210,12 @@ const SyncDeck: React.FC<SyncDeckProps> = ({ onInitiate, onSkip }) => {
                         </div>
                         <div>
                           <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Destination Target</p>
-                          <p className="text-xs font-black text-white uppercase italic tracking-tight">{currentCandidate.target}</p>
+                          <p className="text-xs font-black text-white uppercase italic tracking-tight">{displayData.target}</p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Wait Time</p>
-                        <span className="text-xs font-mono font-black text-action-green">{currentCandidate.waitTime}</span>
+                        <span className="text-xs font-mono font-black text-action-green">{displayData.waitTime}</span>
                       </div>
                    </div>
                 </div>

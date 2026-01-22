@@ -1,21 +1,46 @@
-'use client';
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
+import { supabase } from '@/lib/supabase';
 
 const Profile: React.FC = () => {
   const { user, logout, authenticated } = usePrivy();
+  const [history, setHistory] = useState<any[]>([]);
   
-  const history = [
-    { id: 'PX-8821', date: '2025-05-12', dest: 'LAX Airport', saved: '$42.50' },
-    { id: 'PX-8794', date: '2025-05-10', dest: 'Beverly Hills', saved: '$18.20' },
-  ];
-
   // Get display name from Privy user
   const displayName = user?.email?.address?.split('@')[0] 
     || user?.phone?.number 
     || user?.wallet?.address?.slice(0, 8) 
     || 'User';
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (!user) return;
+      
+      const { data, error } = await supabase
+        .from('trip_passengers')
+        .select(`
+          *,
+          trip_rooms (
+            destination,
+            origin,
+            created_at
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('joined_at', { ascending: false });
+        
+      if (data) {
+        setHistory(data.map((item: any) => ({
+          id: item.trip_id.slice(0, 6),
+          date: new Date(item.joined_at).toISOString().split('T')[0],
+          dest: item.trip_rooms?.destination || 'Unknown Station',
+          saved: '$12.50' // Placeholder calculation
+        })));
+      }
+    };
+    
+    fetchHistory();
+  }, [user]);
 
   const handleLogout = async () => {
     await logout();
@@ -41,6 +66,11 @@ const Profile: React.FC = () => {
         <div className="space-y-4">
           <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Trip History</p>
           <div className="space-y-3">
+             {history.length === 0 && (
+                <div className="p-6 text-center border border-white/5 rounded-3xl bg-white/2">
+                  <p className="text-xs text-slate-500 uppercase">No trips yet</p>
+                </div>
+             )}
             {history.map((trip) => (
               <div key={trip.id} className="bg-white/3 border border-white/5 p-6 rounded-4xl flex justify-between items-center hover:border-white/20 transition-all">
                 <div>

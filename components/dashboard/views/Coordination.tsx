@@ -1,54 +1,156 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from '@/lib/supabase';
+import { usePrivy } from '@privy-io/react-auth';
 
 interface CoordinationProps {
+  tripId: string;
   syncCode: string;
   bookingData: { isBooked: boolean, plate: string, vehicle: string };
   onUpdateBooking: (data: Partial<{ isBooked: boolean, plate: string, vehicle: string }>) => void;
   onProceed: () => void;
 }
 
-const Coordination: React.FC<CoordinationProps> = ({ syncCode, bookingData, onUpdateBooking, onProceed }) => {
+const Coordination: React.FC<CoordinationProps> = ({ tripId, syncCode, bookingData, onUpdateBooking, onProceed }) => {
+  const { user } = usePrivy();
   const [inputCode, setInputCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [showManifest, setShowManifest] = useState(false);
+  const [passengers, setPassengers] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Fetch initial data
   useEffect(() => {
-    const timer = setTimeout(() => setShowManifest(true), 300);
-    return () => clearTimeout(timer);
-  }, []);
+    const fetchData = async () => {
+      if (!tripId) return;
 
-  const passengers = [
-    { name: 'Jordan', role: 'Driver', status: 'Ready', avatar: 'directions_car' },
-    { name: 'You', role: 'Peer', status: isVerified ? 'Verified' : 'Unverified', avatar: 'person' },
-    { name: 'Sarah L.', role: 'Peer', status: 'Verified', avatar: 'person' },
-    { name: 'Mike D.', role: 'Peer', status: 'Pending', avatar: 'person' },
-  ];
+      // 1. Fetch trip details (vehicle info)
+      const { data: trip } = await supabase
+        .from('trip_rooms')
+        .select('license_plate, vehicle_type')
+        .eq('id', tripId)
+        .single();
+      
+      if (trip && trip.license_plate) {
+        // If vehicle info exists, we can consider it "verified" or pre-fill
+        // For now just store it locally or update parent if verified
+      }
 
-  const [messages] = useState([
-    { sender: 'Jordan', text: "Smart Mobility protocol active. I'm 2 mins out.", time: '14:24' },
-    { sender: 'Sarah L.', text: "Verified. Waiting at the node point.", time: '14:25' },
-    { sender: 'Jordan', text: "I'm here. Sync your node to open the door.", time: '14:26' },
-  ]);
+      // 2. Fetch Passengers
+      const { data: pax } = await supabase
+        .from('trip_passengers')
+        .select('*')
+        .eq('trip_id', tripId);
+      
+      if (pax) {
+        setPassengers(pax.map(p => ({
+          name: p.user_name || 'User',
+          role: p.is_driver ? 'Driver' : 'Peer',
+          status: 'Verified', // Assume joined = verified for now
+          avatar: 'person'
+        })));
+      }
 
-  const handleVerify = () => {
+      // 3. Fetch Messages
+      const { data: msgs } = await supabase
+        .from('trip_messages')
+        .select('*')
+        .eq('trip_id', tripId)
+        .order('created_at', { ascending: true });
+      
+      if (msgs) {
+        setMessages(msgs);
+      }
+    };
+
+    fetchData();
+    setShowManifest(true);
+  }, [tripId]);
+
+  // Real-time subscriptions
+  useEffect(() => {
+    if (!tripId) return;
+
+    const channel = supabase
+      .channel('room-updates')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'trip_messages', filter: `trip_id=eq.${tripId}` },
+        (payload) => {
+          setMessages(prev => [...prev, payload.new]);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'trip_passengers', filter: `trip_id=eq.${tripId}` },
+        (payload) => {
+           setPassengers(prev => [...prev, {
+             name: payload.new.user_name || 'New User',
+             role: 'Peer',
+             status: 'Verified',
+             avatar: 'person'
+           }]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tripId]);
+
+  // Scroll to bottom on new message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleVerify = async () => {
     if (inputCode !== syncCode) {
       alert("Node ID Mismatch.");
       return;
     }
     
     setIsVerifying(true);
+    
+    // Fetch real vehicle info from Supabase if not already
+    const { data: trip } = await supabase
+      .from('trip_rooms')
+      .select('license_plate, vehicle_type')
+      .eq('id', tripId)
+      .single();
+
     setTimeout(() => {
       onUpdateBooking({ 
         isBooked: true, 
-        plate: 'ABC-1234',
-        vehicle: 'White Tesla Model 3'
+        plate: trip?.license_plate || 'ABC-1234', // Fallback if empty in DB
+        vehicle: trip?.vehicle_type || 'White Tesla Model 3'
       });
       setIsVerified(true);
       setIsVerifying(false);
     }, 1500);
+  };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !user || !tripId) return;
+
+    const msg = {
+      trip_id: tripId,
+      user_id: user.id,
+      user_name: 'You', // In real app, get from profile
+      content: newMessage.trim(),
+    };
+
+    // Optimistic update
+    // setMessages(prev => [...prev, { ...msg, created_at: new Date().toISOString() }]);
+
+    const { error } = await supabase.from('trip_messages').insert(msg);
+    if (error) console.error('Error sending message:', error);
+    
+    setNewMessage('');
   };
 
   return (
@@ -58,6 +160,7 @@ const Coordination: React.FC<CoordinationProps> = ({ syncCode, bookingData, onUp
         <div className="flex flex-col items-center gap-6">
           <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em]">Mesh Manifest</p>
           <div className="flex justify-center -space-x-4">
+            {passengers.length === 0 && <p className="text-xs text-slate-500">Waiting for peers...</p>}
             {passengers.map((p, i) => (
               <div key={i} className="relative group" style={{ animationDelay: `${i * 100}ms` }}>
                 <div className={`size-16 rounded-2xl border-4 border-background-dark flex items-center justify-center transition-all ${
@@ -150,14 +253,17 @@ const Coordination: React.FC<CoordinationProps> = ({ syncCode, bookingData, onUp
       {/* Message Stream */}
       <div className="flex-1 overflow-y-auto space-y-6 py-4 scrollbar-hide min-h-0">
         {messages.map((m, idx) => (
-          <div key={idx} className={`flex flex-col ${m.sender === 'You' ? 'items-end' : 'items-start'}`} style={{ animationDelay: `${idx * 200}ms` }}>
-             <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-2 px-3">{m.sender}</p>
-             <div className={`px-6 py-4 rounded-[1.8rem] text-[13px] leading-relaxed font-medium shadow-xl max-w-[85%] ${m.sender === 'You' ? 'bg-white text-black rounded-tr-none font-semibold' : 'bg-white/5 border border-white/10 text-white rounded-tl-none'}`}>
-                {m.text}
+          <div key={idx} className={`flex flex-col ${m.user_id === user?.id || m.sender === 'You' ? 'items-end' : 'items-start'}`} style={{ animationDelay: `${idx * 200}ms` }}>
+             <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-2 px-3">{m.user_name || m.sender}</p>
+             <div className={`px-6 py-4 rounded-[1.8rem] text-[13px] leading-relaxed font-medium shadow-xl max-w-[85%] ${m.user_id === user?.id || m.sender === 'You' ? 'bg-white text-black rounded-tr-none font-semibold' : 'bg-white/5 border border-white/10 text-white rounded-tl-none'}`}>
+                {m.content || m.text}
              </div>
-             <p className="text-[8px] font-bold text-slate-700 uppercase mt-2 px-3">{m.time}</p>
+             <p className="text-[8px] font-bold text-slate-700 uppercase mt-2 px-3">
+                {m.created_at ? new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : m.time}
+             </p>
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="pt-8 space-y-4 shrink-0">
@@ -171,8 +277,18 @@ const Coordination: React.FC<CoordinationProps> = ({ syncCode, bookingData, onUp
           </button>
         ) : (
           <div className="flex items-center gap-4">
-            <input className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-8 py-5 text-sm focus:ring-1 focus:ring-white text-white outline-none placeholder:text-slate-700 shadow-inner" placeholder="Message passengers..." type="text" />
-            <button className="size-16 rounded-2xl bg-white text-black flex items-center justify-center transition-all shadow-2xl hover:scale-105 active:scale-95">
+            <input 
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+              className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-8 py-5 text-sm focus:ring-1 focus:ring-white text-white outline-none placeholder:text-slate-700 shadow-inner" 
+              placeholder="Message passengers..." 
+              type="text" 
+            />
+            <button 
+              onClick={handleSendMessage}
+              className="size-16 rounded-2xl bg-white text-black flex items-center justify-center transition-all shadow-2xl hover:scale-105 active:scale-95"
+            >
               <span className="material-symbols-outlined font-black text-2xl">send</span>
             </button>
           </div>

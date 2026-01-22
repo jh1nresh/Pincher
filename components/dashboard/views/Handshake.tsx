@@ -4,13 +4,14 @@ import React, { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 
 interface HandshakeProps {
+  tripId: string;
   onConfirm: () => void;
 }
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
-const Handshake: React.FC<HandshakeProps> = ({ onConfirm }) => {
+const Handshake: React.FC<HandshakeProps> = ({ tripId, onConfirm }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +36,7 @@ const Handshake: React.FC<HandshakeProps> = ({ onConfirm }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           amount: 295, // $2.95 in cents
-          matchId: 'MATCH-' + Date.now(),
+          matchId: tripId,
         }),
       });
 

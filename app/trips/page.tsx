@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useSearchParams } from 'next/navigation';
 import { ViewState } from '@/lib/types';
+import { supabase } from '@/lib/supabase';
 import Header from '@/components/dashboard/Header';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Search from '@/components/dashboard/views/Search';
@@ -16,7 +17,7 @@ import Hosting from '@/components/dashboard/views/Hosting';
 import Profile from '@/components/dashboard/views/Profile';
 
 export default function TripsPage() {
-  const { ready, authenticated, login } = usePrivy();
+  const { ready, authenticated, login, user } = usePrivy();
   const searchParams = useSearchParams();
   
   const [currentView, setCurrentView] = useState<ViewState>(ViewState.SEARCH);
@@ -27,17 +28,64 @@ export default function TripsPage() {
     vehicle: ''
   });
 
+  const [candidates, setCandidates] = useState<any[]>([]);
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+
   // Handle Stripe payment success redirect
   useEffect(() => {
     const payment = searchParams.get('payment');
+    const sessionId = searchParams.get('session_id');
+    const tripId = searchParams.get('trip_id');
+    
     if (payment === 'success') {
       const code = Math.floor(1000 + Math.random() * 9000).toString();
       setSyncCode(code);
       setCurrentView(ViewState.PAYMENT_SUCCESS);
+      if (tripId) setSelectedTripId(tripId);
+      
+      const handleSuccess = async () => {
+        // 1. Record payment
+        try {
+          await supabase.from('payments').insert({
+            stripe_session_id: sessionId || `local_${Date.now()}`,
+            trip_id: tripId,
+            user_id: user?.id || 'anonymous',
+            amount: 295,
+            currency: 'usd',
+            status: 'succeeded',
+            description: 'Match fee payment',
+            completed_at: new Date().toISOString(),
+          });
+          console.log('Payment recorded');
+        } catch (err) {
+          console.error('Payment recording error:', err);
+        }
+
+        // 2. Add user to trip_passengers
+        if (tripId && user) {
+          try {
+            const { error } = await supabase.from('trip_passengers').insert({
+              trip_id: tripId,
+              user_id: user.id,
+              user_name: 'Passenger', // Ideally fetch from profile
+              payment_status: 'paid',
+              joined_at: new Date().toISOString(),
+            });
+            
+            if (error) console.error('Failed to join trip:', error);
+            else console.log('Joined trip successfully');
+          } catch (err) {
+             console.error('Join trip error:', err);
+          }
+        }
+      };
+      
+      handleSuccess();
+      
       // Clean up URL
       window.history.replaceState({}, '', '/trips');
     }
-  }, [searchParams]);
+  }, [searchParams, user]);
 
   // Auto-trigger login when not authenticated
   useEffect(() => {
@@ -61,11 +109,14 @@ export default function TripsPage() {
     );
   }
 
-  const handleSearchConfirm = (origin: string, dest: string, hasMatches: boolean) => {
-    setCurrentView(hasMatches ? ViewState.SYNC_DECK : ViewState.HOST_WAITING);
+  const handleSearchConfirm = (origin: string, dest: string, matches: any[]) => {
+    setCandidates(matches);
+    setCurrentView(matches.length > 0 ? ViewState.SYNC_DECK : ViewState.HOST_WAITING);
   };
 
   const handlePaymentConfirm = () => {
+    // This is called if demo mode is used (no stripe redirect)
+    // We should simulate the success flow
     const code = Math.floor(1000 + Math.random() * 9000).toString();
     setSyncCode(code);
     setCurrentView(ViewState.PAYMENT_SUCCESS);
@@ -74,18 +125,42 @@ export default function TripsPage() {
   const renderView = () => {
     switch (currentView) {
       case ViewState.SEARCH:
-        return <Search onConfirm={handleSearchConfirm} onHost={() => setCurrentView(ViewState.HOST_WAITING)} />;
+        return <Search 
+          onConfirm={handleSearchConfirm} 
+          onHost={(tripId) => {
+            setSelectedTripId(tripId);
+            setCurrentView(ViewState.HOST_WAITING);
+          }} 
+        />;
       case ViewState.HOST_WAITING:
-        return <Hosting onPeerFound={() => setCurrentView(ViewState.HANDSHAKE)} />;
+        return <Hosting 
+          tripId={selectedTripId || ''} 
+          onPeerFound={() => setCurrentView(ViewState.COORDINATION)} 
+          onCancel={() => {
+            // Ideally delete trip here
+            setSelectedTripId(null);
+            setCurrentView(ViewState.SEARCH);
+          }}
+        />;
       case ViewState.SYNC_DECK: 
-        return <SyncDeck onInitiate={() => setCurrentView(ViewState.HANDSHAKE)} onSkip={() => setCurrentView(ViewState.SEARCH)} />;
+        return (
+          <SyncDeck 
+            candidates={candidates}
+            onInitiate={(tripId) => {
+              setSelectedTripId(tripId);
+              setCurrentView(ViewState.HANDSHAKE);
+            }} 
+            onSkip={() => setCurrentView(ViewState.SEARCH)} 
+          />
+        );
       case ViewState.HANDSHAKE: 
-        return <Handshake onConfirm={handlePaymentConfirm} />;
+        return <Handshake tripId={selectedTripId || ''} onConfirm={handlePaymentConfirm} />;
       case ViewState.PAYMENT_SUCCESS:
         return <PaymentSuccess syncCode={syncCode} onProceed={() => setCurrentView(ViewState.COORDINATION)} />;
       case ViewState.COORDINATION: 
         return (
           <Coordination 
+            tripId={selectedTripId || ''}
             syncCode={syncCode}
             bookingData={bookingData}
             onUpdateBooking={(data) => setBookingData(prev => ({...prev, ...data}))}
@@ -93,7 +168,7 @@ export default function TripsPage() {
           />
         );
       case ViewState.ACTIVE_TRIP: 
-        return <ActiveTrip onEnd={() => {
+        return <ActiveTrip tripId={selectedTripId || ''} onEnd={() => {
           setBookingData({ isBooked: false, plate: '', vehicle: '' });
           setSyncCode('');
           setCurrentView(ViewState.SEARCH);
