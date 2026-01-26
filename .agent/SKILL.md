@@ -18,10 +18,11 @@
 
 | 優先級 | 任務 | 負責 | 狀態 |
 |--------|------|------|------|
-| P0 | PaymentSelect 接線 | Dev | ⬜ |
+| P0 | PaymentSelect 接線 | Dev | ✅ |
+| P0 | 分享功能 (拉人) | Dev | ✅ |
+| P0 | Landing 優化 (UCI-LAX) | Dev | ✅ |
 | P0 | 跑 Supabase migration | Dev | ⬜ |
 | P1 | 測試完整 flow | QA | ⬜ |
-| P1 | 修復 any 類型 | Dev | ⬜ |
 | P2 | Paymaster 整合 | Dev | ⬜ |
 
 ### Backlog
@@ -215,7 +216,7 @@ forge test --match-test testDepositEscrow -vvv
 | #2 | ~~無 error toast~~ | 🟡 | ✅ 已修 | 加 sonner |
 | #3 | ~~空狀態缺失~~ | 🟢 | ✅ 已修 | NoMatches.tsx |
 | #4 | any 類型過多 | 🟢 | ⬜ 待修 | |
-| #5 | PaymentSelect 未接線 | 🟡 | ⬜ 待修 | |
+| #5 | ~~PaymentSelect 未接線~~ | 🟡 | ✅ 已修 | 接入主 flow |
 
 ---
 
@@ -229,6 +230,12 @@ forge test --match-test testDepositEscrow -vvv
 - ✅ Toast 系統 — sonner
 - ✅ 空狀態 — NoMatches.tsx
 - ✅ 建立 SKILL.md 工作流
+
+### 2025-01-25 (冷啟動優化)
+- ✅ PaymentSelect 接線 — SyncDeck → PaymentSelect → Coordination/Handshake
+- ✅ 分享功能 — Hosting 頁加入分享按鈕、複製連結、微信分享
+- ✅ Join URL — 支援 ?join=tripId 讓分享連結直接加入
+- ✅ Landing 優化 — UCI-LAX 熱門路線展示、中文 copy、價格對比
 
 ---
 
