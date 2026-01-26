@@ -2,7 +2,7 @@
   "[project]/Desktop/pincher/app/providers.tsx [app-client] (ecmascript, next/dynamic entry)": {
     "id": "[project]/Desktop/pincher/app/providers.tsx [app-client] (ecmascript, next/dynamic entry)",
     "files": [
-      "static/chunks/cb648_366023c2._.js",
+      "static/chunks/cb648_9674171d._.js",
       "static/chunks/cb648_@privy-io_js-sdk-core_dist_esm_5bc4a0a8._.js",
       "static/chunks/cb648_@privy-io_8568022b._.js",
       "static/chunks/cb648_viem__esm_utils_1d557f61._.js",
@@ -29,7 +29,7 @@
       "static/chunks/cb648_@solana_offchain-messages_96c088e7._.js",
       "static/chunks/cb648_eba5d1da._.js",
       "static/chunks/Desktop_pincher_app_providers_tsx_c886541b._.js",
-      "static/chunks/Desktop_pincher_app_providers_tsx_cce3d929._.js"
+      "static/chunks/Desktop_pincher_app_providers_tsx_5691281c._.js"
     ]
   }
 }

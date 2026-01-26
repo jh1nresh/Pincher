@@ -11,6 +11,7 @@ import Search from '@/components/dashboard/views/Search';
 import NoMatches from '@/components/dashboard/views/NoMatches';
 import SyncDeck from '@/components/dashboard/views/SyncDeck';
 import Coordination from '@/components/dashboard/views/Coordination';
+import PaymentSelect from '@/components/dashboard/views/PaymentSelect';
 import Handshake from '@/components/dashboard/views/Handshake';
 import ActiveTrip from '@/components/dashboard/views/ActiveTrip';
 import PaymentSuccess from '@/components/dashboard/views/PaymentSuccess';
@@ -32,6 +33,23 @@ export default function TripsPage() {
   const [candidates, setCandidates] = useState<any[]>([]);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const [searchRoute, setSearchRoute] = useState<{ origin: string; destination: string }>({ origin: '', destination: '' });
+  const [tripCost, setTripCost] = useState<{ estimated: number; passengers: number; payerVenmo?: string }>({ 
+    estimated: 4000, // $40 default
+    passengers: 4 
+  });
+
+  // Handle join link (from shared URL)
+  useEffect(() => {
+    const joinTripId = searchParams.get('join');
+    if (joinTripId && authenticated && user) {
+      // Someone clicked a share link - show them the trip and let them join
+      setSelectedTripId(joinTripId);
+      setCandidates([{ id: joinTripId }]); // Minimal candidate for flow
+      setCurrentView(ViewState.PAYMENT_SELECT);
+      // Clean up URL
+      window.history.replaceState({}, '', '/trips');
+    }
+  }, [searchParams, authenticated, user]);
 
   // Handle Stripe payment success redirect
   useEffect(() => {
@@ -160,9 +178,39 @@ export default function TripsPage() {
             candidates={candidates}
             onInitiate={(tripId) => {
               setSelectedTripId(tripId);
-              setCurrentView(ViewState.HANDSHAKE);
+              // Fetch trip info for payment
+              const trip = candidates.find(c => c.id === tripId);
+              if (trip) {
+                setTripCost({
+                  estimated: trip.estimated_cost || 4000,
+                  passengers: trip.max_passengers || 4,
+                  payerVenmo: trip.payer_venmo
+                });
+              }
+              setCurrentView(ViewState.PAYMENT_SELECT);
             }} 
             onSkip={() => setCurrentView(ViewState.SEARCH)} 
+          />
+        );
+      case ViewState.PAYMENT_SELECT:
+        return (
+          <PaymentSelect
+            tripId={selectedTripId || ''}
+            estimatedCost={tripCost.estimated}
+            passengerCount={tripCost.passengers}
+            payerVenmo={tripCost.payerVenmo}
+            onComplete={(method) => {
+              if (method === 'usdc') {
+                // USDC needs escrow flow
+                setCurrentView(ViewState.HANDSHAKE);
+              } else {
+                // Venmo/Zelle - trust based, go to coordination
+                const code = Math.floor(1000 + Math.random() * 9000).toString();
+                setSyncCode(code);
+                setCurrentView(ViewState.COORDINATION);
+              }
+            }}
+            onBack={() => setCurrentView(ViewState.SYNC_DECK)}
           />
         );
       case ViewState.HANDSHAKE: 
@@ -197,6 +245,7 @@ export default function TripsPage() {
     ViewState.PAYMENT_SUCCESS,
     ViewState.HOST_WAITING,
     ViewState.HANDSHAKE,
+    ViewState.PAYMENT_SELECT,
     ViewState.NO_MATCHES
   ].includes(currentView);
 
