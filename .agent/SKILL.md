@@ -1,155 +1,243 @@
-# Pincher 開發工作流
+# Pincher 專案管理
 
 > Web3 共乘協議 — UCI/Irvine 學生專用
 
-## 📍 專案資訊
+---
 
-| 項目 | 值 |
-|------|-----|
-| **路徑** | `/Users/jhinresh/Desktop/pincher` |
-| **框架** | Next.js 16 + React 19 + Tailwind 4 |
-| **鏈** | Base Sepolia |
-| **資料庫** | Supabase |
-| **認證** | Privy |
+## 📊 PM (專案管理)
+
+### 里程碑
+
+| 階段 | 目標 | 狀態 | 預計完成 |
+|------|------|------|----------|
+| **MVP** | 基本共乘功能 | 🟡 90% | 2025-01-27 |
+| **Beta** | 校園內測 | ⬜ 0% | 2025-02-15 |
+| **Launch** | 正式上線 | ⬜ 0% | 2025-03 |
+
+### Sprint 當前 (2025-01-25 ~ 01-31)
+
+| 優先級 | 任務 | 負責 | 狀態 |
+|--------|------|------|------|
+| P0 | PaymentSelect 接線 | Dev | ⬜ |
+| P0 | 跑 Supabase migration | Dev | ⬜ |
+| P1 | 測試完整 flow | QA | ⬜ |
+| P1 | 修復 any 類型 | Dev | ⬜ |
+| P2 | Paymaster 整合 | Dev | ⬜ |
+
+### Backlog
+
+- [ ] Push 通知
+- [ ] 路線匹配算法優化
+- [ ] iOS TestFlight
+- [ ] 用戶 referral 系統
+- [ ] Analytics 埋點
 
 ---
 
-## 🔧 開發指令
+## 💻 開發 (Development)
+
+### 環境設置
 
 ```bash
-# 啟動開發服務器
-npm run dev
+cd /Users/jhinresh/Desktop/pincher
 
-# 檢查類型
-npx tsc --noEmit
+# 安裝依賴
+npm install
 
-# Lint
-npm run lint:check
+# 環境變數 (.env.local)
+NEXT_PUBLIC_SUPABASE_URL=xxx
+NEXT_PUBLIC_SUPABASE_ANON_KEY=xxx
+NEXT_PUBLIC_PRIVY_APP_ID=xxx
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=xxx
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=xxx
+```
 
-# 格式化
-npm run format
+### 常用指令
 
-# 跑 Supabase migrations
-supabase db push
+```bash
+# 開發
+npm run dev              # 啟動 dev server (localhost:3000)
 
-# 部署合約 (Foundry)
+# 檢查
+npx tsc --noEmit         # TypeScript 檢查
+npm run lint:check       # ESLint
+npm run format:check     # Prettier
+
+# 資料庫
+supabase db push         # 跑 migrations
+supabase db reset        # 重置 DB
+
+# 合約
+forge build              # 編譯合約
+forge test -vv           # 跑測試
 forge script script/Deploy.s.sol --rpc-url base-sepolia --broadcast
 ```
 
----
-
-## 📁 專案結構
+### 專案結構
 
 ```
 pincher/
 ├── app/                    # Next.js App Router
-│   ├── page.tsx           # Landing page
-│   ├── trips/             # 主功能頁
-│   │   ├── page.tsx       # Dashboard controller (所有 views)
-│   │   ├── create/        # 創建行程
-│   │   └── room/          # 行程房間
+│   ├── page.tsx           # Landing
+│   ├── trips/page.tsx     # 🔥 主 Dashboard (所有 views)
 │   ├── profile/           # 用戶資料
 │   └── api/               # API routes
-├── components/
-│   └── dashboard/
-│       └── views/         # ⭐ 主要 UI 組件
-│           ├── Search.tsx
-│           ├── SyncDeck.tsx
-│           ├── Coordination.tsx
-│           ├── PaymentSelect.tsx  # 支付選擇
-│           └── ...
+├── components/dashboard/views/
+│   ├── Search.tsx         # 選點搜索
+│   ├── NoMatches.tsx      # 空狀態
+│   ├── SyncDeck.tsx       # 匹配卡片
+│   ├── Coordination.tsx   # 聊天協調
+│   ├── PaymentSelect.tsx  # 支付選擇 ⭐
+│   ├── Handshake.tsx      # Stripe/USDC
+│   ├── ActiveTrip.tsx     # 進行中
+│   └── Profile.tsx        # 個人資料
 ├── lib/
-│   ├── hotzones.ts        # 🔴 熱門地點定義 (唯一來源)
-│   ├── supabase.ts        # DB client
-│   └── types.ts           # TypeScript 類型
+│   ├── constants.ts       # HOTZONES 定義
+│   ├── types.ts           # TypeScript 類型
+│   └── supabase.ts        # DB client
 ├── contracts/
-│   └── PincherEscrow.sol  # USDC 託管合約
-└── supabase/
-    └── migrations/        # DB schema
+│   └── PincherEscrow.sol  # USDC 託管
+└── supabase/migrations/   # DB schema
+```
+
+### Git Flow
+
+```bash
+# 功能開發
+git checkout -b feat/xxx
+# ... 改動 ...
+git add -A && git commit -m "feat: xxx"
+git push origin feat/xxx
+
+# 主分支
+git checkout master
+git merge feat/xxx
+git push
+```
+
+### 當前分支狀態
+
+```bash
+git log --oneline -5
+# be0b1e7 feat: unify hotzones, add toast notifications, empty state UI
+# 000dddc profile duplicate error
+# 04f2b2d feat: complete supabase integration
+# e72bdf9 feat: integrate micropayment dashboard
+# f87b9f9 feat: add global Error Boundary
 ```
 
 ---
 
-## 🚦 當前狀態
+## 🧪 測試 (Testing)
 
-### ✅ 已完成
-- [x] Landing + Privy 登入
-- [x] Trip rooms CRUD
-- [x] Hotzone 選擇
-- [x] 即時聊天 (Supabase Realtime)
-- [x] Trip history
-- [x] User profile
-- [x] Rating 系統
-- [x] Escrow 合約 (待部署)
-- [x] Stripe 整合
-- [x] PaymentSelect 組件 (Venmo/Zelle/USDC)
+### 測試環境
 
-### 🔄 進行中
-- [x] 統一 Hotzones (刪除 hardcode) ✅ 2025-01-25
-- [x] Toast 通知系統 (sonner) ✅ 2025-01-25
-- [x] 空狀態設計 (NoMatches.tsx) ✅ 2025-01-25
-- [ ] PaymentSelect 接線到主 flow
+| 環境 | URL | 用途 |
+|------|-----|------|
+| Local | localhost:3000 | 開發 |
+| Preview | Vercel Preview | PR 預覽 |
+| Prod | pincher.app | 正式 |
 
-### 📋 待做
-- [ ] Paymaster (免 gas)
-- [ ] Push 通知
-- [ ] 路線匹配算法優化
-- [ ] iOS TestFlight
+### 手動測試 Checklist
 
----
+#### 登入流程
+- [ ] Landing page 載入正常
+- [ ] 點擊「Get Started」→ Privy modal 彈出
+- [ ] Email 登入成功
+- [ ] Wallet 登入成功
+- [ ] 登入後跳轉 /trips
 
-## 🧪 測試清單
+#### 搜索流程
+- [ ] 選擇 Origin → 自動切換到 Destination
+- [ ] 選擇 Destination → 兩個都有選
+- [ ] 點擊「Find Rides」→ loading 動畫
+- [ ] **有匹配** → 進入 SyncDeck
+- [ ] **無匹配** → 進入 NoMatches 空狀態
 
-### 手動測試流程
-1. **登入** → Privy modal 正常彈出
-2. **選點** → 選 Origin + Destination
-3. **搜索** → 有匹配 / 無匹配 兩種情況
-4. **創建行程** → Host 模式等待
-5. **加入行程** → Sync code 驗證
-6. **聊天** → Realtime 收發
-7. **支付** → Venmo/Zelle/USDC 三種
-8. **完成** → Rating + 歷史記錄
+#### Host 流程
+- [ ] 點擊「Host a Ride」→ 顯示車輛表單
+- [ ] 填寫車牌、車型、顏色
+- [ ] 確認 → 創建 trip room
+- [ ] 進入等待頁面
+- [ ] (模擬) 有人加入 → 跳轉協調頁
 
-### 驗證指令
+#### 加入流程
+- [ ] SyncDeck 左右滑動正常
+- [ ] 點擊「Join Mesh」→ 進入 Handshake
+- [ ] Stripe 支付流程 (或 demo mode)
+- [ ] 支付成功 → PaymentSuccess → Coordination
+
+#### 支付流程 (新)
+- [ ] PaymentSelect 顯示 Venmo/Zelle/USDC 選項
+- [ ] 選擇 Venmo → 顯示 payer handle
+- [ ] 選擇 Zelle → 顯示 payer handle
+- [ ] 選擇 USDC → 連接錢包提示
+
+#### Profile
+- [ ] 顯示用戶名
+- [ ] 編輯 Venmo handle
+- [ ] 編輯 Zelle handle
+- [ ] 保存成功 toast
+- [ ] Trip history 顯示正確
+- [ ] Logout 正常
+
+### API 驗證
+
 ```bash
-# 檢查 Supabase 連線
+# Supabase 連線
 curl "$NEXT_PUBLIC_SUPABASE_URL/rest/v1/trip_rooms?select=*&limit=1" \
   -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY"
 
-# 檢查合約 (如已部署)
-cast call $ESCROW_ADDRESS "usdc()" --rpc-url base-sepolia
+# 創建測試 trip
+curl -X POST "$NEXT_PUBLIC_SUPABASE_URL/rest/v1/trip_rooms" \
+  -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"creator_id":"test","origin":"UCI","destination":"LAX","status":"open"}'
+```
+
+### 合約測試
+
+```bash
+cd /Users/jhinresh/Desktop/pincher
+forge test -vv
+
+# 特定測試
+forge test --match-test testDepositEscrow -vvv
 ```
 
 ---
 
-## 🐛 已知問題
+## 🐛 Issue Tracker
 
-| 問題 | 嚴重度 | 狀態 |
-|------|--------|------|
-| Search.tsx 有 hardcode hotSpots | 🟡 中 | ✅ 已修 |
-| 無 error toast | 🟡 中 | ✅ 已修 |
-| 空狀態 UI 缺失 | 🟢 低 | ✅ 已修 |
-| `any` 類型過多 | 🟢 低 | 待修 |
+| ID | 問題 | 嚴重度 | 狀態 | 備註 |
+|----|------|--------|------|------|
+| #1 | ~~hardcode hotSpots~~ | 🟡 | ✅ 已修 | 統一用 HOTZONES |
+| #2 | ~~無 error toast~~ | 🟡 | ✅ 已修 | 加 sonner |
+| #3 | ~~空狀態缺失~~ | 🟢 | ✅ 已修 | NoMatches.tsx |
+| #4 | any 類型過多 | 🟢 | ⬜ 待修 | |
+| #5 | PaymentSelect 未接線 | 🟡 | ⬜ 待修 | |
 
 ---
 
-## 📝 開發筆記
+## 📝 開發日誌
 
 ### 2025-01-25
-- 新增 `PaymentSelect.tsx` — Venmo/Zelle 主要，USDC optional
-- 更新 `Profile.tsx` — 可編輯 payment handles
-- 新增 migration `20250125_payment_methods.sql`
-- 更新 `lib/types.ts` — 加 payment 相關類型
-- **統一 Hotzones** — Search.tsx 改用 `lib/constants.ts` 的 HOTZONES
-- **Toast 系統** — 安裝 sonner，layout.tsx 加 Toaster，Search.tsx 錯誤用 toast
-- **空狀態** — 新增 `NoMatches.tsx`，無匹配時顯示「Be the First!」+ Host 按鈕
-- 新增 `NO_MATCHES` ViewState
+- ✅ 新增 `PaymentSelect.tsx` — Venmo/Zelle/USDC 選擇
+- ✅ 更新 `Profile.tsx` — 可編輯 payment handles
+- ✅ 新增 migration `20250125_payment_methods.sql`
+- ✅ 統一 Hotzones — Search.tsx 用 constants.ts
+- ✅ Toast 系統 — sonner
+- ✅ 空狀態 — NoMatches.tsx
+- ✅ 建立 SKILL.md 工作流
 
 ---
 
 ## 🔗 資源
 
-- **Supabase Dashboard**: https://supabase.com/dashboard
-- **Base Sepolia Explorer**: https://sepolia.basescan.org
-- **Privy Dashboard**: https://dashboard.privy.io
-- **Stripe Dashboard**: https://dashboard.stripe.com
+| 服務 | Dashboard |
+|------|-----------|
+| Supabase | https://supabase.com/dashboard |
+| Privy | https://dashboard.privy.io |
+| Stripe | https://dashboard.stripe.com |
+| Vercel | https://vercel.com/dashboard |
+| Base Sepolia | https://sepolia.basescan.org |
