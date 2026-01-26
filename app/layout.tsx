@@ -4,7 +4,7 @@ import "./globals.css";
 import DynamicProviders from "@/components/DynamicProviders";
 import BottomNav from "@/components/BottomNav";
 import { ThemeProvider } from "@/components/ThemeProvider";
-
+import { Toaster } from "sonner";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
 
@@ -65,6 +65,18 @@ export default function RootLayout({
             <DynamicProviders>
               {children}
               <BottomNav />
+              <Toaster 
+                position="top-center" 
+                richColors 
+                theme="dark"
+                toastOptions={{
+                  style: {
+                    background: 'rgba(0, 0, 0, 0.9)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: 'white',
+                  },
+                }}
+              />
             </DynamicProviders>
           </ErrorBoundary>
         </ThemeProvider>

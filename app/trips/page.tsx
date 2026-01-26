@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import Header from '@/components/dashboard/Header';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Search from '@/components/dashboard/views/Search';
+import NoMatches from '@/components/dashboard/views/NoMatches';
 import SyncDeck from '@/components/dashboard/views/SyncDeck';
 import Coordination from '@/components/dashboard/views/Coordination';
 import Handshake from '@/components/dashboard/views/Handshake';
@@ -30,6 +31,7 @@ export default function TripsPage() {
 
   const [candidates, setCandidates] = useState<any[]>([]);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+  const [searchRoute, setSearchRoute] = useState<{ origin: string; destination: string }>({ origin: '', destination: '' });
 
   // Handle Stripe payment success redirect
   useEffect(() => {
@@ -111,7 +113,8 @@ export default function TripsPage() {
 
   const handleSearchConfirm = (origin: string, dest: string, matches: any[]) => {
     setCandidates(matches);
-    setCurrentView(matches.length > 0 ? ViewState.SYNC_DECK : ViewState.HOST_WAITING);
+    setSearchRoute({ origin, destination: dest });
+    setCurrentView(matches.length > 0 ? ViewState.SYNC_DECK : ViewState.NO_MATCHES);
   };
 
   const handlePaymentConfirm = () => {
@@ -132,6 +135,15 @@ export default function TripsPage() {
             setCurrentView(ViewState.HOST_WAITING);
           }} 
         />;
+      case ViewState.NO_MATCHES:
+        return (
+          <NoMatches
+            origin={searchRoute.origin}
+            destination={searchRoute.destination}
+            onHost={() => setCurrentView(ViewState.SEARCH)} // Go back to search to use Host flow
+            onBack={() => setCurrentView(ViewState.SEARCH)}
+          />
+        );
       case ViewState.HOST_WAITING:
         return <Hosting 
           tripId={selectedTripId || ''} 
@@ -184,7 +196,8 @@ export default function TripsPage() {
     ViewState.ACTIVE_TRIP, 
     ViewState.PAYMENT_SUCCESS,
     ViewState.HOST_WAITING,
-    ViewState.HANDSHAKE
+    ViewState.HANDSHAKE,
+    ViewState.NO_MATCHES
   ].includes(currentView);
 
   const hideSidebar = isFullScreen || currentView === ViewState.SEARCH;

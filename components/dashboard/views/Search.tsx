@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { supabase } from '@/lib/supabase';
+import { HOTZONES } from '@/lib/constants';
+import { toast } from 'sonner';
 
 interface SearchProps {
   onConfirm: (origin: string, destination: string, matches: any[]) => void;
@@ -28,68 +30,80 @@ const Search: React.FC<SearchProps> = ({ onConfirm, onHost }) => {
   const [vehicleInfo, setVehicleInfo] = useState({ plate: '', model: '', color: '' });
   const [showHostForm, setShowHostForm] = useState(false);
 
-  // Hot spots in SoCal area
-  const hotSpots = [
-    { name: 'Union Station', icon: 'train' },
-    { name: 'Beverly Hills', icon: 'diamond' },
-    { name: 'LAX Airport', icon: 'flight_takeoff' },
-    { name: 'Hollywood', icon: 'movie' },
-    { name: 'Crypto Arena', icon: 'sports_basketball' },
-    { name: 'Santa Monica', icon: 'waves' }
-  ];
-
   // Fetch available trip rooms on mount
   useEffect(() => {
     const fetchTrips = async () => {
-      const { data } = await supabase
-        .from('trip_rooms')
-        .select('*')
-        .eq('status', 'open')
-        .order('created_at', { ascending: false })
-        .limit(20);
-      
-      if (data) {
-        setAvailableTrips(data);
+      try {
+        const { data, error } = await supabase
+          .from('trip_rooms')
+          .select('*')
+          .eq('status', 'open')
+          .order('created_at', { ascending: false })
+          .limit(20);
+        
+        if (error) throw error;
+        if (data) setAvailableTrips(data);
+      } catch (err) {
+        console.error('Failed to fetch trips:', err);
+        toast.error('Failed to load trips');
       }
     };
     
     fetchTrips();
   }, []);
 
-  const handleSpotClick = (name: string) => {
+  const handleSpotClick = (displayName: string) => {
     if (activeTab === 'origin') {
-      if (name === destination) {
+      if (displayName === destination) {
         setDestination('');
       }
-      setOrigin(name);
+      setOrigin(displayName);
       setActiveTab('destination');
     } else {
-      if (name === origin) return;
-      setDestination(name);
+      if (displayName === origin) return;
+      setDestination(displayName);
     }
   };
 
   const handleSearch = async () => {
-    if (!origin || !destination) return;
+    if (!origin || !destination) {
+      toast.error('Please select both origin and destination');
+      return;
+    }
     setIsSearching(true);
 
-    // Check if there are matching trips
-    const { data: matches } = await supabase
-      .from('trip_rooms')
-      .select('*')
-      .eq('origin', origin)
-      .eq('destination', destination)
-      .eq('status', 'open')
-      .limit(5);
+    try {
+      const { data: matches, error } = await supabase
+        .from('trip_rooms')
+        .select('*')
+        .eq('origin', origin)
+        .eq('destination', destination)
+        .eq('status', 'open')
+        .limit(5);
 
-    // Small delay for UX
-    setTimeout(() => {
-      onConfirm(origin, destination, matches || []);
-    }, 1500);
+      if (error) throw error;
+
+      // Small delay for UX
+      setTimeout(() => {
+        onConfirm(origin, destination, matches || []);
+      }, 1500);
+    } catch (err) {
+      console.error('Search failed:', err);
+      toast.error('Search failed. Please try again.');
+      setIsSearching(false);
+    }
   };
 
   const handleHostTrip = async () => {
-    if (!origin || !destination || !user) return;
+    if (!origin || !destination) {
+      toast.error('Please select both origin and destination');
+      return;
+    }
+    
+    if (!user) {
+      toast.error('Please sign in first');
+      return;
+    }
     
     if (!showHostForm) {
       setShowHostForm(true);
@@ -97,44 +111,46 @@ const Search: React.FC<SearchProps> = ({ onConfirm, onHost }) => {
     }
 
     if (!vehicleInfo.plate || !vehicleInfo.model) {
-      alert('Please enter vehicle details');
+      toast.error('Please enter vehicle details');
       return;
     }
 
     setIsSearching(true);
 
-    // Create a new trip room as host
-    const { data, error } = await supabase.from('trip_rooms').insert({
-      creator_id: user.id,
-      origin: origin,
-      destination: destination,
-      departure_time: new Date(Date.now() + 30 * 60000).toISOString(),
-      status: 'open',
-      min_passengers: 2,
-      max_passengers: 4,
-      license_plate: vehicleInfo.plate,
-      vehicle_type: vehicleInfo.model,
-      vehicle_color: vehicleInfo.color
-    }).select().single();
+    try {
+      // Create a new trip room as host
+      const { data, error } = await supabase.from('trip_rooms').insert({
+        creator_id: user.id,
+        origin: origin,
+        destination: destination,
+        departure_time: new Date(Date.now() + 30 * 60000).toISOString(),
+        status: 'open',
+        min_passengers: 2,
+        max_passengers: 4,
+        license_plate: vehicleInfo.plate,
+        vehicle_type: vehicleInfo.model,
+        vehicle_color: vehicleInfo.color
+      }).select().single();
 
-    if (error) {
-      console.error('Failed to create trip room:', error);
+      if (error) throw error;
+
+      // Add host as driver
+      await supabase.from('trip_passengers').insert({
+        trip_id: data.id,
+        user_id: user.id,
+        user_name: 'Driver',
+        is_driver: true,
+        status: 'joined',
+        joined_at: new Date().toISOString()
+      });
+
+      toast.success('Trip created! Waiting for passengers...');
+      onHost(data.id);
+    } catch (err) {
+      console.error('Failed to create trip:', err);
+      toast.error('Failed to create trip. Please try again.');
       setIsSearching(false);
-      return;
     }
-
-    // Add host as driver
-    await supabase.from('trip_passengers').insert({
-      trip_id: data.id,
-      user_id: user.id,
-      user_name: 'Driver',
-      is_driver: true,
-      status: 'joined',
-      joined_at: new Date().toISOString()
-    });
-
-    console.log('Created trip room:', data);
-    onHost(data.id);
   };
 
   if (isSearching) {
@@ -214,28 +230,36 @@ const Search: React.FC<SearchProps> = ({ onConfirm, onHost }) => {
           <>
             <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-5 px-2">Available Smart Hubs</p>
             <div className="grid grid-cols-2 gap-4 pb-8">
-              {hotSpots.map((spot) => {
-                const isSelectedAsOrigin = origin === spot.name;
-                const isSelectedAsDest = destination === spot.name;
+              {HOTZONES.map((zone) => {
+                const isSelectedAsOrigin = origin === zone.displayName;
+                const isSelectedAsDest = destination === zone.displayName;
                 const isDisabled = (activeTab === 'destination' && isSelectedAsOrigin) || (activeTab === 'origin' && isSelectedAsDest);
 
                 return (
                   <button 
-                    key={spot.name}
+                    key={zone.id}
                     disabled={isDisabled}
-                    onClick={() => handleSpotClick(spot.name)}
+                    onClick={() => handleSpotClick(zone.displayName)}
                     className={`h-32 border rounded-4xl flex flex-col items-center justify-center gap-3 transition-all relative overflow-hidden group ${
                       (isSelectedAsOrigin || isSelectedAsDest)
                       ? 'bg-action-green/10 border-action-green/50 shadow-[0_0_30px_rgba(0,255,0,0.1)]' 
                       : isDisabled ? 'opacity-10 grayscale border-white/5 bg-transparent cursor-not-allowed' : 'bg-white/3 border-white/5 hover:bg-white/8 hover:border-white/20'
                     }`}
                   >
-                    <div className={`size-12 rounded-2xl flex items-center justify-center transition-all ${
-                       (isSelectedAsOrigin || isSelectedAsDest) ? 'bg-action-green text-black' : 'bg-white/5 text-slate-400 group-hover:text-white'
+                    {/* Background image */}
+                    {zone.backgroundImage && (
+                      <div 
+                        className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity bg-cover bg-center"
+                        style={{ backgroundImage: `url(${zone.backgroundImage})` }}
+                      />
+                    )}
+                    
+                    <div className={`relative z-10 size-12 rounded-2xl flex items-center justify-center transition-all ${
+                       (isSelectedAsOrigin || isSelectedAsDest) ? 'bg-action-green text-black' : `${zone.color} text-white group-hover:scale-110`
                     }`}>
-                      <span className="material-symbols-outlined text-2xl">{spot.icon}</span>
+                      <span className="text-2xl">{zone.icon}</span>
                     </div>
-                    <p className="text-[10px] font-black text-white uppercase tracking-widest">{spot.name}</p>
+                    <p className="relative z-10 text-[10px] font-black text-white uppercase tracking-widest text-center px-2">{zone.displayName}</p>
                     
                     {(isSelectedAsOrigin || isSelectedAsDest) && (
                       <div className={`absolute top-4 right-4 size-2 rounded-full animate-pulse ${isSelectedAsOrigin ? 'bg-action-green shadow-[0_0_8px_#00FF00]' : 'bg-blue-400 shadow-[0_0_8px_#60a5fa]'}`}></div>
