@@ -1,294 +1,466 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
-import { supabase } from '@/lib/supabase';
-import { HOTZONES } from '@/lib/constants';
-import { toast } from 'sonner';
+import React, { useEffect, useMemo, useState } from "react";
+import { usePrivy } from "@privy-io/react-auth";
+import { useSearchParams } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import {
+  CONSENSUS_CALENDAR_URL,
+  CONSENSUS_EVENT_DAYS,
+  CONSENSUS_SIDE_EVENTS,
+  CONSENSUS_TELEGRAM_URL,
+  CONSENSUS_VENUE,
+  ConsensusSideEvent,
+  estimateRideCostCents,
+  estimateSplitCents,
+  formatMiamiDateTime,
+  formatMiamiTime,
+  getDefaultLeaveAt,
+  getEventsForDay,
+  getLocationLabel,
+} from "@/lib/consensus-events";
+import { toast } from "sonner";
 
 interface SearchProps {
-  onConfirm: (origin: string, destination: string, matches: any[]) => void;
+  onConfirm: (origin: string, destination: string, matches: EventRideRoom[]) => void;
   onHost: (tripId: string) => void;
 }
 
-interface TripRoom {
+interface EventRideRoom {
   id: string;
+  creator_id: string;
   origin: string;
   destination: string;
   departure_time: string;
   status: string;
+  max_passengers?: number;
+  estimated_cost?: number;
+  destination_address?: string;
+  destination_hotzone_id?: string;
+}
+
+type FromMode = "venue" | "current" | "hotel";
+type LeaveMode = "now" | "15" | "30" | "event";
+
+const fromOptions: Array<{ id: FromMode; label: string; description: string; icon: string }> = [
+  { id: "venue", label: "Consensus Venue", description: CONSENSUS_VENUE.name, icon: "distance" },
+  {
+    id: "current",
+    label: "Current Location",
+    description: "Mini App location later",
+    icon: "my_location",
+  },
+  { id: "hotel", label: "Hotel / Custom", description: "Manual pickup label", icon: "apartment" },
+];
+
+const leaveOptions: Array<{ id: LeaveMode; label: string; description: string }> = [
+  { id: "now", label: "Now", description: "Immediate group" },
+  { id: "15", label: "15 min", description: "Quick coordination" },
+  { id: "30", label: "30 min", description: "Default buffer" },
+  { id: "event", label: "Before event", description: "Arrive near start" },
+];
+
+function getOriginLabel(fromMode: FromMode) {
+  if (fromMode === "venue") return CONSENSUS_VENUE.name;
+  if (fromMode === "current") return "Current Location";
+  return "Hotel / Custom Pickup";
+}
+
+function getLeaveAt(mode: LeaveMode, event: ConsensusSideEvent) {
+  const now = new Date();
+  if (mode === "now") return now;
+  if (mode === "15") return new Date(now.getTime() + 15 * 60 * 1000);
+  if (mode === "30") return new Date(now.getTime() + 30 * 60 * 1000);
+  return getDefaultLeaveAt(event);
+}
+
+function getPrecisionLabel(event: ConsensusSideEvent) {
+  if (event.locationPrecision === "exact") return "Exact address";
+  if (event.locationPrecision === "hidden") return "Hidden address";
+  return "Area only";
+}
+
+function getRegistrationClass(status: ConsensusSideEvent["registrationStatus"]) {
+  if (status === "open") return "bg-action-green/10 text-action-green border-action-green/20";
+  if (status === "waitlist") return "bg-yellow-400/10 text-yellow-300 border-yellow-300/20";
+  if (status === "approval") return "bg-sky-400/10 text-sky-300 border-sky-300/20";
+  if (status === "sold_out") return "bg-red-400/10 text-red-300 border-red-300/20";
+  return "bg-white/5 text-slate-400 border-white/10";
 }
 
 const Search: React.FC<SearchProps> = ({ onConfirm, onHost }) => {
   const { user } = usePrivy();
-  const [origin, setOrigin] = useState('');
-  const [destination, setDestination] = useState('');
-  const [activeTab, setActiveTab] = useState<'origin' | 'destination'>('origin');
+  const searchParams = useSearchParams();
+  const [selectedDay, setSelectedDay] = useState<ConsensusSideEvent["day"]>("2026-05-04");
+  const [selectedEventId, setSelectedEventId] = useState(CONSENSUS_SIDE_EVENTS[0]?.id || "");
+  const [fromMode, setFromMode] = useState<FromMode>("venue");
+  const [leaveMode, setLeaveMode] = useState<LeaveMode>("30");
   const [isSearching, setIsSearching] = useState(false);
-  const [availableTrips, setAvailableTrips] = useState<TripRoom[]>([]);
-  
-  const [vehicleInfo, setVehicleInfo] = useState({ plate: '', model: '', color: '' });
-  const [showHostForm, setShowHostForm] = useState(false);
 
-  // Fetch available trip rooms on mount
+  const dayEvents = useMemo(() => getEventsForDay(selectedDay), [selectedDay]);
+  const selectedEvent =
+    CONSENSUS_SIDE_EVENTS.find(event => event.id === selectedEventId) || dayEvents[0];
+  const origin = getOriginLabel(fromMode);
+
   useEffect(() => {
-    const fetchTrips = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('trip_rooms')
-          .select('*')
-          .eq('status', 'open')
-          .order('created_at', { ascending: false })
-          .limit(20);
-        
-        if (error) throw error;
-        if (data) setAvailableTrips(data);
-      } catch (err) {
-        console.error('Failed to fetch trips:', err);
-        toast.error('Failed to load trips');
-      }
-    };
-    
-    fetchTrips();
-  }, []);
+    const eventId = searchParams.get("event");
+    const event = CONSENSUS_SIDE_EVENTS.find(item => item.id === eventId);
+    if (!event) return;
 
-  const handleSpotClick = (displayName: string) => {
-    if (activeTab === 'origin') {
-      if (displayName === destination) {
-        setDestination('');
-      }
-      setOrigin(displayName);
-      setActiveTab('destination');
-    } else {
-      if (displayName === origin) return;
-      setDestination(displayName);
-    }
+    setSelectedDay(event.day);
+    setSelectedEventId(event.id);
+  }, [searchParams]);
+
+  const handleDaySelect = (day: ConsensusSideEvent["day"]) => {
+    const events = getEventsForDay(day);
+    setSelectedDay(day);
+    if (events[0]) setSelectedEventId(events[0].id);
   };
 
-  const handleSearch = async () => {
-    if (!origin || !destination) {
-      toast.error('Please select both origin and destination');
+  const handleFindRides = async () => {
+    if (!selectedEvent) {
+      toast.error("Select a Luma side event first");
       return;
     }
+
     setIsSearching(true);
 
     try {
-      const { data: matches, error } = await supabase
-        .from('trip_rooms')
-        .select('*')
-        .eq('origin', origin)
-        .eq('destination', destination)
-        .eq('status', 'open')
-        .limit(5);
+      const { data, error } = await supabase
+        .from("trip_rooms")
+        .select("*")
+        .eq("destination_hotzone_id", selectedEvent.id)
+        .eq("status", "open")
+        .order("departure_time", { ascending: true })
+        .limit(8);
 
       if (error) throw error;
 
-      // Small delay for UX
       setTimeout(() => {
-        onConfirm(origin, destination, matches || []);
-      }, 1500);
+        onConfirm(origin, selectedEvent.name, data || []);
+      }, 450);
     } catch (err) {
-      console.error('Search failed:', err);
-      toast.error('Search failed. Please try again.');
+      console.error("Event ride search failed:", err);
+      toast.error("Could not load ride groups");
       setIsSearching(false);
     }
   };
 
-  const handleHostTrip = async () => {
-    if (!origin || !destination) {
-      toast.error('Please select both origin and destination');
-      return;
-    }
-    
-    if (!user) {
-      toast.error('Please sign in first');
-      return;
-    }
-    
-    if (!showHostForm) {
-      setShowHostForm(true);
+  const handleStartRide = async () => {
+    if (!selectedEvent) {
+      toast.error("Select a Luma side event first");
       return;
     }
 
-    if (!vehicleInfo.plate || !vehicleInfo.model) {
-      toast.error('Please enter vehicle details');
+    if (!user?.id) {
+      toast.error("Please sign in first");
       return;
     }
 
     setIsSearching(true);
 
     try {
-      // Create a new trip room as host
-      const { data, error } = await supabase.from('trip_rooms').insert({
-        creator_id: user.id,
-        origin: origin,
-        destination: destination,
-        departure_time: new Date(Date.now() + 30 * 60000).toISOString(),
-        status: 'open',
-        min_passengers: 2,
-        max_passengers: 4,
-        license_plate: vehicleInfo.plate,
-        vehicle_type: vehicleInfo.model,
-        vehicle_color: vehicleInfo.color
-      }).select().single();
+      const leaveAt = getLeaveAt(leaveMode, selectedEvent);
+      const estimatedCost = estimateRideCostCents(selectedEvent);
+
+      const { data, error } = await supabase
+        .from("trip_rooms")
+        .insert({
+          creator_id: user.id,
+          origin,
+          origin_hotzone_id: fromMode === "venue" ? CONSENSUS_VENUE.id : fromMode,
+          origin_address: fromMode === "venue" ? CONSENSUS_VENUE.address : origin,
+          destination: selectedEvent.name,
+          destination_hotzone_id: selectedEvent.id,
+          destination_address: selectedEvent.address,
+          departure_time: leaveAt.toISOString(),
+          status: "open",
+          min_passengers: 2,
+          max_passengers: 4,
+          estimated_cost: estimatedCost,
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
-      // Add host as driver
-      await supabase.from('trip_passengers').insert({
+      await supabase.from("trip_passengers").insert({
         trip_id: data.id,
         user_id: user.id,
-        user_name: 'Driver',
-        is_driver: true,
-        status: 'joined',
-        joined_at: new Date().toISOString()
+        user_name: user.email?.address?.split("@")[0] || "Organizer",
+        is_driver: false,
+        payment_status: "unpaid",
+        joined_at: new Date().toISOString(),
       });
 
-      toast.success('Trip created! Waiting for passengers...');
+      toast.success("Ride group created");
       onHost(data.id);
     } catch (err) {
-      console.error('Failed to create trip:', err);
-      toast.error('Failed to create trip. Please try again.');
+      console.error("Failed to create event ride:", err);
+      toast.error("Failed to create ride group");
       setIsSearching(false);
     }
   };
 
   if (isSearching) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-10 h-full bg-transparent page-transition">
-        <div className="relative mb-12">
-          <div className="size-40 border-2 border-action-green/5 border-t-action-green rounded-full animate-spin"></div>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="material-symbols-outlined text-action-green animate-pulse text-5xl">smart_toy</span>
+      <div className="flex h-full flex-1 flex-col items-center justify-center bg-transparent p-10 page-transition">
+        <div className="relative mb-8">
+          <div className="size-36 rounded-full border border-action-green/10" />
+          <div className="absolute inset-3 rounded-full border border-dashed border-action-green/20 animate-spin" />
+          <div className="absolute inset-0 grid place-items-center">
+            <span className="material-symbols-outlined text-5xl text-action-green">route</span>
           </div>
         </div>
-        <div className="text-center space-y-2">
-          <h2 className="text-2xl font-black text-white uppercase italic tracking-[0.2em] font-display">Smart Mobility Engine</h2>
-          <p className="text-[10px] text-slate-500 uppercase tracking-[0.4em] animate-pulse">Scanning for {origin} → {destination}...</p>
+        <div className="max-w-md space-y-3 text-center">
+          <h2 className="font-display text-3xl font-black uppercase italic tracking-tight text-white">
+            Checking open rides
+          </h2>
+          <p className="text-xs uppercase tracking-[0.24em] text-slate-500">
+            {origin} to {selectedEvent?.name || "selected side event"}
+          </p>
         </div>
       </div>
     );
   }
 
+  const selectedSplit = selectedEvent
+    ? (estimateSplitCents(selectedEvent) / 100).toFixed(2)
+    : "0.00";
+  const selectedTotal = selectedEvent
+    ? (estimateRideCostCents(selectedEvent) / 100).toFixed(0)
+    : "0";
+
   return (
-    <div className="flex-1 flex flex-col items-center px-6 py-8 h-full max-w-xl mx-auto w-full page-transition">
-      <div className="w-full flex justify-between items-end mb-10 shrink-0">
-        <div className="space-y-1">
-          <p className="text-[10px] font-black text-action-green uppercase tracking-[0.4em]">Smart Mobility</p>
-          <h1 className="text-4xl font-black text-white italic uppercase tracking-tighter font-display">Protocol Route</h1>
+    <div className="mx-auto flex h-full w-full max-w-6xl flex-1 flex-col px-4 py-5 md:px-7 md:py-7 page-transition">
+      <div className="mb-5 flex shrink-0 flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="max-w-2xl space-y-3">
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.24em] text-action-green">
+            <span className="size-1.5 rounded-full bg-action-green shadow-[0_0_10px_#00FF00]" />
+            Consensus Miami ride agent
+          </div>
+          <div>
+            <h1 className="font-display text-4xl font-black uppercase italic tracking-tight text-white md:text-5xl">
+              Choose a side event
+            </h1>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
+              Pick a Luma destination, choose when to leave, then join an existing ride or start a
+              new four-seat group.
+            </p>
+          </div>
         </div>
-        {availableTrips.length > 0 && (
-          <div className="text-right">
-            <p className="text-[9px] font-black text-slate-500 uppercase">{availableTrips.length} Active Trips</p>
-          </div>
-        )}
+
+        <div className="flex gap-2">
+          <a
+            href={CONSENSUS_TELEGRAM_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[10px] font-black uppercase tracking-[0.18em] text-slate-300 transition hover:bg-white/10"
+          >
+            Telegram
+          </a>
+          <a
+            href={CONSENSUS_CALENDAR_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-xl border border-action-green/20 bg-action-green/10 px-4 py-3 text-[10px] font-black uppercase tracking-[0.18em] text-action-green transition hover:bg-action-green/15"
+          >
+            Luma source
+          </a>
+        </div>
       </div>
 
-      <div className="w-full glass-panel rounded-4xl p-3 flex items-stretch gap-2 mb-10 shrink-0 border-white/5 relative shadow-2xl">
-        <button 
-          onClick={() => setActiveTab('origin')}
-          className={`flex-1 py-6 rounded-3xl transition-all flex flex-col items-center relative z-10 ${activeTab === 'origin' ? 'bg-white/10 ring-1 ring-white/20 shadow-xl' : 'opacity-40 hover:opacity-60'}`}
-        >
-          <p className="text-[8px] font-black text-slate-500 uppercase mb-1">Pickup Node</p>
-          <p className="text-xs font-black text-white truncate px-2">{origin || 'Select Origin'}</p>
-        </button>
-        <div className="flex items-center text-action-green opacity-40"><span className="material-symbols-outlined text-sm">double_arrow</span></div>
-        <button 
-          onClick={() => setActiveTab('destination')}
-          className={`flex-1 py-6 rounded-3xl transition-all flex flex-col items-center relative z-10 ${activeTab === 'destination' ? 'bg-white/10 ring-1 ring-white/20 shadow-xl' : 'opacity-40 hover:opacity-60'}`}
-        >
-          <p className="text-[8px] font-black text-slate-500 uppercase mb-1">Drop Target</p>
-          <p className="text-xs font-black text-white truncate px-2">{destination || 'Select Destination'}</p>
-        </button>
+      <div className="mb-4 grid grid-cols-4 gap-2 shrink-0">
+        {CONSENSUS_EVENT_DAYS.map(day => (
+          <button
+            key={day.id}
+            onClick={() => handleDaySelect(day.id)}
+            className={`min-h-[48px] rounded-2xl text-xs font-black uppercase tracking-[0.14em] transition-all ${
+              selectedDay === day.id
+                ? "bg-action-green text-black shadow-[0_0_24px_rgba(0,255,0,0.18)]"
+                : "border border-white/10 bg-white/[0.03] text-slate-500 hover:bg-white/8 hover:text-white"
+            }`}
+          >
+            {day.label}
+          </button>
+        ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto w-full pr-1 scrollbar-hide">
-        {showHostForm ? (
-          <div className="space-y-4 p-1">
-             <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-2 px-2">Vehicle Configuration</p>
-             <input 
-               placeholder="LICENSE PLATE (e.g. 8XYZ123)" 
-               className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-sm text-white placeholder:text-slate-600 outline-none focus:border-action-green/50 transition-colors uppercase font-mono"
-               value={vehicleInfo.plate}
-               onChange={e => setVehicleInfo({...vehicleInfo, plate: e.target.value.toUpperCase()})}
-             />
-             <input 
-               placeholder="VEHICLE MODEL (e.g. Tesla Model 3)" 
-               className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-sm text-white placeholder:text-slate-600 outline-none focus:border-action-green/50 transition-colors"
-               value={vehicleInfo.model}
-               onChange={e => setVehicleInfo({...vehicleInfo, model: e.target.value})}
-             />
-              <input 
-               placeholder="COLOR (e.g. White)" 
-               className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-sm text-white placeholder:text-slate-600 outline-none focus:border-action-green/50 transition-colors"
-               value={vehicleInfo.color}
-               onChange={e => setVehicleInfo({...vehicleInfo, color: e.target.value})}
-             />
-             <button onClick={() => setShowHostForm(false)} className="text-xs text-slate-500 uppercase tracking-widest hover:text-white mt-4 w-full text-center">Back to Selection</button>
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_390px]">
+        <section className="min-h-0 rounded-[1.75rem] border border-white/8 bg-white/[0.025] p-3 md:p-4">
+          <div className="mb-3 flex items-center justify-between px-1">
+            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-slate-600">
+              {dayEvents.length} Luma destinations
+            </p>
+            <p className="text-[9px] font-black uppercase tracking-[0.22em] text-slate-600">
+              Est. split assumes 4 riders
+            </p>
           </div>
-        ) : (
-          <>
-            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-5 px-2">Available Smart Hubs</p>
-            <div className="grid grid-cols-2 gap-4 pb-8">
-              {HOTZONES.map((zone) => {
-                const isSelectedAsOrigin = origin === zone.displayName;
-                const isSelectedAsDest = destination === zone.displayName;
-                const isDisabled = (activeTab === 'destination' && isSelectedAsOrigin) || (activeTab === 'origin' && isSelectedAsDest);
+
+          <div className="h-full min-h-0 overflow-y-auto pr-1 scrollbar-hide">
+            <div className="grid gap-3 pb-3 md:grid-cols-2">
+              {dayEvents.map(event => {
+                const selected = selectedEventId === event.id;
+                const split = (estimateSplitCents(event) / 100).toFixed(2);
 
                 return (
-                  <button 
-                    key={zone.id}
-                    disabled={isDisabled}
-                    onClick={() => handleSpotClick(zone.displayName)}
-                    className={`h-32 border rounded-4xl flex flex-col items-center justify-center gap-3 transition-all relative overflow-hidden group ${
-                      (isSelectedAsOrigin || isSelectedAsDest)
-                      ? 'bg-action-green/10 border-action-green/50 shadow-[0_0_30px_rgba(0,255,0,0.1)]' 
-                      : isDisabled ? 'opacity-10 grayscale border-white/5 bg-transparent cursor-not-allowed' : 'bg-white/3 border-white/5 hover:bg-white/8 hover:border-white/20'
+                  <button
+                    key={event.id}
+                    onClick={() => setSelectedEventId(event.id)}
+                    className={`min-h-[148px] rounded-2xl border p-4 text-left transition-all ${
+                      selected
+                        ? "border-action-green/50 bg-action-green/10 shadow-[0_0_28px_rgba(0,255,0,0.08)]"
+                        : "border-white/8 bg-black/20 hover:border-white/18 hover:bg-white/[0.055]"
                     }`}
                   >
-                    {/* Background image */}
-                    {zone.backgroundImage && (
-                      <div 
-                        className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity bg-cover bg-center"
-                        style={{ backgroundImage: `url(${zone.backgroundImage})` }}
-                      />
-                    )}
-                    
-                    <div className={`relative z-10 size-12 rounded-2xl flex items-center justify-center transition-all ${
-                       (isSelectedAsOrigin || isSelectedAsDest) ? 'bg-action-green text-black' : `${zone.color} text-white group-hover:scale-110`
-                    }`}>
-                      <span className="text-2xl">{zone.icon}</span>
+                    <div className="mb-4 flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-action-green">
+                          {formatMiamiTime(event.startsAt)}
+                        </p>
+                        <h2 className="mt-2 line-clamp-2 text-sm font-black leading-snug text-white">
+                          {event.name}
+                        </h2>
+                      </div>
+                      <span
+                        className={`shrink-0 rounded-lg border px-2 py-1 text-[8px] font-black uppercase tracking-wider ${getRegistrationClass(
+                          event.registrationStatus,
+                        )}`}
+                      >
+                        {event.registrationStatus.replace("_", " ")}
+                      </span>
                     </div>
-                    <p className="relative z-10 text-[10px] font-black text-white uppercase tracking-widest text-center px-2">{zone.displayName}</p>
-                    
-                    {(isSelectedAsOrigin || isSelectedAsDest) && (
-                      <div className={`absolute top-4 right-4 size-2 rounded-full animate-pulse ${isSelectedAsOrigin ? 'bg-action-green shadow-[0_0_8px_#00FF00]' : 'bg-blue-400 shadow-[0_0_8px_#60a5fa]'}`}></div>
-                    )}
+
+                    <div className="mt-auto grid grid-cols-[1fr_auto] items-end gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-medium text-slate-400">
+                          {getLocationLabel(event)}
+                        </p>
+                        <p className="mt-1 text-[9px] font-black uppercase tracking-[0.16em] text-slate-600">
+                          {getPrecisionLabel(event)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[8px] font-black uppercase tracking-widest text-slate-600">
+                          Split
+                        </p>
+                        <p className="text-sm font-black text-action-green">{split} USDC</p>
+                      </div>
+                    </div>
                   </button>
                 );
               })}
             </div>
-          </>
-        )}
-      </div>
+          </div>
+        </section>
 
-      <div className="pt-8 w-full shrink-0 space-y-3">
-        {!showHostForm && (
-          <button 
-            disabled={!origin || !destination}
-            onClick={handleSearch}
-            className={`w-full py-6 rounded-4xl font-black text-base uppercase tracking-[0.3em] transition-all shadow-2xl ${origin && destination ? 'bg-white text-black hover:scale-[1.02] active:scale-95' : 'bg-white/5 text-slate-800 border border-white/5 cursor-not-allowed'}`}
-          >
-            Find Rides
-          </button>
-        )}
-        <button 
-          disabled={!origin || !destination}
-          onClick={handleHostTrip}
-          className={`w-full py-5 rounded-3xl font-black text-sm uppercase tracking-[0.2em] transition-all ${origin && destination ? 'bg-action-green/10 border border-action-green/30 text-action-green hover:bg-action-green/20' : 'bg-white/3 text-slate-700 border border-white/5 cursor-not-allowed'}`}
-        >
-          {showHostForm ? 'Confirm & Host' : 'Host a Ride'}
-        </button>
+        <aside className="flex min-h-0 flex-col rounded-[1.75rem] border border-white/10 bg-black/40 p-4 shadow-2xl backdrop-blur-2xl md:p-5">
+          {selectedEvent && (
+            <>
+              <div className="mb-5 rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+                <p className="text-[9px] font-black uppercase tracking-[0.22em] text-slate-600">
+                  Selected ride
+                </p>
+                <h2 className="mt-3 font-display text-2xl font-black uppercase italic leading-tight text-white">
+                  {selectedEvent.name}
+                </h2>
+
+                <div className="mt-4 space-y-3 text-xs text-slate-400">
+                  <div className="flex justify-between gap-4">
+                    <span className="text-slate-600">Starts</span>
+                    <span className="text-right text-white">
+                      {formatMiamiDateTime(selectedEvent.startsAt)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-slate-600">Destination</span>
+                    <span className="max-w-[210px] truncate text-right text-white">
+                      {getLocationLabel(selectedEvent)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-slate-600">Estimate</span>
+                    <span className="text-right text-white">
+                      ${selectedTotal} car / {selectedSplit} USDC each
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="min-h-0 flex-1 overflow-y-auto pr-1 scrollbar-hide">
+                <div className="mb-5">
+                  <p className="mb-2 text-[9px] font-black uppercase tracking-[0.22em] text-slate-600">
+                    Pickup
+                  </p>
+                  <div className="space-y-2">
+                    {fromOptions.map(option => (
+                      <button
+                        key={option.id}
+                        onClick={() => setFromMode(option.id)}
+                        className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition ${
+                          fromMode === option.id
+                            ? "border-white bg-white text-black"
+                            : "border-white/10 bg-white/[0.03] text-white hover:bg-white/8"
+                        }`}
+                      >
+                        <span className="material-symbols-outlined text-xl">{option.icon}</span>
+                        <span className="min-w-0">
+                          <span className="block text-xs font-black">{option.label}</span>
+                          <span
+                            className={`mt-1 block truncate text-[10px] ${fromMode === option.id ? "text-black/50" : "text-slate-500"}`}
+                          >
+                            {option.description}
+                          </span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="mb-2 text-[9px] font-black uppercase tracking-[0.22em] text-slate-600">
+                    Leave time
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {leaveOptions.map(option => (
+                      <button
+                        key={option.id}
+                        onClick={() => setLeaveMode(option.id)}
+                        className={`min-h-[64px] rounded-2xl border px-3 py-3 text-left transition ${
+                          leaveMode === option.id
+                            ? "border-action-green bg-action-green text-black"
+                            : "border-white/10 bg-white/[0.03] text-white hover:bg-white/8"
+                        }`}
+                      >
+                        <p className="text-xs font-black">{option.label}</p>
+                        <p
+                          className={`mt-1 text-[9px] leading-tight ${leaveMode === option.id ? "text-black/55" : "text-slate-500"}`}
+                        >
+                          {option.description}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 shrink-0 space-y-3 border-t border-white/8 pt-4">
+                <button
+                  onClick={handleFindRides}
+                  className="w-full min-h-[56px] rounded-2xl bg-white text-sm font-black uppercase tracking-[0.16em] text-black transition hover:scale-[1.01] active:scale-95"
+                >
+                  Find open rides
+                </button>
+                <button
+                  onClick={handleStartRide}
+                  className="w-full min-h-[54px] rounded-2xl border border-action-green/30 bg-action-green/10 text-xs font-black uppercase tracking-[0.16em] text-action-green transition hover:bg-action-green/18"
+                >
+                  Start ride group
+                </button>
+              </div>
+            </>
+          )}
+        </aside>
       </div>
     </div>
   );

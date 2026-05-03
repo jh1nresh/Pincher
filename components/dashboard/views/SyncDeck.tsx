@@ -1,8 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-
-
+import React, { useEffect, useRef, useState } from "react";
 
 interface Candidate {
   id: string;
@@ -12,10 +10,8 @@ interface Candidate {
   departure_time: string;
   min_passengers: number;
   max_passengers: number;
-  // Computed/Mocked for UI
-  match?: number;
-  savings?: string;
-  waitTime?: string;
+  estimated_cost?: number;
+  destination_address?: string;
 }
 
 interface SyncDeckProps {
@@ -24,42 +20,45 @@ interface SyncDeckProps {
   onSkip: () => void;
 }
 
+const SWIPE_THRESHOLD = 150;
+
 const SyncDeck: React.FC<SyncDeckProps> = ({ candidates, onInitiate, onSkip }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
-  
+
   const startX = useRef(0);
   const currentCandidate = candidates[currentIndex];
-  // Helper to format display data
-  const getDisplayData = (candidate: Candidate) => ({
-    name: `User ${candidate.creator_id.slice(0, 4)}`,
-    match: candidate.match || 95,
-    savings: candidate.savings || '$120',
-    seats: `1/${candidate.max_passengers}`,
-    waitTime: '5 MIN',
-    target: candidate.destination,
-  });
-
   const nextCandidate = candidates[currentIndex + 1];
 
-  const SWIPE_THRESHOLD = 150;
+  const getDisplayData = (candidate: Candidate) => {
+    const estimatedTotal = candidate.estimated_cost || 4200;
+    const split = Math.ceil(estimatedTotal / (candidate.max_passengers || 4));
+    const leaveTime = new Date(candidate.departure_time).toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+
+    return {
+      shortId: candidate.id.slice(0, 8),
+      split: `${(split / 100).toFixed(2)} USDC`,
+      seats: `1/${candidate.max_passengers || 4}`,
+      leaveTime,
+      destination: candidate.destination,
+      address: candidate.destination_address || "Luma side event",
+      origin: candidate.origin || "Consensus venue",
+    };
+  };
 
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     setIsDragging(true);
-    startX.current = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    startX.current = "touches" in e ? e.touches[0].clientX : e.clientX;
   };
 
   const handleDragMove = (e: MouseEvent | TouchEvent) => {
     if (!isDragging) return;
-    const currentX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
-    const offset = currentX - startX.current;
-    setDragOffset(offset);
-
-    if (offset > 20) setSwipeDirection('right');
-    else if (offset < -20) setSwipeDirection('left');
-    else setSwipeDirection(null);
+    const currentX = "touches" in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
+    setDragOffset(currentX - startX.current);
   };
 
   const handleDragEnd = () => {
@@ -67,173 +66,194 @@ const SyncDeck: React.FC<SyncDeckProps> = ({ candidates, onInitiate, onSkip }) =
     setIsDragging(false);
 
     if (dragOffset > SWIPE_THRESHOLD) {
-      completeSwipe('right');
+      completeSwipe("right");
     } else if (dragOffset < -SWIPE_THRESHOLD) {
-      completeSwipe('left');
+      completeSwipe("left");
     } else {
       setDragOffset(0);
-      setSwipeDirection(null);
     }
   };
 
-  const completeSwipe = (direction: 'left' | 'right') => {
-    setDragOffset(direction === 'right' ? 800 : -800);
+  const completeSwipe = (direction: "left" | "right") => {
+    setDragOffset(direction === "right" ? 800 : -800);
     setTimeout(() => {
-      if (direction === 'right') {
-        if (currentCandidate) {
-          onInitiate(currentCandidate.id);
-        }
-      } else {
-        if (currentIndex < candidates.length - 1) {
-          setCurrentIndex(prev => prev + 1);
-          setDragOffset(0);
-          setSwipeDirection(null);
-        } else {
-          onSkip();
-        }
+      if (direction === "right") {
+        if (currentCandidate) onInitiate(currentCandidate.id);
+        return;
       }
-    }, 300);
+
+      if (currentIndex < candidates.length - 1) {
+        setCurrentIndex(prev => prev + 1);
+        setDragOffset(0);
+      } else {
+        onSkip();
+      }
+    }, 240);
   };
 
   useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleDragMove);
-      window.addEventListener('mouseup', handleDragEnd);
-      window.addEventListener('touchmove', handleDragMove);
-      window.addEventListener('touchend', handleDragEnd);
-    }
+    if (!isDragging) return;
+
+    window.addEventListener("mousemove", handleDragMove);
+    window.addEventListener("mouseup", handleDragEnd);
+    window.addEventListener("touchmove", handleDragMove);
+    window.addEventListener("touchend", handleDragEnd);
+
     return () => {
-      window.removeEventListener('mousemove', handleDragMove);
-      window.removeEventListener('mouseup', handleDragEnd);
-      window.removeEventListener('touchmove', handleDragMove);
-      window.removeEventListener('touchend', handleDragEnd);
+      window.removeEventListener("mousemove", handleDragMove);
+      window.removeEventListener("mouseup", handleDragEnd);
+      window.removeEventListener("touchmove", handleDragMove);
+      window.removeEventListener("touchend", handleDragEnd);
     };
   }, [isDragging, dragOffset]);
 
-  const rotation = dragOffset / 20;
-  const opacity = Math.min(Math.abs(dragOffset) / SWIPE_THRESHOLD, 1);
-
   if (!currentCandidate) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-500">
-        <p>No more candidates.</p>
-        <button onClick={onSkip} className="mt-4 text-action-green">Back to Search</button>
+      <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
+        <div className="grid size-14 place-items-center rounded-2xl border border-white/10 bg-white/[0.03] text-slate-500">
+          <span className="material-symbols-outlined text-3xl">route</span>
+        </div>
+        <h2 className="mt-5 font-display text-3xl font-black uppercase italic text-white">
+          No more open rides
+        </h2>
+        <button
+          onClick={onSkip}
+          className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-3 text-xs font-black uppercase tracking-[0.16em] text-action-green"
+        >
+          Back to search
+        </button>
       </div>
     );
   }
 
   const displayData = getDisplayData(currentCandidate);
+  const rotation = dragOffset / 28;
+  const overlayOpacity = Math.min(Math.abs(dragOffset) / SWIPE_THRESHOLD, 1);
 
   return (
-    <section className="flex-1 flex flex-col items-center justify-center p-6 select-none overflow-hidden relative">
-      <div className="max-w-[420px] w-full relative h-[600px] flex flex-col items-center justify-center">
-        <div className="absolute top-0 w-full text-center space-y-2 pointer-events-none">
-          <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.6em]">Discovery Pool</h2>
-          <div className="flex justify-center gap-1.5">
-            {candidates.map((_, i) => (
-              <div key={i} className={`h-1 w-4 rounded-full transition-all ${i === currentIndex ? 'bg-action-green w-8 shadow-[0_0_8px_#00FF00]' : 'bg-white/10'}`}></div>
+    <section className="relative flex flex-1 select-none flex-col items-center justify-center overflow-hidden p-5">
+      <div className="w-full max-w-[430px]">
+        <div className="mb-5 text-center">
+          <p className="text-[10px] font-black uppercase tracking-[0.34em] text-action-green">
+            Open ride groups
+          </p>
+          <h1 className="mt-2 font-display text-4xl font-black uppercase italic tracking-tight text-white">
+            Join a room
+          </h1>
+          <div className="mt-4 flex justify-center gap-1.5">
+            {candidates.map((_, index) => (
+              <div
+                key={index}
+                className={`h-1 rounded-full transition-all ${
+                  index === currentIndex
+                    ? "w-8 bg-action-green shadow-[0_0_8px_#00FF00]"
+                    : "w-4 bg-white/10"
+                }`}
+              />
             ))}
           </div>
         </div>
 
-        <div className="relative w-full h-[520px] mt-10">
+        <div className="relative h-[540px]">
           {nextCandidate && (
-            <div className="absolute inset-0 scale-[0.92] translate-y-6 opacity-40 blur-[1px] glass-panel rounded-[2.5rem] border-white/5 pointer-events-none">
-               <div className="h-full w-full flex items-center justify-center">
-                  <span className="material-symbols-outlined text-4xl text-slate-800">pinch</span>
-               </div>
-            </div>
+            <div className="absolute inset-x-3 top-6 h-[500px] rounded-[2rem] border border-white/5 bg-white/[0.025] opacity-50 blur-[1px]" />
           )}
 
-          <div 
+          <div
             onMouseDown={handleDragStart}
             onTouchStart={handleDragStart}
-            style={{ 
+            style={{
               transform: `translateX(${dragOffset}px) rotate(${rotation}deg)`,
-              transition: isDragging ? 'none' : 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-              cursor: isDragging ? 'grabbing' : 'grab'
+              transition: isDragging ? "none" : "transform 0.42s cubic-bezier(0.2, 0.8, 0.2, 1)",
+              cursor: isDragging ? "grabbing" : "grab",
             }}
             className="absolute inset-0 z-20"
           >
-            <div className="glass-panel h-full rounded-[2.5rem] overflow-hidden shadow-2xl border-white/10 flex flex-col">
-              <div className="h-1/2 bg-black/40 relative flex items-center justify-center border-b border-white/5 overflow-hidden">
-                <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#00FF00 1.5px, transparent 0)', backgroundSize: '24px 24px' }}></div>
-                
-                <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none transition-opacity" style={{ opacity: dragOffset > 40 ? opacity : 0 }}>
-                  <div className="bg-action-green text-black px-10 py-4 rounded-2xl border-4 border-black font-black text-4xl italic uppercase tracking-widest shadow-[0_0_40px_rgba(0,255,0,0.4)]">
-                    JOIN
-                  </div>
+            <div className="flex h-full flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-black/55 shadow-2xl backdrop-blur-2xl">
+              <div className="relative border-b border-white/8 bg-white/[0.03] p-5">
+                <div
+                  className="absolute inset-0 grid place-items-center bg-action-green/90 text-black transition-opacity"
+                  style={{ opacity: dragOffset > 40 ? overlayOpacity : 0 }}
+                >
+                  <p className="font-display text-4xl font-black uppercase italic tracking-[0.18em]">
+                    Join
+                  </p>
+                </div>
+                <div
+                  className="absolute inset-0 grid place-items-center bg-red-500/90 text-white transition-opacity"
+                  style={{ opacity: dragOffset < -40 ? overlayOpacity : 0 }}
+                >
+                  <p className="font-display text-4xl font-black uppercase italic tracking-[0.18em]">
+                    Skip
+                  </p>
                 </div>
 
-                <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none transition-opacity" style={{ opacity: dragOffset < -40 ? opacity : 0 }}>
-                  <div className="bg-red-500 text-white px-10 py-4 rounded-2xl border-4 border-black font-black text-4xl italic uppercase tracking-widest shadow-[0_0_40px_rgba(239,68,68,0.4)]">
-                    SKIP
+                <div className="relative z-10">
+                  <div className="mb-6 flex items-start justify-between gap-4">
+                    <div className="grid size-14 place-items-center rounded-2xl border border-action-green/25 bg-action-green/10 text-action-green">
+                      <span className="material-symbols-outlined text-3xl">local_taxi</span>
+                    </div>
+                    <div className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-right">
+                      <p className="text-[8px] font-black uppercase tracking-widest text-slate-600">
+                        Room
+                      </p>
+                      <p className="font-mono text-xs font-black text-white">
+                        {displayData.shortId}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-10 relative z-10 transition-transform" style={{ transform: `scale(${1 - Math.abs(dragOffset)/1000})` }}>
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="size-20 rounded-3xl glass-panel flex items-center justify-center text-action-green border-action-green/30 bg-action-green/5">
-                      <span className="material-symbols-outlined text-4xl">pinch</span>
-                    </div>
-                    <span className="text-[9px] font-black text-slate-500 tracking-widest uppercase">NODE ID: {currentCandidate.id.slice(0, 8)}</span>
-                  </div>
-                  
-                  <div className="flex flex-col items-center space-y-4">
-                    <div className="bg-action-green text-black px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-[0_0_30px_rgba(0,255,0,0.3)]">
-                      {displayData.match}% MATCH
-                    </div>
-                  </div>
+                  <h2 className="font-display text-3xl font-black uppercase italic leading-tight text-white">
+                    {displayData.destination}
+                  </h2>
+                  <p className="mt-3 truncate text-sm text-slate-400">{displayData.address}</p>
                 </div>
               </div>
 
-              <div className="p-8 flex-1 flex flex-col">
-                <div className="flex justify-between items-start mb-6">
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Est. Saving</p>
-                    <p className="text-5xl font-black text-white italic tracking-tighter neon-text-green">{displayData.savings}</p>
-                  </div>
-                  <div className="text-right space-y-1">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Seats Available</p>
-                    <div className="flex items-center gap-2 justify-end">
-                      <span className="text-2xl font-black text-action-green italic">{displayData.seats}</span>
-                      <span className="material-symbols-outlined text-action-green text-xl fill-icon">group</span>
+              <div className="flex flex-1 flex-col p-5">
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    ["Leave", displayData.leaveTime],
+                    ["Seats", displayData.seats],
+                    ["Split", displayData.split],
+                    ["From", displayData.origin],
+                  ].map(([label, value]) => (
+                    <div
+                      key={label}
+                      className="min-h-[88px] rounded-2xl border border-white/8 bg-white/[0.03] p-4"
+                    >
+                      <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-600">
+                        {label}
+                      </p>
+                      <p className="mt-2 line-clamp-2 text-sm font-black text-white">{value}</p>
                     </div>
-                  </div>
+                  ))}
                 </div>
 
-                <div className="mb-6">
-                   <div className="flex items-center justify-between p-5 glass-panel rounded-3xl border-white/5 bg-white/1">
-                      <div className="flex items-center gap-4">
-                        <div className="size-10 rounded-xl bg-sky-400/10 flex items-center justify-center text-sky-400">
-                          <span className="material-symbols-outlined text-xl">location_on</span>
-                        </div>
-                        <div>
-                          <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Destination Target</p>
-                          <p className="text-xs font-black text-white uppercase italic tracking-tight">{displayData.target}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Wait Time</p>
-                        <span className="text-xs font-mono font-black text-action-green">{displayData.waitTime}</span>
-                      </div>
-                   </div>
+                <div className="mt-auto grid grid-cols-2 gap-3 pt-5">
+                  <button
+                    onClick={event => {
+                      event.stopPropagation();
+                      completeSwipe("left");
+                    }}
+                    className="min-h-[56px] rounded-2xl border border-white/10 bg-white/[0.03] text-xs font-black uppercase tracking-[0.16em] text-slate-400 transition hover:bg-white/8 hover:text-white"
+                  >
+                    Skip
+                  </button>
+                  <button
+                    onClick={event => {
+                      event.stopPropagation();
+                      completeSwipe("right");
+                    }}
+                    className="min-h-[56px] rounded-2xl bg-action-green text-xs font-black uppercase tracking-[0.16em] text-black shadow-[0_0_30px_rgba(0,255,0,0.2)] transition hover:scale-[1.02] active:scale-95"
+                  >
+                    Join ride
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mt-auto">
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); completeSwipe('left'); }}
-                    className="py-5 rounded-2xl glass-panel text-slate-500 text-[10px] font-black uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all"
-                  >
-                    Skip Peer
-                  </button>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); completeSwipe('right'); }}
-                    className="py-5 rounded-2xl bg-action-green text-black text-[10px] font-black uppercase tracking-widest shadow-[0_0_30px_rgba(0,255,0,0.2)] hover:scale-[1.02] active:scale-95 transition-all"
-                  >
-                    Join Mesh
-                  </button>
-                </div>
+                <p className="mt-4 text-center text-[10px] uppercase tracking-[0.18em] text-slate-600">
+                  Swipe right to join, left to skip
+                </p>
               </div>
             </div>
           </div>

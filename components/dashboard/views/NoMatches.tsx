@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 
 interface NoMatchesProps {
   origin: string;
@@ -11,84 +11,68 @@ interface NoMatchesProps {
 
 const NoMatches: React.FC<NoMatchesProps> = ({ origin, destination, onHost, onBack }) => {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-8 h-full page-transition">
-      <div className="max-w-md w-full text-center space-y-8">
-        
-        {/* Illustration */}
-        <div className="relative">
-          <div className="absolute inset-0 bg-action-green/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="relative size-40 mx-auto bg-white/5 border border-white/10 rounded-[3rem] flex items-center justify-center">
-            <div className="absolute inset-4 border-2 border-dashed border-white/10 rounded-[2rem] animate-spin-slow"></div>
-            <span className="material-symbols-outlined text-6xl text-slate-600">person_search</span>
+    <div className="flex h-full flex-1 items-center justify-center p-5 page-transition">
+      <div className="w-full max-w-xl">
+        <div className="rounded-[2rem] border border-white/10 bg-black/40 p-6 shadow-2xl backdrop-blur-2xl md:p-8">
+          <div className="mb-8 flex items-center justify-between gap-4">
+            <div className="grid size-14 shrink-0 place-items-center rounded-2xl border border-action-green/25 bg-action-green/10 text-action-green">
+              <span className="material-symbols-outlined text-3xl">group_add</span>
+            </div>
+            <div className="rounded-xl border border-white/8 bg-white/[0.03] px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
+              0 open groups
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <p className="text-[10px] font-black uppercase tracking-[0.26em] text-action-green">
+              No matching ride yet
+            </p>
+            <h1 className="font-display text-4xl font-black uppercase italic tracking-tight text-white">
+              Start the group
+            </h1>
+            <p className="text-sm leading-6 text-slate-400">
+              Nobody is currently waiting from{" "}
+              <span className="font-bold text-white">{origin}</span> to{" "}
+              <span className="font-bold text-white">{destination}</span>. Create the room and share
+              it in Telegram so other attendees can join.
+            </p>
+          </div>
+
+          <div className="mt-7 rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                ["1", "Create room"],
+                ["2", "Share command"],
+                ["3", "Confirm rider list"],
+              ].map(([step, label]) => (
+                <div key={label} className="rounded-xl bg-black/30 p-3">
+                  <p className="font-display text-xl font-black italic text-action-green">{step}</p>
+                  <p className="mt-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">
+                    {label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-7 space-y-3">
+            <button
+              onClick={onHost}
+              className="flex w-full min-h-[58px] items-center justify-center gap-3 rounded-2xl bg-action-green text-sm font-black uppercase tracking-[0.16em] text-black shadow-[0_0_34px_rgba(0,255,0,0.22)] transition hover:scale-[1.01] active:scale-95"
+            >
+              <span className="material-symbols-outlined text-xl">add_circle</span>
+              Start ride group
+            </button>
+
+            <button
+              onClick={onBack}
+              className="w-full min-h-[50px] rounded-2xl border border-white/10 bg-white/[0.03] text-xs font-black uppercase tracking-[0.16em] text-slate-400 transition hover:bg-white/8 hover:text-white"
+            >
+              Choose another event
+            </button>
           </div>
         </div>
-
-        {/* Message */}
-        <div className="space-y-3">
-          <h2 className="text-3xl font-black text-white italic uppercase tracking-tight font-display">
-            No Rides Found
-          </h2>
-          <p className="text-sm text-slate-400">
-            No one is heading from <span className="text-white font-bold">{origin}</span> to <span className="text-white font-bold">{destination}</span> yet.
-          </p>
-        </div>
-
-        {/* Call to Action */}
-        <div className="bg-gradient-to-br from-action-green/10 to-action-green/5 border border-action-green/20 rounded-3xl p-8 space-y-4">
-          <div className="flex items-center justify-center gap-3">
-            <span className="text-4xl">🚀</span>
-            <h3 className="text-2xl font-black text-action-green italic uppercase font-display">
-              Be the First!
-            </h3>
-          </div>
-          <p className="text-sm text-slate-400">
-            Create a ride and others will join you. Save up to <span className="text-action-green font-bold">75%</span> on your trip!
-          </p>
-          
-          <button
-            onClick={onHost}
-            className="w-full py-5 rounded-2xl bg-action-green text-black font-black text-lg uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_40px_rgba(0,255,0,0.3)] flex items-center justify-center gap-3"
-          >
-            <span className="material-symbols-outlined">add_circle</span>
-            Host This Ride
-          </button>
-        </div>
-
-        {/* Stats hint */}
-        <div className="flex justify-center gap-8 opacity-60">
-          <div className="text-center">
-            <p className="text-2xl font-black text-white">~5</p>
-            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Min Avg Wait</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-black text-white">4</p>
-            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Max Riders</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-black text-action-green">$0</p>
-            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Platform Fee</p>
-          </div>
-        </div>
-
-        {/* Back button */}
-        <button
-          onClick={onBack}
-          className="text-sm text-slate-500 hover:text-white transition-colors"
-        >
-          ← Choose different locations
-        </button>
       </div>
-
-      {/* Background decoration */}
-      <style jsx>{`
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-spin-slow {
-          animation: spin-slow 20s linear infinite;
-        }
-      `}</style>
     </div>
   );
 };
