@@ -1,3 +1,0 @@
-module.exports=[60304,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(72032);a.n(d("[project]/Desktop/pincher/node_modules/next/dist/client/components/builtin/global-error.js <module evaluation>"))},5113,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(72032);a.n(d("[project]/Desktop/pincher/node_modules/next/dist/client/components/builtin/global-error.js"))},88438,a=>{"use strict";a.i(60304);var b=a.i(5113);a.n(b)}];
-
-//# sourceMappingURL=cb648_next_dist_client_components_builtin_global-error_052fad65.js.map
