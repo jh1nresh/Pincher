@@ -377,7 +377,7 @@ export default function ProfilePage() {
                             return (
                                 <Link
                                     key={trip.id}
-                                    href={`/trips/room?id=${trip.id}`}
+                                    href={`/trips?join=${trip.id}`}
                                     className="block bg-white dark:bg-gray-800 rounded-3xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 transition-all active:scale-[0.98]"
                                 >
                                     <div className="flex justify-between items-center mb-1">

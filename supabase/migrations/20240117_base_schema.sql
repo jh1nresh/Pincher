@@ -52,6 +52,5 @@ CREATE TABLE IF NOT EXISTS point_transactions (
 CREATE TABLE IF NOT EXISTS user_profiles (
   user_id TEXT PRIMARY KEY,
   display_name TEXT,
-  venmo_handle TEXT,
   points INT DEFAULT 0
 );
