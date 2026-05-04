@@ -124,6 +124,12 @@ function getRoomMeta(room: RideRoom): RideRoomMeta {
   return (room.payment_method_info || {}) as RideRoomMeta;
 }
 
+function isUsableOpenRoom(room: RideRoom) {
+  if (!["open", "full", "splitting"].includes(room.status)) return false;
+  const topicStatus = getRoomMeta(room).telegram_topic_status;
+  return topicStatus !== "unavailable" && topicStatus !== "closed";
+}
+
 function getAllowedChatIds() {
   return (process.env.TELEGRAM_ALLOWED_CHAT_IDS || "")
     .split(",")
@@ -582,7 +588,8 @@ async function findRoomByShortId(shortId: string) {
       .maybeSingle();
 
     if (error) throw error;
-    return data as RideRoom | null;
+    const room = data as RideRoom | null;
+    return room && isUsableOpenRoom(room) ? room : null;
   }
 
   const { data, error } = await supabase
@@ -594,8 +601,9 @@ async function findRoomByShortId(shortId: string) {
 
   if (error) throw error;
   return (
-    ((data || []) as RideRoom[]).find(room => room.id.toLowerCase().startsWith(normalizedId)) ||
-    null
+    ((data || []) as RideRoom[]).find(
+      room => room.id.toLowerCase().startsWith(normalizedId) && isUsableOpenRoom(room),
+    ) || null
   );
 }
 
@@ -686,6 +694,7 @@ async function findSimilarOpenRooms(room: RideRoom, limit = 3) {
 
   const rooms = ((data || []) as RideRoom[]).filter(candidate => {
     if (candidate.id === room.id) return false;
+    if (!isUsableOpenRoom(candidate)) return false;
     if (!areRideTimesSimilar(room, candidate)) return false;
     return areRideDestinationsSimilar(room, candidate);
   });
@@ -1211,7 +1220,9 @@ async function listOpenRides(chatId: TelegramChatId) {
     .limit(10);
 
   if (error) throw error;
-  if (!rooms?.length) {
+  const usableRooms = ((rooms || []) as RideRoom[]).filter(isUsableOpenRoom);
+
+  if (!usableRooms.length) {
     return sendMessage(
       chatId,
       `No open ride groups yet.\n\nStart one with /ride <event keyword> <time>\nCalendar: ${CONSENSUS_CALENDAR_URL}`,
@@ -1219,7 +1230,7 @@ async function listOpenRides(chatId: TelegramChatId) {
   }
 
   const lines = await Promise.all(
-    (rooms as RideRoom[]).map(async (room, index) => {
+    usableRooms.map(async (room, index) => {
       const passengers = await getPassengers(room.id);
       const names =
         passengers.map(passenger => passenger.user_name || passenger.user_id).join(", ") ||
