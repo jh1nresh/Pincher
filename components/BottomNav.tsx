@@ -2,20 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { usePrivy } from "@privy-io/react-auth";
 
 export default function BottomNav() {
   const pathname = usePathname();
-  const { authenticated, ready } = usePrivy();
 
-  // Hide on: login page, trips dashboard, or when not authenticated
+  // Hide on landing page or trips dashboard.
   if (pathname === "/" || pathname === "/trips" || pathname.startsWith("/trips/")) return null;
-
-  // Hide when not authenticated (login screens on other pages)
-  if (ready && !authenticated) return null;
-
-  // Hide during loading to prevent flash
-  if (!ready) return null;
 
   const isLobbyActive = pathname === "/trips";
   const isProfileActive = pathname === "/profile" || pathname.startsWith("/profile/");

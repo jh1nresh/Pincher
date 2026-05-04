@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import DynamicProviders from "@/components/DynamicProviders";
 import BottomNav from "@/components/BottomNav";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "sonner";
@@ -32,18 +31,26 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-  
 }>) {
   return (
     <html lang="zh-TW" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover"
+        />
         <meta name="apple-mobile-web-app-title" content="Pincher" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         {/* Dashboard fonts */}
-        <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+          rel="stylesheet"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -62,22 +69,20 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <ErrorBoundary>
-            <DynamicProviders>
-              {children}
-              <BottomNav />
-              <Toaster 
-                position="top-center" 
-                richColors 
-                theme="dark"
-                toastOptions={{
-                  style: {
-                    background: 'rgba(0, 0, 0, 0.9)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    color: 'white',
-                  },
-                }}
-              />
-            </DynamicProviders>
+            {children}
+            <BottomNav />
+            <Toaster
+              position="top-center"
+              richColors
+              theme="dark"
+              toastOptions={{
+                style: {
+                  background: "rgba(0, 0, 0, 0.9)",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  color: "white",
+                },
+              }}
+            />
           </ErrorBoundary>
         </ThemeProvider>
       </body>

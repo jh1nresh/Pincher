@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
-import { supabase } from '@/lib/supabase';
+import { useState, useEffect, useRef } from "react";
+import { supabase } from "@/lib/supabase";
+import { getLocalUser } from "@/lib/local-user";
 
 interface Message {
   id: string;
@@ -17,36 +17,44 @@ interface ChatRoomProps {
 }
 
 export default function ChatRoom({ tripId }: ChatRoomProps) {
-  const { user } = usePrivy();
+  const [localUser] = useState(() => getLocalUser());
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchMessages();
-    
+
     // Realtime subscription
     const channel = supabase
       .channel(`chat-${tripId}`)
-      .on('postgres_changes', 
-        { event: 'INSERT', schema: 'public', table: 'trip_messages', filter: `trip_id=eq.${tripId}` },
-        (payload) => {
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "trip_messages",
+          filter: `trip_id=eq.${tripId}`,
+        },
+        payload => {
           setMessages(prev => [...prev, payload.new as Message]);
           scrollToBottom();
-        }
+        },
       )
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [tripId]);
 
   async function fetchMessages() {
     const { data } = await supabase
-      .from('trip_messages')
-      .select('*')
-      .eq('trip_id', tripId)
-      .order('created_at', { ascending: true });
-    
+      .from("trip_messages")
+      .select("*")
+      .eq("trip_id", tripId)
+      .order("created_at", { ascending: true });
+
     if (data) {
       setMessages(data);
       scrollToBottom();
@@ -55,22 +63,22 @@ export default function ChatRoom({ tripId }: ChatRoomProps) {
 
   function scrollToBottom() {
     setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   }
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
-    if (!newMessage.trim() || !user) return;
+    if (!newMessage.trim()) return;
 
     const content = newMessage.trim();
-    setNewMessage('');
+    setNewMessage("");
 
-    await supabase.from('trip_messages').insert({
+    await supabase.from("trip_messages").insert({
       trip_id: tripId,
-      user_id: user.id,
-      user_name: user.email?.address?.split('@')[0] || 'User',
-      content
+      user_id: localUser.id,
+      user_name: localUser.name,
+      content,
     });
   }
 
@@ -84,19 +92,20 @@ export default function ChatRoom({ tripId }: ChatRoomProps) {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map(msg => {
-          const isMe = msg.user_id === user?.id;
+          const isMe = msg.user_id === localUser.id;
           return (
-            <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-              <div className={`
+            <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+              <div
+                className={`
                 max-w-[75%] rounded-2xl px-4 py-2 text-sm
-                ${isMe 
-                  ? 'bg-blue-500 text-white rounded-br-none' 
-                  : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                ${
+                  isMe
+                    ? "bg-blue-500 text-white rounded-br-none"
+                    : "bg-gray-100 text-gray-800 rounded-bl-none"
                 }
-              `}>
-                {!isMe && (
-                  <div className="text-[10px] opacity-70 mb-1">{msg.user_name}</div>
-                )}
+              `}
+              >
+                {!isMe && <div className="text-[10px] opacity-70 mb-1">{msg.user_name}</div>}
                 {msg.content}
               </div>
             </div>
@@ -110,11 +119,11 @@ export default function ChatRoom({ tripId }: ChatRoomProps) {
         <input
           type="text"
           value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
+          onChange={e => setNewMessage(e.target.value)}
           placeholder="傳送訊息..."
           className="flex-1 bg-gray-50 border-0 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-100 outline-none"
         />
-        <button 
+        <button
           type="submit"
           disabled={!newMessage.trim()}
           className="bg-blue-500 text-white p-2 rounded-xl px-4 font-bold disabled:opacity-50"

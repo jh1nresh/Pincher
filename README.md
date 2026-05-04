@@ -102,7 +102,7 @@ Add registration later only if the product needs:
 - **Bot**: Telegram Bot API via `app/api/telegram/webhook/route.ts`.
 - **Database**: Supabase Postgres.
 - **Hosting**: Railway.
-- **Auth / wallet**: Privy exists in the web app, but it is not required for the Telegram MVP.
+- **Identity**: Telegram user identity in the bot; the web UI uses a lightweight local rider ID.
 - **Payments**: Manual settlement; no escrow or chain verification in the MVP.
 
 ## Environment Variables
@@ -115,13 +115,6 @@ TELEGRAM_BOT_TOKEN=...
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
-```
-
-Optional web app / legacy integrations:
-
-```env
-NEXT_PUBLIC_PRIVY_APP_ID=...
-NEXT_PUBLIC_PRIVY_CLIENT_ID=...
 ```
 
 Do not expose `SUPABASE_SERVICE_ROLE_KEY` in client-side code. It is only for server routes.

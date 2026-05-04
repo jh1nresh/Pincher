@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS user_profiles (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id TEXT UNIQUE NOT NULL,  -- Privy user ID
+    user_id TEXT UNIQUE NOT NULL,  -- Telegram or local rider ID
     display_name TEXT,
     username TEXT UNIQUE,          -- @username (must be unique)
     avatar_url TEXT,

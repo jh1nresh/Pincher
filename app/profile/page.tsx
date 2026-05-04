@@ -1,414 +1,137 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
-import { supabase } from '@/lib/supabase';
-import { BackgroundBeams } from '@/components/BackgroundBeams';
-import WalletBadge from '@/components/WalletBadge';
-import Link from 'next/link';
-import { registerPushNotifications } from '@/lib/push';
-import { PushNotifications } from '@capacitor/push-notifications';
-import { Capacitor } from '@capacitor/core';
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { getLocalUser } from "@/lib/local-user";
 
 interface TripSummary {
-    id: string;
-    origin: string;
-    destination: string;
-    status: string;
-    departure_time: string;
+  id: string;
+  origin: string;
+  destination: string;
+  status: string;
+  departure_time: string;
 }
 
-// Helper: Check if trip is expired (12 hours past departure)
 function getTripDisplayStatus(trip: TripSummary): { status: string; label: string } {
-    const departureTime = new Date(trip.departure_time);
-    const now = new Date();
-    const hoursPastDeparture = (now.getTime() - departureTime.getTime()) / (1000 * 60 * 60);
+  const departureTime = new Date(trip.departure_time);
+  const now = new Date();
+  const hoursPastDeparture = (now.getTime() - departureTime.getTime()) / (1000 * 60 * 60);
 
-    // If status is 'open' but >12 hours past departure, show as expired
-    if (trip.status === 'open' && hoursPastDeparture > 12) {
-        return { status: 'expired', label: '已過期' };
-    }
+  if (trip.status === "open" && hoursPastDeparture > 12) {
+    return { status: "expired", label: "Expired" };
+  }
 
-    // If departure time has passed but within 12 hours, show as "進行中"
-    if (trip.status === 'open' && hoursPastDeparture > 0 && hoursPastDeparture <= 12) {
-        return { status: 'in_progress', label: '進行中' };
-    }
+  if (trip.status === "open" && hoursPastDeparture > 0 && hoursPastDeparture <= 12) {
+    return { status: "in_progress", label: "In progress" };
+  }
 
-    // Standard statuses
-    if (trip.status === 'open') return { status: 'open', label: 'Active' };
-    if (trip.status === 'completed') return { status: 'completed', label: '已完成' };
-    if (trip.status === 'expired') return { status: 'expired', label: '已過期' };
-    if (trip.status === 'cancelled') return { status: 'cancelled', label: '已取消' };
+  if (trip.status === "open") return { status: "open", label: "Active" };
+  if (trip.status === "completed") return { status: "completed", label: "Completed" };
+  if (trip.status === "expired") return { status: "expired", label: "Expired" };
+  if (trip.status === "cancelled") return { status: "cancelled", label: "Cancelled" };
 
-    return { status: trip.status, label: trip.status };
+  return { status: trip.status, label: trip.status };
 }
 
 export default function ProfilePage() {
-    const { user, ready, authenticated, logout } = usePrivy();
-    const [myTrips, setMyTrips] = useState<TripSummary[]>([]);
-    const [points, setPoints] = useState(0);
-    
-    // Editable profile fields
-    const [displayName, setDisplayName] = useState('');
-    const [username, setUsername] = useState('');
-    const [isEditing, setIsEditing] = useState(false);
-    const [saving, setSaving] = useState(false);
-    const [usernameError, setUsernameError] = useState('');
-    
-    // New Features state
-    const [avgRating, setAvgRating] = useState<number | null>(null);
-    const [pushEnabled, setPushEnabled] = useState(false);
-    const [loading, setLoading] = useState(true);
+  const [localUser] = useState(() => getLocalUser());
+  const [myTrips, setMyTrips] = useState<TripSummary[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    // Load profile from Supabase on mount
-    useEffect(() => {
-        if (user?.id) {
-            setLoading(true);
-            Promise.all([fetchProfileData(), loadUserProfile(), checkPushStatus()])
-                .finally(() => setLoading(false));
-        }
-    }, [user]);
+  useEffect(() => {
+    async function fetchTrips() {
+      const { data } = await supabase
+        .from("trip_passengers")
+        .select(
+          `
+          trip_id,
+          trip_rooms (
+            id, origin, destination, status, departure_time
+          )
+        `,
+        )
+        .eq("user_id", localUser.id)
+        .order("joined_at", { ascending: false });
 
-    async function checkPushStatus() {
-        if (!Capacitor.isNativePlatform()) return;
-        try {
-            const perm = await PushNotifications.checkPermissions();
-            setPushEnabled(perm.receive === 'granted');
-        } catch (e) {
-            console.error('Failed to check push status:', e);
-        }
+      if (data) {
+        const trips = data
+          .map(t => (Array.isArray(t.trip_rooms) ? t.trip_rooms[0] : t.trip_rooms))
+          .filter(Boolean) as unknown as TripSummary[];
+        setMyTrips(trips);
+      }
+
+      setLoading(false);
     }
 
-    async function handleEnablePush() {
-        if (!user?.id) return;
-        await registerPushNotifications(user.id);
-        checkPushStatus();
-    }
+    fetchTrips();
+  }, [localUser.id]);
 
-    async function loadUserProfile() {
-        if (!user?.id) return;
-        
-        const { data, error } = await supabase
-            .from('user_profiles')
-            .select('display_name, username')
-            .eq('user_id', user.id)
-            .single();
-        
-        if (data) {
-            setDisplayName(data.display_name || '');
-            setUsername(data.username || '');
-        } else {
-            // Default to email prefix if no profile exists
-            setDisplayName(user?.email?.address?.split('@')[0] || 'User');
-        }
-    }
+  const visibleTrips = myTrips.filter(trip => {
+    const displayStatus = getTripDisplayStatus(trip);
+    return displayStatus.status !== "expired" && displayStatus.status !== "cancelled";
+  });
 
-    async function fetchProfileData() {
-        if (!user) return;
+  return (
+    <div className="min-h-screen bg-gray-50 pb-28 text-gray-950 dark:bg-gray-900 dark:text-white">
+      <div className="mx-auto max-w-lg px-4 pt-24">
+        <section className="mb-6 rounded-3xl border border-gray-100 bg-white p-6 text-center shadow-sm dark:border-gray-800 dark:bg-gray-800">
+          <div className="mx-auto mb-4 grid size-20 place-items-center rounded-2xl bg-black text-3xl font-black text-action-green">
+            P
+          </div>
+          <h1 className="text-2xl font-black">{localUser.name}</h1>
+          <p className="mt-2 font-mono text-xs text-gray-400">{localUser.id}</p>
+          <p className="mt-3 text-xs font-bold uppercase tracking-widest text-gray-500">
+            Telegram-first rider, no wallet login required
+          </p>
+        </section>
 
-        // 1. Fetch Points
-        const { data: pointsData } = await supabase
-            .from('point_transactions')
-            .select('amount')
-            .eq('user_id', user.id);
-        
-        if (pointsData) {
-            const total = pointsData.reduce((acc, curr) => acc + curr.amount, 0);
-            setPoints(total);
-        }
+        <section className="space-y-4">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-xs font-black uppercase tracking-widest text-gray-400">
+              Ride History
+            </h2>
+            <Link href="/trips" className="text-xs font-black text-action-green">
+              Open board
+            </Link>
+          </div>
 
-        // 2. Fetch My Trips
-        const { data: tripData } = await supabase
-            .from('trip_passengers')
-            .select(`
-                trip_id,
-                trip_rooms (
-                    id, origin, destination, status, departure_time
-                )
-            `)
-            .eq('user_id', user.id)
-            .order('joined_at', { ascending: false });
-
-        if (tripData) {
-            const trips = tripData.map(t => Array.isArray(t.trip_rooms) ? t.trip_rooms[0] : t.trip_rooms).filter(Boolean) as unknown as TripSummary[];
-            setMyTrips(trips);
-        }
-
-        // 3. Fetch Ratings (Robust calculation)
-        const { data: ratings } = await supabase
-            .from('user_ratings')
-            .select('score')
-            .eq('rated_id', user.id);
-        
-        if (ratings && ratings.length > 0) {
-            const sum = ratings.reduce((a, b) => a + b.score, 0);
-            setAvgRating(sum / ratings.length);
-        }
-    }
-
-    const saveProfile = async () => {
-        if (!user?.id) return;
-        setSaving(true);
-        setUsernameError('');
-
-        // Check if username is taken (if changed)
-        if (username) {
-            const { data: existingUser } = await supabase
-                .from('user_profiles')
-                .select('user_id')
-                .eq('username', username)
-                .neq('user_id', user.id)
-                .single();
-            
-            if (existingUser) {
-                setUsernameError('Username already taken');
-                setSaving(false);
-                return;
-            }
-        }
-
-        // Upsert profile (insert or update)
-        const { error } = await supabase
-            .from('user_profiles')
-            .upsert({
-                user_id: user.id,
-                display_name: displayName || null,
-                username: username || null
-            }, {
-                onConflict: 'user_id'
-            });
-
-        if (error) {
-            console.error('Failed to save profile:', error);
-            setUsernameError(error.message);
-        } else {
-            setIsEditing(false);
-        }
-        setSaving(false);
-    };
-
-    if (ready && !authenticated) {
-        return (
-            <div className="flex h-screen items-center justify-center p-4">
-                <div className="text-center">
-                    <h1 className="text-2xl font-bold mb-4">Please Login</h1>
-                    <Link href="/" className="bg-black text-white px-6 py-2 rounded-xl">Go to Login</Link>
-                </div>
+          {loading && (
+            <div className="rounded-3xl border border-gray-100 bg-white p-8 text-center text-xs text-gray-400 dark:border-gray-800 dark:bg-gray-800">
+              Loading rides...
             </div>
-        );
-    }
+          )}
 
-    // Loading skeleton
-    if (loading && !displayName) {
-        return (
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-28 relative overflow-hidden">
-                <div className="max-w-lg mx-auto px-4 pt-28">
-                    {/* Avatar skeleton */}
-                    <div className="flex flex-col items-center mb-8">
-                        <div className="w-28 h-28 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse mb-4" />
-                        <div className="w-32 h-6 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse mb-2" />
-                        <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
-                    </div>
-                    {/* Points card skeleton */}
-                    <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-3xl animate-pulse mb-8" />
-                    {/* Trip history skeleton */}
-                    <div className="space-y-3">
-                        <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                        <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded-3xl animate-pulse" />
-                        <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded-3xl animate-pulse" />
-                    </div>
-                </div>
+          {!loading && visibleTrips.length === 0 && (
+            <div className="rounded-3xl border border-dashed border-gray-200 bg-white p-8 text-center text-xs text-gray-400 dark:border-gray-700 dark:bg-gray-800">
+              No rides yet.
             </div>
-        );
-    }
+          )}
 
-    return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-28 relative overflow-hidden transition-colors duration-300">
-             <BackgroundBeams />
-             
-             {/* Floating Header - Forced Safe Position */}
-             <div className="fixed top-0 left-0 right-0 z-50 px-4 pointer-events-none flex flex-col items-center">
-                {/* Safe Area Spacer */}
-                <div className="w-full" style={{ height: 'max(env(safe-area-inset-top), 48px)' }}></div>
-                <div className="w-full max-w-lg pointer-events-auto flex justify-between items-center">
-                    <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-full shadow-sm px-4 py-2 border border-gray-100 dark:border-gray-700">
-                        <span className="font-bold text-xs uppercase tracking-wider dark:text-white">👤 Profile</span>
-                    </div>
-                    <button
-                        onClick={() => isEditing ? saveProfile() : setIsEditing(true)}
-                        className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
-                            isEditing 
-                                ? 'bg-green-500 text-white' 
-                                : 'bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border border-gray-100 dark:border-gray-700 dark:text-white'
-                        }`}
-                    >
-                        {saving ? '...' : isEditing ? '✓ Save' : '✏️ Edit'}
-                    </button>
+          {visibleTrips.map(trip => {
+            const displayStatus = getTripDisplayStatus(trip);
+            return (
+              <Link
+                key={trip.id}
+                href={`/trips?join=${trip.id}`}
+                className="block rounded-3xl border border-gray-100 bg-white p-4 shadow-sm transition hover:border-gray-200 active:scale-[0.98] dark:border-gray-800 dark:bg-gray-800"
+              >
+                <div className="mb-1 flex items-center justify-between gap-3">
+                  <div className="truncate text-sm font-bold">
+                    {trip.origin} <span className="text-gray-300">to</span> {trip.destination}
+                  </div>
+                  <span className="shrink-0 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                    {displayStatus.label}
+                  </span>
                 </div>
-             </div>
-
-             <div className="relative z-10 max-w-lg mx-auto px-4 pt-24">
-                {/* Avatar Section - Compact for iOS */}
-                <div className="text-center mb-6 relative">
-                    {/* Gradient Ring Avatar */}
-                    <div className="w-24 h-24 bg-linear-to-tr from-violet-500 via-pink-500 to-orange-400 rounded-full mx-auto mb-3 p-[3px] shadow-xl">
-                        <div className="w-full h-full bg-white dark:bg-gray-800 rounded-full flex items-center justify-center text-4xl font-bold text-gray-800 dark:text-white overflow-hidden">
-                             {displayName?.charAt(0).toUpperCase() || user?.email?.address?.charAt(0).toUpperCase() || '👤'}
-                        </div>
-                    </div>
-                    
-                    {/* Editable Name */}
-                    {isEditing ? (
-                        <div className="space-y-3 max-w-xs mx-auto">
-                            <input
-                                type="text"
-                                value={displayName}
-                                onChange={(e) => setDisplayName(e.target.value)}
-                                placeholder="Display Name"
-                                className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 text-center font-bold dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
-                            />
-                            <input
-                                type="text"
-                                value={username}
-                                onChange={(e) => {
-                                    setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''));
-                                    setUsernameError('');
-                                }}
-                                placeholder="@username"
-                                className={`w-full px-4 py-2.5 bg-white dark:bg-gray-800 rounded-xl border text-center text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 ${usernameError ? 'border-red-400' : 'border-gray-200 dark:border-gray-700'}`}
-                            />
-                            {usernameError && (
-                                <div className="text-red-500 text-xs font-medium">{usernameError}</div>
-                            )}
-                        </div>
-                    ) : (
-                        <>
-                            {/* Name Badge */}
-                            <div className="inline-block px-4 py-1.5 bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-full border border-gray-200 dark:border-gray-700 shadow-sm mb-2">
-                                <h1 className="text-lg font-black text-gray-900 dark:text-white tracking-tight">
-                                    {displayName || user?.email?.address?.split('@')[0] || 'User'}
-                                </h1>
-                            </div>
-                            {/* Rating Badge */}
-                            {avgRating && (
-                                <div className="flex justify-center mb-2">
-                                    <div className="bg-yellow-400/20 backdrop-blur px-2 py-0.5 rounded-md border border-yellow-400/30 flex items-center gap-1">
-                                        <span className="text-xs">⭐️</span>
-                                        <span className="text-xs font-bold text-yellow-600 dark:text-yellow-400">{avgRating.toFixed(1)}</span>
-                                    </div>
-                                </div>
-                            )}
-                            {username && (
-                                <div className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2">@{username}</div>
-                            )}
-                        </>
-                    )}
-                    
-                    {/* Wallet Badge */}
-                    <div className="flex justify-center mt-2">
-                        <WalletBadge className="text-sm px-3 py-1.5" />
-                    </div>
+                <div className="text-[10px] font-medium text-gray-400">
+                  {new Date(trip.departure_time).toLocaleDateString()}
                 </div>
-
-                {/* Premium Points Card - Compact for iOS */}
-                <div className="relative overflow-hidden bg-[#0A0A0A] text-white rounded-3xl p-5 shadow-xl mb-6 border border-gray-800 group">
-                    <div className="absolute -top-12 -right-12 w-48 h-48 bg-linear-to-br from-blue-600 to-purple-600 rounded-full blur-[60px] opacity-40 group-hover:opacity-60 transition-opacity duration-500"></div>
-                    
-                    <div className="relative z-10 flex justify-between items-end">
-                        <div>
-                            <div className="flex items-center gap-2 mb-1 opacity-60">
-                                <span className="text-[10px] font-bold tracking-widest uppercase">Rewards</span>
-                            </div>
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-4xl font-black tracking-tight bg-clip-text text-transparent bg-linear-to-b from-white to-white/70">
-                                    {points}
-                                </span>
-                                <span className="text-xs font-bold text-yellow-500">PTS</span>
-                            </div>
-                        </div>
-                        <div className="text-gray-400 text-xs font-medium max-w-[50%] text-right leading-tight">
-                            Earn <span className="text-white">5x</span> by hosting rides.
-                        </div>
-                    </div>
-                </div>
-
-                {/* Notification Banner */}
-                {!pushEnabled && Capacitor.isNativePlatform() && (
-                    <button
-                        onClick={handleEnablePush}
-                        className="w-full bg-linear-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-2xl shadow-lg mb-8 flex items-center justify-between"
-                    >
-                        <div className="text-left">
-                            <div className="font-bold text-sm">Enable Notifications</div>
-                            <div className="text-xs opacity-80">Get alerts when rides start</div>
-                        </div>
-                        <div className="bg-white/20 p-2 rounded-full">🔔</div>
-                    </button>
-                )}
-
-                {/* Trip History - Only show completed trips (hide expired) */}
-                <div className="space-y-4">
-                    <h2 className="font-bold text-sm text-gray-400 dark:text-gray-500 uppercase tracking-wider px-2">Trip History</h2>
-                    {(() => {
-                        // Filter trips: only show completed trips, hide expired ones
-                        const visibleTrips = myTrips.filter(trip => {
-                            const displayStatus = getTripDisplayStatus(trip);
-                            // Hide expired trips, show completed trips only
-                            if (displayStatus.status === 'expired') return false;
-                            // Show completed trips
-                            if (displayStatus.status === 'completed') return true;
-                            // Show active/in_progress trips (ongoing)
-                            if (displayStatus.status === 'open' || displayStatus.status === 'in_progress') return true;
-                            // Hide cancelled
-                            if (displayStatus.status === 'cancelled') return false;
-                            return true;
-                        });
-
-                        if (visibleTrips.length === 0) {
-                            return (
-                                <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl text-center text-gray-400 border border-gray-100 dark:border-gray-700 border-dashed text-xs">
-                                    No trips yet.
-                                </div>
-                            );
-                        }
-
-                        return visibleTrips.map(trip => {
-                            const displayStatus = getTripDisplayStatus(trip);
-                            return (
-                                <Link
-                                    key={trip.id}
-                                    href={`/trips?join=${trip.id}`}
-                                    className="block bg-white dark:bg-gray-800 rounded-3xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600 transition-all active:scale-[0.98]"
-                                >
-                                    <div className="flex justify-between items-center mb-1">
-                                        <div className="font-bold text-sm text-gray-900 dark:text-white tracking-tight">
-                                            {trip.origin} <span className="text-gray-300 mx-1">→</span> {trip.destination}
-                                        </div>
-                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide ${
-                                            displayStatus.status === 'completed' ? 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
-                                            displayStatus.status === 'in_progress' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
-                                            'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400'
-                                        }`}>
-                                            {displayStatus.label}
-                                        </span>
-                                    </div>
-                                    <div className="text-[10px] text-gray-400 font-medium">
-                                        {new Date(trip.departure_time).toLocaleDateString()}
-                                    </div>
-                                </Link>
-                            );
-                        });
-                    })()}
-                </div>
-
-                {/* Logout */}
-                <button 
-                    onClick={logout}
-                    className="w-full mt-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-400 font-bold py-4 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-red-500 transition-colors text-sm"
-                >
-                    Sign Out
-                </button>
-             </div>
-        </div>
-    );
+              </Link>
+            );
+          })}
+        </section>
+      </div>
+    </div>
+  );
 }

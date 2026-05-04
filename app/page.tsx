@@ -1,13 +1,10 @@
 "use client";
 
-import { usePrivy } from "@privy-io/react-auth";
 import Link from "next/link";
 
 const COMMANDS = ["/events", "/ride <event> <time>", "/rides", "/join 8f3a91b2"];
 
 export default function HomePage() {
-  const { ready, authenticated, login } = usePrivy();
-
   return (
     <main className="relative min-h-screen overflow-hidden dashboard-bg px-4 py-6 text-white sm:px-5">
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_72%_18%,rgba(0,255,0,0.16),transparent_34%),radial-gradient(circle_at_14%_86%,rgba(56,189,248,0.1),transparent_30%)]" />
@@ -56,22 +53,14 @@ export default function HomePage() {
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              {ready && authenticated ? (
-                <Link
-                  href="/trips"
-                  className="inline-flex min-h-[56px] w-full items-center justify-center rounded-2xl bg-action-green px-6 text-center text-xs font-black uppercase tracking-[0.16em] text-black shadow-[0_0_34px_rgba(0,255,0,0.26)] transition hover:scale-[1.01] active:scale-[0.98] sm:w-auto sm:px-7 sm:text-sm sm:tracking-[0.18em]"
-                >
-                  Open Ride Agent
-                </Link>
-              ) : (
-                <button
-                  onClick={login}
-                  disabled={!ready}
-                  className="inline-flex min-h-[56px] w-full items-center justify-center rounded-2xl bg-action-green px-6 text-center text-xs font-black uppercase tracking-[0.16em] text-black shadow-[0_0_34px_rgba(0,255,0,0.26)] transition hover:scale-[1.01] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-7 sm:text-sm sm:tracking-[0.18em]"
-                >
-                  {ready ? "Start Ride Agent" : "Loading..."}
-                </button>
-              )}
+              <a
+                href="https://t.me/cryptosideevents"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-[56px] w-full items-center justify-center rounded-2xl bg-action-green px-6 text-center text-xs font-black uppercase tracking-[0.16em] text-black shadow-[0_0_34px_rgba(0,255,0,0.26)] transition hover:scale-[1.01] active:scale-[0.98] sm:w-auto sm:px-7 sm:text-sm sm:tracking-[0.18em]"
+              >
+                Open Telegram Group
+              </a>
 
               <a
                 href="https://luma.com/cryptosideevents"
@@ -81,6 +70,13 @@ export default function HomePage() {
               >
                 View Luma Events
               </a>
+
+              <Link
+                href="/trips"
+                className="inline-flex min-h-[56px] w-full items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-6 text-center text-xs font-black uppercase tracking-[0.16em] text-white transition hover:bg-white/10 sm:w-auto sm:px-7 sm:text-sm sm:tracking-[0.18em]"
+              >
+                Web Board
+              </Link>
             </div>
 
             <div className="mt-8 grid max-w-xl grid-cols-3 gap-3">

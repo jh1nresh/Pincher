@@ -1,24 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { usePrivy } from "@privy-io/react-auth";
 import { supabase } from "@/lib/supabase";
+import { getLocalUser } from "@/lib/local-user";
 
 const Profile: React.FC = () => {
-  const { user, logout, authenticated } = usePrivy();
+  const [localUser] = useState(() => getLocalUser());
   const [history, setHistory] = useState<any[]>([]);
 
-  // Get display name from Privy user
-  const displayName =
-    user?.email?.address?.split("@")[0] ||
-    user?.phone?.number ||
-    user?.wallet?.address?.slice(0, 8) ||
-    "User";
+  const displayName = localUser.name;
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user) return;
-
       // Fetch history
       const { data: historyData } = await supabase
         .from("trip_passengers")
@@ -33,7 +26,7 @@ const Profile: React.FC = () => {
           )
         `,
         )
-        .eq("user_id", user.id)
+        .eq("user_id", localUser.id)
         .order("joined_at", { ascending: false })
         .limit(10);
 
@@ -53,12 +46,7 @@ const Profile: React.FC = () => {
     };
 
     fetchData();
-  }, [user]);
-
-  const handleLogout = async () => {
-    await logout();
-    window.location.href = "/";
-  };
+  }, [localUser.id]);
 
   return (
     <div className="flex-1 overflow-y-auto h-full page-transition">
@@ -73,7 +61,7 @@ const Profile: React.FC = () => {
               {displayName}
             </h1>
             <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-              {authenticated ? "Connected" : "Not Connected"}
+              Telegram-first rider
             </p>
           </div>
         </section>
@@ -115,13 +103,9 @@ const Profile: React.FC = () => {
           </div>
         </section>
 
-        {/* Logout */}
-        <button
-          onClick={handleLogout}
-          className="w-full py-5 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-500/10 transition-all"
-        >
-          Logout
-        </button>
+        <p className="text-center text-[10px] font-black uppercase tracking-widest text-slate-600">
+          No account required for the Consensus MVP
+        </p>
       </div>
     </div>
   );

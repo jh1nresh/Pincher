@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { usePrivy } from "@privy-io/react-auth";
+import { getLocalUser } from "@/lib/local-user";
 
 interface CoordinationProps {
   tripId: string;
@@ -19,7 +19,7 @@ const Coordination: React.FC<CoordinationProps> = ({
   onUpdateBooking,
   onProceed,
 }) => {
-  const { user } = usePrivy();
+  const [localUser] = useState(() => getLocalUser());
   const [inputCode, setInputCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
@@ -156,12 +156,12 @@ const Coordination: React.FC<CoordinationProps> = ({
   };
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !user || !tripId) return;
+    if (!newMessage.trim() || !tripId) return;
 
     const msg = {
       trip_id: tripId,
-      user_id: user.id,
-      user_name: "You", // In real app, get from profile
+      user_id: localUser.id,
+      user_name: localUser.name,
       content: newMessage.trim(),
     };
 
@@ -310,14 +310,14 @@ const Coordination: React.FC<CoordinationProps> = ({
         {messages.map((m, idx) => (
           <div
             key={idx}
-            className={`flex flex-col ${m.user_id === user?.id || m.sender === "You" ? "items-end" : "items-start"}`}
+            className={`flex flex-col ${m.user_id === localUser.id || m.sender === "You" ? "items-end" : "items-start"}`}
             style={{ animationDelay: `${idx * 200}ms` }}
           >
             <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-2 px-3">
               {m.user_name || m.sender}
             </p>
             <div
-              className={`px-6 py-4 rounded-[1.8rem] text-[13px] leading-relaxed font-medium shadow-xl max-w-[85%] ${m.user_id === user?.id || m.sender === "You" ? "bg-white text-black rounded-tr-none font-semibold" : "bg-white/5 border border-white/10 text-white rounded-tl-none"}`}
+              className={`px-6 py-4 rounded-[1.8rem] text-[13px] leading-relaxed font-medium shadow-xl max-w-[85%] ${m.user_id === localUser.id || m.sender === "You" ? "bg-white text-black rounded-tr-none font-semibold" : "bg-white/5 border border-white/10 text-white rounded-tl-none"}`}
             >
               {m.content || m.text}
             </div>

@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ViewState } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
+import { getLocalUser } from "@/lib/local-user";
 import Header from "@/components/dashboard/Header";
 import Sidebar from "@/components/dashboard/Sidebar";
 import Search from "@/components/dashboard/views/Search";
@@ -15,9 +15,9 @@ import ActiveTrip from "@/components/dashboard/views/ActiveTrip";
 import Hosting from "@/components/dashboard/views/Hosting";
 import Profile from "@/components/dashboard/views/Profile";
 
-export default function TripsPage() {
-  const { ready, authenticated, login, user } = usePrivy();
+function TripsContent() {
   const searchParams = useSearchParams();
+  const [localUser] = useState(() => getLocalUser());
 
   const [currentView, setCurrentView] = useState<ViewState>(ViewState.SEARCH);
   const [syncCode, setSyncCode] = useState<string>("");
@@ -37,32 +37,10 @@ export default function TripsPage() {
   // Handle join link (from shared URL)
   useEffect(() => {
     const joinTripId = searchParams.get("join");
-    if (joinTripId && authenticated && user) {
+    if (joinTripId) {
       joinSelectedTrip(joinTripId);
     }
-  }, [searchParams, authenticated, user]);
-
-  // Auto-trigger login when not authenticated
-  useEffect(() => {
-    if (ready && !authenticated) {
-      login();
-    }
-  }, [ready, authenticated, login]);
-
-  // Show loading screen while Privy initializes or login modal is open
-  if (!ready || !authenticated) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen dashboard-bg text-white">
-        <div className="text-center space-y-6">
-          <div className="size-12 border-2 border-action-green/20 border-t-action-green rounded-full animate-spin mx-auto"></div>
-          <h1 className="text-2xl font-black text-white italic uppercase tracking-tighter font-display">
-            {ready ? "Connecting..." : "Loading..."}
-          </h1>
-          <p className="text-slate-500 text-sm">Please complete login to access the dashboard</p>
-        </div>
-      </div>
-    );
-  }
+  }, [searchParams]);
 
   const handleSearchConfirm = (origin: string, dest: string, matches: any[]) => {
     setCandidates(matches);
@@ -71,13 +49,13 @@ export default function TripsPage() {
   };
 
   const joinSelectedTrip = async (tripId: string) => {
-    if (!tripId || !user?.id) return;
+    if (!tripId) return;
 
     const { data: existing } = await supabase
       .from("trip_passengers")
       .select("id")
       .eq("trip_id", tripId)
-      .eq("user_id", user.id)
+      .eq("user_id", localUser.id)
       .maybeSingle();
 
     if (existing?.id) {
@@ -90,8 +68,8 @@ export default function TripsPage() {
     } else {
       await supabase.from("trip_passengers").insert({
         trip_id: tripId,
-        user_id: user.id,
-        user_name: user.email?.address?.split("@")[0] || "Passenger",
+        user_id: localUser.id,
+        user_name: localUser.name,
         is_driver: false,
         payment_status: "unpaid",
         joined_at: new Date().toISOString(),
@@ -198,5 +176,24 @@ export default function TripsPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function TripsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen flex-col items-center justify-center dashboard-bg text-white">
+          <div className="space-y-6 text-center">
+            <div className="mx-auto size-12 animate-spin rounded-full border-2 border-action-green/20 border-t-action-green" />
+            <h1 className="font-display text-2xl font-black uppercase italic tracking-tighter text-white">
+              Loading rides...
+            </h1>
+          </div>
+        </div>
+      }
+    >
+      <TripsContent />
+    </Suspense>
   );
 }

@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { getLocalUser } from "@/lib/local-user";
 import {
   CONSENSUS_CALENDAR_URL,
   CONSENSUS_EVENT_DAYS,
@@ -89,8 +89,8 @@ function getRegistrationClass(status: ConsensusSideEvent["registrationStatus"]) 
 }
 
 const Search: React.FC<SearchProps> = ({ onConfirm, onHost }) => {
-  const { user } = usePrivy();
   const searchParams = useSearchParams();
+  const [localUser] = useState(() => getLocalUser());
   const [selectedDay, setSelectedDay] = useState<ConsensusSideEvent["day"]>("2026-05-04");
   const [selectedEventId, setSelectedEventId] = useState(CONSENSUS_SIDE_EVENTS[0]?.id || "");
   const [fromMode, setFromMode] = useState<FromMode>("venue");
@@ -152,11 +152,6 @@ const Search: React.FC<SearchProps> = ({ onConfirm, onHost }) => {
       return;
     }
 
-    if (!user?.id) {
-      toast.error("Please sign in first");
-      return;
-    }
-
     setIsSearching(true);
 
     try {
@@ -166,7 +161,7 @@ const Search: React.FC<SearchProps> = ({ onConfirm, onHost }) => {
       const { data, error } = await supabase
         .from("trip_rooms")
         .insert({
-          creator_id: user.id,
+          creator_id: localUser.id,
           origin,
           origin_hotzone_id: fromMode === "venue" ? CONSENSUS_VENUE.id : fromMode,
           origin_address: fromMode === "venue" ? CONSENSUS_VENUE.address : origin,
@@ -186,8 +181,8 @@ const Search: React.FC<SearchProps> = ({ onConfirm, onHost }) => {
 
       await supabase.from("trip_passengers").insert({
         trip_id: data.id,
-        user_id: user.id,
-        user_name: user.email?.address?.split("@")[0] || "Organizer",
+        user_id: localUser.id,
+        user_name: localUser.name,
         is_driver: false,
         payment_status: "unpaid",
         joined_at: new Date().toISOString(),

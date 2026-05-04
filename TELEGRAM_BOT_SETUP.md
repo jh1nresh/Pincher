@@ -10,7 +10,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://...
 SUPABASE_SERVICE_ROLE_KEY=...
 ```
 
-`SUPABASE_SERVICE_ROLE_KEY` is recommended because Telegram users are not Privy-authenticated. If it is missing, the webhook falls back to `NEXT_PUBLIC_SUPABASE_ANON_KEY`, but RLS may block writes.
+`SUPABASE_SERVICE_ROLE_KEY` is recommended because Telegram users are not browser-authenticated. If it is missing, the webhook falls back to `NEXT_PUBLIC_SUPABASE_ANON_KEY`, but RLS may block writes.
 
 ## Webhook
 

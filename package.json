@@ -20,14 +20,12 @@
     "@capacitor/ios": "^8.0.1",
     "@capacitor/push-notifications": "^8.0.0",
     "@heroicons/react": "^2.2.0",
-    "@privy-io/react-auth": "^3.10.0",
     "@supabase/supabase-js": "^2.89.0",
     "framer-motion": "^12.23.26",
     "next": "^16.0.10",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "sonner": "^2.0.7",
-    "viem": "^2.43.3",
     "zod": "^3.25.76"
   },
   "devDependencies": {
