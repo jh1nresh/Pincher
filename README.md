@@ -10,6 +10,7 @@ The current MVP is built for **Consensus Miami, May 4-8**. Attendees can create 
 
 - Creates carpool rooms from the Consensus venue to side events.
 - Supports optional custom pickup points for riders starting away from the venue.
+- Uses GPS coordinates or map links to avoid matching rides from far-apart pickup points.
 - Matches riders by destination and departure time.
 - Tracks who is waiting, who joined, and who will call Uber.
 - Opens a Telegram Forum Topic for each ride when the group supports topics.
@@ -41,6 +42,7 @@ Pincher does **not** call Uber, custody funds, escrow USDC, or verify chain tran
    /ride coinbase dinner 5/4 8:00
    /ride closing dinner 5/8 7:30
    /ride sui 6:30 from Fontainebleau lobby
+   /ride sui 6:30 from 25.7909,-80.1865
    ```
 
 4. Pincher posts the ride room with Join / Leave / Uber caller actions.
@@ -69,6 +71,12 @@ Create a ride room directly. Known side events are matched automatically; unknow
 
 /ride <event or destination> <time> from <pickup>
 Create a ride room from a custom pickup point instead of the Consensus venue.
+
+/ride <event or destination> <time> from <lat,lng>
+Create a ride room with GPS pickup matching.
+
+/pickup <id> <maps link or lat,lng>
+Add or update GPS pickup for an existing ride. Inside a ride topic, riders can also send a Telegram location.
 
 /events
 List known Consensus side events from the Luma seed.
@@ -127,6 +135,7 @@ Add registration later only if the product needs:
 - **Hosting**: Railway.
 - **Identity**: Telegram user identity in the bot; the web UI uses a lightweight local rider ID.
 - **Payments**: Manual settlement; no escrow or chain verification in the MVP.
+- **Maps**: Coordinate parsing and haversine distance matching; no paid map/geocoding API.
 
 ## Environment Variables
 

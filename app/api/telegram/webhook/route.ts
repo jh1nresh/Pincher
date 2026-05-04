@@ -5,6 +5,7 @@ import {
   CONSENSUS_SIDE_EVENTS,
   CONSENSUS_VENUE,
   ConsensusSideEvent,
+  EventCoordinate,
   estimateRideCostCents,
   formatMiamiTime,
   getDefaultLeaveAt,
@@ -26,6 +27,11 @@ interface TelegramMessage {
   chat?: { id?: TelegramChatId; is_forum?: boolean };
   from?: TelegramUser;
   text?: string;
+  caption?: string;
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
   reply_to_message?: TelegramMessage;
 }
 
@@ -78,6 +84,7 @@ const RIDE_ACTION_RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const RIDE_ACTION_RATE_LIMIT_MAX = 20;
 const SIMILAR_RIDE_WINDOW_MS = 30 * 60 * 1000;
 const NEARBY_EVENT_DISTANCE_MILES = 0.8;
+const SIMILAR_PICKUP_DISTANCE_MILES = 0.35;
 
 type PassengerUpsertResult = "joined" | "already_joined" | "updated";
 type PassengerLeaveResult = "left" | "creator_cannot_leave";
@@ -94,6 +101,8 @@ interface RideRoomMeta {
   closed_at?: string;
   close_reason?: string;
   ready_reminded_at?: string;
+  origin_coordinate?: EventCoordinate;
+  origin_coordinate_source?: "command" | "telegram_location";
 }
 
 const rideCreateRateLimit = new Map<string, number[]>();
@@ -220,6 +229,8 @@ function getRideQuery(text: string) {
 
 function cleanOriginText(value?: string) {
   return (value || "")
+    .replace(/https?:\/\/\S+/gi, " ")
+    .replace(/(?:gps:)?-?\d{1,2}(?:\.\d+)?\s*,\s*-?\d{1,3}(?:\.\d+)?/gi, " ")
     .replace(/\b(?:may\s*[3-8]|5\/[3-8](?:\/2026)?)\b/gi, " ")
     .replace(/\b\d{1,2}(?::\d{2})?\s*(?:am|pm)?\b/gi, " ")
     .replace(/\s+/g, " ")
@@ -237,12 +248,58 @@ function getOriginInput(text: string) {
   return cleanOriginText(englishMatch?.[1] || chineseMatch?.[1]);
 }
 
-function getRideOrigin(text: string) {
+function isValidCoordinate(coordinate: EventCoordinate) {
+  return (
+    Number.isFinite(coordinate.lat) &&
+    Number.isFinite(coordinate.lng) &&
+    Math.abs(coordinate.lat) <= 90 &&
+    Math.abs(coordinate.lng) <= 180
+  );
+}
+
+function parseCoordinateFromText(text?: string): EventCoordinate | undefined {
+  if (!text) return undefined;
+
+  const decodedText = (() => {
+    try {
+      return decodeURIComponent(text);
+    } catch {
+      return text;
+    }
+  })();
+  const match = decodedText.match(/(?:gps:)?(-?\d{1,2}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)/i);
+  if (!match) return undefined;
+
+  const coordinate = {
+    lat: Number(match[1]),
+    lng: Number(match[2]),
+  };
+
+  return isValidCoordinate(coordinate) ? coordinate : undefined;
+}
+
+function getMessageCoordinate(message: TelegramMessage): EventCoordinate | undefined {
+  if (message.location) {
+    const coordinate = {
+      lat: message.location.latitude,
+      lng: message.location.longitude,
+    };
+
+    return isValidCoordinate(coordinate) ? coordinate : undefined;
+  }
+
+  return parseCoordinateFromText(message.text || message.caption);
+}
+
+function getRideOrigin(text: string, coordinate?: EventCoordinate) {
   const origin = getOriginInput(text);
+  const parsedCoordinate = coordinate || parseCoordinateFromText(text);
+  const hasCoordinate = Boolean(parsedCoordinate);
 
   return {
-    name: origin || CONSENSUS_VENUE.name,
-    address: origin || CONSENSUS_VENUE.address,
+    name: origin || (hasCoordinate ? "GPS pickup" : CONSENSUS_VENUE.name),
+    address: origin || (hasCoordinate ? "Shared GPS pickup" : CONSENSUS_VENUE.address),
+    coordinate: parsedCoordinate,
   };
 }
 
@@ -403,6 +460,7 @@ function hasLeaveTime(text: string) {
 }
 
 function buildRideText(room: RideRoom, passengers: RidePassenger[], event?: ConsensusSideEvent) {
+  const meta = getRoomMeta(room);
   const waitingList = passengers.length
     ? passengers
         .map(
@@ -417,6 +475,7 @@ function buildRideText(room: RideRoom, passengers: RidePassenger[], event?: Cons
     "",
     `To: ${room.destination}`,
     `From: ${room.origin || CONSENSUS_VENUE.name}`,
+    meta.origin_coordinate ? "Pickup: GPS shared" : undefined,
     `Leave: ${formatMiamiTime(room.departure_time)}`,
     `Waiting: ${passengers.length}/${room.max_passengers || 4}`,
     event ? `Location: ${getLocationLabel(event)}` : undefined,
@@ -468,6 +527,7 @@ function buildHelpText() {
     "/rides - list open ride groups",
     "/join <id> - join a ride",
     "/leave <id> - leave a ride",
+    "/pickup <id> <maps link or lat,lng> - add GPS pickup",
     "/payer <id> - mark yourself as the Uber caller",
     "/close <id> - close a ride after it is done or wrong",
     "/paid <id> [txhash] - mark your split as paid",
@@ -483,11 +543,13 @@ function buildRideUsageText() {
     "You can also type:",
     "/ride <event keyword> <time>",
     "/ride <event keyword> <time> from <pickup>",
+    "/ride <event keyword> <time> from 25.7909,-80.1865",
     "",
     "Examples:",
     "/ride bnb 5/6 6:00",
     "/ride coinbase dinner 8:00",
     "/ride sui 6:30 from Fontainebleau lobby",
+    "/ride sui 6:30 from 25.7909,-80.1865",
     "",
     "Use /events to see known side events.",
   ].join("\n");
@@ -519,6 +581,7 @@ function buildEventTimePrompt(event: ConsensusSideEvent) {
     "",
     "Reply with a time, e.g. 6:30 or 5/6 6:00.",
     "Optional: add pickup, e.g. 6:30 from Fontainebleau lobby.",
+    "GPS works too: 6:30 from 25.7909,-80.1865",
     `${EVENT_ID_PROMPT_PREFIX} ${event.id}`,
   ].join("\n");
 }
@@ -766,6 +829,13 @@ function areRideTimesSimilar(a: RideRoom, b: RideRoom) {
 }
 
 function areRideOriginsSimilar(a: RideRoom, b: RideRoom) {
+  const aCoordinate = getRoomMeta(a).origin_coordinate;
+  const bCoordinate = getRoomMeta(b).origin_coordinate;
+
+  if (aCoordinate && bCoordinate) {
+    return getDistanceMiles(aCoordinate, bCoordinate) <= SIMILAR_PICKUP_DISTANCE_MILES;
+  }
+
   const aPlace = normalizePlace(a.origin);
   const bPlace = normalizePlace(b.origin);
 
@@ -976,13 +1046,14 @@ async function createRideRoom(
   chatId: TelegramChatId,
   user: TelegramUser | undefined,
   text: string,
+  originCoordinate?: EventCoordinate,
 ) {
   const supabase = getSupabaseServerClient();
   const event = findEventFromCommand(text);
   const customDestination = getRideQuery(text) || "Custom side event";
   const leaveAt = parseLeaveAt(text, event);
   const estimatedCost = event ? estimateRideCostCents(event) : 4500;
-  const origin = getRideOrigin(text);
+  const origin = getRideOrigin(text, originCoordinate);
 
   const { data: room, error } = await supabase
     .from("trip_rooms")
@@ -1002,6 +1073,8 @@ async function createRideRoom(
       payment_method_info: {
         type: "usdc",
         creator_name: user ? getTelegramName(user) : undefined,
+        origin_coordinate: origin.coordinate,
+        origin_coordinate_source: origin.coordinate ? "command" : undefined,
       },
     })
     .select()
@@ -1051,6 +1124,8 @@ function buildCandidateRoom(
     payment_method_info: {
       type: "usdc",
       creator_name: user ? getTelegramName(user) : undefined,
+      origin_coordinate: origin.coordinate,
+      origin_coordinate_source: origin.coordinate ? "command" : undefined,
     },
     status: "open",
   } satisfies RideRoom;
@@ -1226,6 +1301,92 @@ async function canCloseRoom(room: RideRoom, chatId: TelegramChatId, user: Telegr
   return isChatAdmin(chatId, user);
 }
 
+async function canUpdateRidePickup(room: RideRoom, chatId: TelegramChatId, user: TelegramUser) {
+  const userId = getTelegramUserId(user);
+  if (room.creator_id === userId || room.payer_id === userId) return true;
+  if (await isChatAdmin(chatId, user)) return true;
+
+  const passengers = await getPassengers(room.id);
+  return passengers.some(passenger => passenger.user_id === userId);
+}
+
+function findRoomShortIdInText(text?: string) {
+  const match = (text || "").match(/\b(?:Ride group|ride)\s+([a-f0-9]{8})\b/i);
+  return match?.[1];
+}
+
+function getPickupLabel(text: string, shortId?: string) {
+  const withoutCommand = text
+    .replace(/^\/pickup(@\w+)?/i, "")
+    .replace(shortId || "", "")
+    .trim();
+
+  return cleanOriginText(withoutCommand) || undefined;
+}
+
+async function findRoomByTopic(chatId: TelegramChatId, messageThreadId?: number) {
+  if (!messageThreadId) return null;
+
+  const { data, error } = await getSupabaseServerClient()
+    .from("trip_rooms")
+    .select("*")
+    .in("status", ACTIVE_ROOM_STATUSES)
+    .order("created_at", { ascending: false })
+    .limit(120);
+
+  if (error) throw error;
+
+  return (
+    ((data || []) as RideRoom[]).find(room => {
+      const meta = getRoomMeta(room);
+      return (
+        isUsableOpenRoom(room) &&
+        String(meta.telegram_chat_id) === String(chatId) &&
+        meta.telegram_topic_id === messageThreadId
+      );
+    }) || null
+  );
+}
+
+async function updateRidePickup(
+  room: RideRoom,
+  chatId: TelegramChatId,
+  user: TelegramUser,
+  coordinate: EventCoordinate,
+  label?: string,
+  source: RideRoomMeta["origin_coordinate_source"] = "command",
+) {
+  const originName = label || "GPS pickup";
+  const meta = getRoomMeta(room);
+
+  const { data, error } = await getSupabaseServerClient()
+    .from("trip_rooms")
+    .update({
+      origin: originName,
+      origin_address: label || "Shared GPS pickup",
+      payment_method_info: {
+        ...meta,
+        telegram_chat_id: meta.telegram_chat_id || chatId,
+        origin_coordinate: coordinate,
+        origin_coordinate_source: source,
+      },
+    })
+    .eq("id", room.id)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  await sendMessage(
+    chatId,
+    `Pickup GPS updated for ride ${formatRoomShortId(room.id)}.`,
+    undefined,
+    getRoomMeta(data as RideRoom).telegram_topic_id,
+  );
+
+  return data as RideRoom;
+}
+
 async function closeRoom(
   room: RideRoom,
   chatId: TelegramChatId,
@@ -1349,13 +1510,54 @@ async function listOpenRides(chatId: TelegramChatId) {
 }
 
 async function handleTextMessage(message: TelegramMessage) {
-  const text = message.text || "";
+  const text = message.text || message.caption || "";
   const chatId = message.chat?.id;
   if (!chatId) return { ok: true, ignored: true };
   if (!isAllowedChat(chatId)) return { ok: true, ignored: "chat_not_allowed" };
 
   const command = text.trim().toLowerCase();
   const selectedEvent = getSelectedEventFromReply(message);
+  const messageCoordinate = getMessageCoordinate(message);
+
+  if (message.location && message.from && messageCoordinate) {
+    const replyRoomId = findRoomShortIdInText(message.reply_to_message?.text);
+    const room = replyRoomId
+      ? await findRoomByShortId(replyRoomId)
+      : await findRoomByTopic(chatId, message.message_thread_id);
+
+    if (!room) {
+      return sendMessage(
+        chatId,
+        "Reply to a ride card with your Telegram location, or send it inside the ride topic.",
+        undefined,
+        message.message_thread_id,
+      );
+    }
+
+    if (!roomBelongsToChat(room, chatId)) {
+      return sendMessage(chatId, `Ride ${formatRoomShortId(room.id)} belongs to another group.`);
+    }
+
+    if (!(await canUpdateRidePickup(room, chatId, message.from))) {
+      return sendMessage(
+        chatId,
+        `Join ride ${formatRoomShortId(room.id)} before updating its pickup.`,
+        undefined,
+        message.message_thread_id,
+      );
+    }
+
+    const updatedRoom = await updateRidePickup(
+      room,
+      chatId,
+      message.from,
+      messageCoordinate,
+      "GPS pickup",
+      "telegram_location",
+    );
+    await updateRoomMessage(updatedRoom, chatId);
+    return { ok: true, pickup: "updated" };
+  }
 
   if (selectedEvent && message.from) {
     if (!hasLeaveTime(text)) {
@@ -1416,6 +1618,44 @@ async function handleTextMessage(message: TelegramMessage) {
 
   if (command.startsWith("/rides")) {
     return listOpenRides(chatId);
+  }
+
+  const pickupMatch = text.match(/^\/pickup(@\w+)?\s+([a-f0-9-]{6,36})/i);
+  if (pickupMatch && message.from) {
+    if (isRideActionRateLimited(chatId, message.from)) {
+      return sendMessage(chatId, "Too many ride actions. Try again in a minute.");
+    }
+
+    const shortId = pickupMatch[2];
+    const room = await findRoomByShortId(shortId);
+    if (!room) return sendMessage(chatId, `Ride ${shortId} was not found. Try /rides.`);
+    if (!roomBelongsToChat(room, chatId)) {
+      return sendMessage(chatId, `Ride ${shortId} belongs to a different Telegram group.`);
+    }
+
+    if (!(await canUpdateRidePickup(room, chatId, message.from))) {
+      return sendMessage(chatId, `Join ride ${shortId} before updating its pickup.`);
+    }
+
+    if (!messageCoordinate) {
+      return sendMessage(
+        chatId,
+        `Send /pickup ${formatRoomShortId(room.id)} with a Google Maps link or lat,lng, e.g. /pickup ${formatRoomShortId(room.id)} 25.7909,-80.1865.`,
+        undefined,
+        message.message_thread_id,
+      );
+    }
+
+    const updatedRoom = await updateRidePickup(
+      room,
+      chatId,
+      message.from,
+      messageCoordinate,
+      getPickupLabel(text, shortId),
+      "command",
+    );
+    await updateRoomMessage(updatedRoom, chatId);
+    return { ok: true, pickup: "updated" };
   }
 
   if (command.startsWith("/ride")) {
