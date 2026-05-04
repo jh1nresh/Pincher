@@ -557,7 +557,6 @@ function hasLeaveTime(text: string) {
 }
 
 function buildRideText(room: RideRoom, passengers: RidePassenger[], event?: ConsensusSideEvent) {
-  const meta = getRoomMeta(room);
   const waitingList = passengers.length
     ? passengers
         .map(
@@ -572,7 +571,6 @@ function buildRideText(room: RideRoom, passengers: RidePassenger[], event?: Cons
     "",
     `To: ${room.destination}`,
     `From: ${room.origin || CONSENSUS_VENUE.name}`,
-    meta.origin_coordinate ? "Pickup: GPS shared" : undefined,
     `Leave: ${formatMiamiTime(room.departure_time)}`,
     `Waiting: ${passengers.length}/${room.max_passengers || 4}`,
     event ? `Location: ${getLocationLabel(event)}` : undefined,
@@ -1478,13 +1476,6 @@ async function updateRidePickup(
 
   if (error) throw error;
 
-  await sendMessage(
-    chatId,
-    `Pickup GPS updated for ride ${formatRoomShortId(room.id)}.`,
-    undefined,
-    getRoomMeta(data as RideRoom).telegram_topic_id,
-  );
-
   return data as RideRoom;
 }
 
@@ -1656,7 +1647,12 @@ async function handleTextMessage(message: TelegramMessage) {
       "GPS pickup",
       "telegram_location",
     );
-    await updateRoomMessage(updatedRoom, chatId);
+    await sendMessage(
+      chatId,
+      `Pickup updated for ride ${formatRoomShortId(updatedRoom.id)}.`,
+      undefined,
+      message.message_thread_id,
+    );
     return { ok: true, pickup: "updated" };
   }
 
@@ -1761,7 +1757,13 @@ async function handleTextMessage(message: TelegramMessage) {
       geocodedPickup ? "google_geocoding" : "command",
       geocodedPickup?.formattedAddress,
     );
-    await updateRoomMessage(updatedRoom, chatId);
+    await sendMessage(
+      chatId,
+      `Pickup updated for ride ${formatRoomShortId(updatedRoom.id)}: ${updatedRoom.origin}`,
+      undefined,
+      message.message_thread_id,
+    );
+    await deleteMessageQuietly(chatId, message.message_id);
     return { ok: true, pickup: "updated" };
   }
 
