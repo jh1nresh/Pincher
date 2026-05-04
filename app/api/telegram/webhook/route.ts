@@ -320,8 +320,6 @@ function hasLeaveTime(text: string) {
 }
 
 function buildRideText(room: RideRoom, passengers: RidePassenger[], event?: ConsensusSideEvent) {
-  const estimatedTotal = room.estimated_cost || (event ? estimateRideCostCents(event) : 4200);
-  const split = Math.ceil(estimatedTotal / (room.max_passengers || 4));
   const waitingList = passengers.length
     ? passengers
         .map(
@@ -338,7 +336,6 @@ function buildRideText(room: RideRoom, passengers: RidePassenger[], event?: Cons
     `From: ${room.origin || CONSENSUS_VENUE.name}`,
     `Leave: ${formatMiamiTime(room.departure_time)}`,
     `Waiting: ${passengers.length}/${room.max_passengers || 4}`,
-    `Est. split: ${(split / 100).toFixed(2)} USDC`,
     event ? `Location: ${getLocationLabel(event)}` : undefined,
     "",
     waitingList,
@@ -920,13 +917,13 @@ async function createRideRoom(
 
 function buildTopicTitle(room: RideRoom) {
   const meta = getRoomMeta(room);
-  const location = compactTopicPart(room.destination_address || room.destination);
+  const eventName = compactTopicPart(room.destination);
   const creator = compactTopicPart(meta.creator_name || room.creator_id.replace(/^telegram:/, ""));
-  const title = `${formatMiamiTime(room.departure_time)} · ${location} · ${creator}`;
+  const title = `${formatMiamiTime(room.departure_time)} · ${eventName} · ${creator}`;
 
   return title.length <= 128
     ? title
-    : `${formatMiamiTime(room.departure_time)} · ${location}`.slice(0, 128);
+    : `${formatMiamiTime(room.departure_time)} · ${eventName}`.slice(0, 128);
 }
 
 function buildCandidateRoom(
