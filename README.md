@@ -191,7 +191,12 @@ For the current bot MVP, `trip_rooms.payment_method_info` is also used to store 
 
 ## Railway Deployment
 
-Production service:
+Pincher uses two Railway services:
+
+- `Pincher`: the always-on Telegram webhook/web service.
+- `pincher-cleanup-cron`: a scheduled job that closes stale rides and exits.
+
+Production web service:
 
 ```text
 https://pincher-production.up.railway.app
@@ -226,7 +231,16 @@ curl "https://pincher-production.up.railway.app/api/telegram/webhook?task=close-
   -H "authorization: Bearer $CRON_SECRET"
 ```
 
-Schedule this every 10-15 minutes with Railway cron, GitHub Actions, or any uptime monitor that can send an HTTP request. The Telegram webhook still runs the same cleanup opportunistically whenever the bot receives activity.
+Railway cleanup cron service:
+
+```text
+Start command: npm run cleanup:expired
+Cron schedule: */15 * * * *
+```
+
+Cron schedules run in UTC. The script reads `PINCHER_CLEANUP_URL`; if that variable is unset, it defaults to the production cleanup endpoint above. If `CRON_SECRET` is set on the webhook service, set the same value on the cron service.
+
+The Telegram webhook still runs the same cleanup opportunistically whenever the bot receives activity, but the Railway cron keeps stale rides closing even when nobody is messaging the bot and the local Codex automation is offline.
 
 ## MVP Success Metric
 
