@@ -1,41 +1,53 @@
 # Dependencies
-/node_modules
-/.pnp
+node_modules/
+.pnp
 .pnp.js
-
-# Testing
-/coverage
+.yarn/install-state.gz
 
 # Next.js
-/.next/
-/out/
+.next/
+out/
+certificates.next
 
-# Production
-/build
+# Build output
+build/
+dist/
+coverage/
+*.tsbuildinfo
 
-# Misc
-.DS_Store
+# Environment variables and local secrets
+.env
+.env.*
+*.env
+*.local
 *.pem
 
-# Debug
+# Logs
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
+lerna-debug.log*
+*.log
 
-# Environment Variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-*.env
+# Local IDE and OS files
+.DS_Store
+.idea/
+.vscode/
 
-# Vercel
-.vercel
+# Deploy providers
+.vercel/
+.railway/
+
+# Supabase local state
+.supabase/
+supabase/.branches/
+supabase/.temp/
 
 # Foundry
-/cache
-/out
-/broadcast
+cache/
+out/
+broadcast/
 
-certificates.next
+# iOS / Capacitor local output
+ios/App/build/
+DerivedData/
