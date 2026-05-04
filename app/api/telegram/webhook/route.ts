@@ -71,8 +71,11 @@ const AUTO_CLOSE_AFTER_HOURS = 2;
 const CONSENSUS_YEAR = 2026;
 const EVENT_ID_PROMPT_PREFIX = "Event ID:";
 const ACTIVE_ROOM_STATUSES = ["open", "full", "splitting"];
+const RIDE_CREATE_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const RIDE_CREATE_RATE_LIMIT_MAX = 3;
 
 type PassengerUpsertResult = "joined" | "already_joined" | "updated";
+type PassengerLeaveResult = "left" | "creator_cannot_leave";
 
 interface RideRoomMeta {
   type?: string;
@@ -80,11 +83,14 @@ interface RideRoomMeta {
   payer_name?: string;
   telegram_chat_id?: TelegramChatId;
   telegram_topic_id?: number;
+  telegram_topic_title?: string;
   telegram_topic_status?: "open" | "closed" | "unavailable";
   closed_by?: string;
   closed_at?: string;
   close_reason?: string;
 }
+
+const rideCreateRateLimit = new Map<string, number[]>();
 
 function getSupabaseServerClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -113,6 +119,48 @@ function getTelegramUserId(user: TelegramUser) {
 
 function getRoomMeta(room: RideRoom): RideRoomMeta {
   return (room.payment_method_info || {}) as RideRoomMeta;
+}
+
+function getAllowedChatIds() {
+  return (process.env.TELEGRAM_ALLOWED_CHAT_IDS || "")
+    .split(",")
+    .map(value => value.trim())
+    .filter(Boolean);
+}
+
+function isAllowedChat(chatId: TelegramChatId) {
+  const allowedChatIds = getAllowedChatIds();
+  if (!allowedChatIds.length) return true;
+  return allowedChatIds.includes(String(chatId));
+}
+
+function getRateLimitKey(chatId: TelegramChatId, user?: TelegramUser) {
+  return `${chatId}:${user?.id || "unknown"}`;
+}
+
+function isRideCreateRateLimited(chatId: TelegramChatId, user?: TelegramUser) {
+  const now = Date.now();
+  const key = getRateLimitKey(chatId, user);
+  const recentAttempts = (rideCreateRateLimit.get(key) || []).filter(
+    timestamp => now - timestamp < RIDE_CREATE_RATE_LIMIT_WINDOW_MS,
+  );
+
+  if (recentAttempts.length >= RIDE_CREATE_RATE_LIMIT_MAX) {
+    rideCreateRateLimit.set(key, recentAttempts);
+    return true;
+  }
+
+  rideCreateRateLimit.set(key, [...recentAttempts, now]);
+  return false;
+}
+
+function isCronAuthorized(request: NextRequest) {
+  const secret = process.env.CRON_SECRET || process.env.AUTO_CLOSE_SECRET;
+  if (!secret) return true;
+
+  const authHeader = request.headers.get("authorization");
+  const key = request.nextUrl.searchParams.get("key");
+  return authHeader === `Bearer ${secret}` || key === secret;
 }
 
 function getRideQuery(text: string) {
@@ -437,6 +485,14 @@ async function createForumTopic(chatId: TelegramChatId, name: string) {
   });
 }
 
+async function editForumTopic(chatId: TelegramChatId, messageThreadId: number, name: string) {
+  return telegram("editForumTopic", {
+    chat_id: chatId,
+    message_thread_id: messageThreadId,
+    name: name.slice(0, 128),
+  });
+}
+
 async function closeForumTopic(chatId: TelegramChatId, messageThreadId: number) {
   return telegram("closeForumTopic", {
     chat_id: chatId,
@@ -612,9 +668,10 @@ function buildTopicTitle(room: RideRoom) {
 
 async function ensureRideTopic(chatId: TelegramChatId, room: RideRoom) {
   const meta = getRoomMeta(room);
-  if (meta.telegram_topic_id) return room;
+  if (meta.telegram_topic_id) return syncRideTopicTitle(chatId, room);
 
-  const topic = await createForumTopic(chatId, buildTopicTitle(room));
+  const topicTitle = buildTopicTitle(room);
+  const topic = await createForumTopic(chatId, topicTitle);
   if (!topic?.ok || !topic.result?.message_thread_id) {
     console.warn("createForumTopic skipped:", topic);
     return updateRoomMeta(room, {
@@ -626,16 +683,52 @@ async function ensureRideTopic(chatId: TelegramChatId, room: RideRoom) {
   return updateRoomMeta(room, {
     telegram_chat_id: chatId,
     telegram_topic_id: topic.result.message_thread_id,
+    telegram_topic_title: topicTitle,
     telegram_topic_status: "open",
   });
 }
 
-async function updateRoomMessage(room: RideRoom, chatId: TelegramChatId, messageId?: number) {
-  const passengers = await getPassengers(room.id);
-  const event = CONSENSUS_SIDE_EVENTS.find(item => item.id === room.destination_hotzone_id);
-  const text = buildRideText(room, passengers, event);
-  const keyboard = buildRideKeyboard(room.id);
+async function syncRideTopicTitle(chatId: TelegramChatId, room: RideRoom) {
   const meta = getRoomMeta(room);
+  if (!meta.telegram_topic_id) return room;
+
+  let creatorName = meta.creator_name;
+  if (!creatorName) {
+    const passengers = await getPassengers(room.id);
+    creatorName = passengers.find(passenger => passenger.user_id === room.creator_id)?.user_name;
+  }
+
+  const topicTitle = buildTopicTitle({
+    ...room,
+    payment_method_info: { ...meta, creator_name: creatorName },
+  });
+  if (meta.telegram_topic_title === topicTitle) return room;
+
+  const topicResult = await editForumTopic(
+    meta.telegram_chat_id || chatId,
+    meta.telegram_topic_id,
+    topicTitle,
+  );
+
+  if (!topicResult?.ok) {
+    console.warn("editForumTopic skipped:", topicResult);
+    return room;
+  }
+
+  return updateRoomMeta(room, {
+    creator_name: creatorName,
+    telegram_chat_id: meta.telegram_chat_id || chatId,
+    telegram_topic_title: topicTitle,
+  });
+}
+
+async function updateRoomMessage(room: RideRoom, chatId: TelegramChatId, messageId?: number) {
+  const syncedRoom = await syncRideTopicTitle(chatId, room);
+  const passengers = await getPassengers(room.id);
+  const event = CONSENSUS_SIDE_EVENTS.find(item => item.id === syncedRoom.destination_hotzone_id);
+  const text = buildRideText(syncedRoom, passengers, event);
+  const keyboard = buildRideKeyboard(syncedRoom.id);
+  const meta = getRoomMeta(syncedRoom);
 
   if (messageId) return editMessage(chatId, messageId, text, keyboard);
   return sendMessage(chatId, text, keyboard, meta.telegram_topic_id);
@@ -652,7 +745,11 @@ async function handleJoin(room: RideRoom, user: TelegramUser) {
   return result;
 }
 
-async function handleLeave(room: RideRoom, user: TelegramUser) {
+async function handleLeave(room: RideRoom, user: TelegramUser): Promise<PassengerLeaveResult> {
+  if (room.creator_id === getTelegramUserId(user)) {
+    return "creator_cannot_leave" as const;
+  }
+
   const supabase = getSupabaseServerClient();
   const { error } = await supabase
     .from("trip_passengers")
@@ -663,6 +760,7 @@ async function handleLeave(room: RideRoom, user: TelegramUser) {
   if (error) throw error;
 
   await supabase.from("trip_rooms").update({ status: "open" }).eq("id", room.id);
+  return "left" as const;
 }
 
 async function handlePayer(room: RideRoom, user: TelegramUser) {
@@ -839,6 +937,7 @@ async function handleTextMessage(message: TelegramMessage) {
   const text = message.text || "";
   const chatId = message.chat?.id;
   if (!chatId) return { ok: true, ignored: true };
+  if (!isAllowedChat(chatId)) return { ok: true, ignored: "chat_not_allowed" };
 
   const command = text.trim().toLowerCase();
   const selectedEvent = getSelectedEventFromReply(message);
@@ -848,6 +947,15 @@ async function handleTextMessage(message: TelegramMessage) {
       return sendMessage(
         chatId,
         `Reply with a leave time for ${selectedEvent.name}, e.g. 6:30 or 5/6 6:00.`,
+        undefined,
+        message.message_thread_id,
+      );
+    }
+
+    if (isRideCreateRateLimited(chatId, message.from)) {
+      return sendMessage(
+        chatId,
+        "Too many ride groups opened recently. Try again in a few minutes.",
         undefined,
         message.message_thread_id,
       );
@@ -903,6 +1011,15 @@ async function handleTextMessage(message: TelegramMessage) {
       );
       await deleteMessageQuietly(chatId, message.message_id);
       return result;
+    }
+
+    if (isRideCreateRateLimited(chatId, message.from)) {
+      return sendMessage(
+        chatId,
+        "Too many ride groups opened recently. Try again in a few minutes.",
+        undefined,
+        message.message_thread_id,
+      );
     }
 
     const {
@@ -965,7 +1082,17 @@ async function handleTextMessage(message: TelegramMessage) {
     );
   }
 
-  if (action === "leave") await handleLeave(room, message.from);
+  if (action === "leave") {
+    const result = await handleLeave(room, message.from);
+    if (result === "creator_cannot_leave") {
+      return sendMessage(
+        chatId,
+        `Ride creators should close ${formatRoomShortId(room.id)} instead of leaving it.`,
+        undefined,
+        message.message_thread_id,
+      );
+    }
+  }
   if (action === "payer") await handlePayer(room, message.from);
   if (action === "paid") await handlePaid(room, message.from, txHash);
 
@@ -979,6 +1106,10 @@ async function handleCallback(callback: TelegramCallbackQuery) {
 
   if (!chatId || !shortId) {
     return answerCallback(callback.id);
+  }
+
+  if (!isAllowedChat(chatId)) {
+    return answerCallback(callback.id, "This group is not enabled for Pincher");
   }
 
   if (action === "ride_event") {
@@ -1026,7 +1157,13 @@ async function handleCallback(callback: TelegramCallbackQuery) {
     const result = await handleJoin(room, callback.from);
     callbackText = result === "already_joined" ? "You're already in this ride" : "Joined ride";
   }
-  if (action === "leave") await handleLeave(room, callback.from);
+  if (action === "leave") {
+    const result = await handleLeave(room, callback.from);
+    callbackText =
+      result === "creator_cannot_leave"
+        ? "Ride creators should close the ride instead"
+        : "Left ride";
+  }
   if (action === "payer") await handlePayer(room, callback.from);
   if (action === "paid") await handlePaid(room, callback.from);
 
@@ -1053,6 +1190,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, ignored: true });
   } catch (error) {
     console.error("Telegram webhook error:", error);
+    return NextResponse.json(
+      { ok: false, error: error instanceof Error ? error.message : "unknown error" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const task = request.nextUrl.searchParams.get("task") || "close-expired";
+    if (task !== "close-expired") {
+      return NextResponse.json({ ok: false, error: "unknown task" }, { status: 400 });
+    }
+
+    if (!isCronAuthorized(request)) {
+      return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+    }
+
+    const closed = await closeExpiredRooms();
+    return NextResponse.json({ ok: true, task, closed });
+  } catch (error) {
+    console.error("Telegram cron error:", error);
     return NextResponse.json(
       { ok: false, error: error instanceof Error ? error.message : "unknown error" },
       { status: 500 },

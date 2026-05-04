@@ -14,7 +14,8 @@ The current MVP is built for **Consensus Miami, May 4-8**. Attendees can create 
 - Opens a Telegram Forum Topic for each ride when the group supports topics.
 - Supports custom events that are not in the built-in Luma list.
 - Lets organizers or admins close completed rides with `/close <id>`.
-- Auto-closes stale rides after the departure window when the bot receives activity.
+- Auto-closes stale rides after the departure window from bot activity or the cron endpoint.
+- Supports optional group allowlisting and basic ride-creation rate limiting.
 
 Pincher does **not** call Uber, custody funds, escrow USDC, or verify chain transactions in this MVP. Payment is intentionally manual: the riders coordinate in the topic and settle with USDC, Venmo, Zelle, cash, or whatever works for them.
 
@@ -82,7 +83,7 @@ For the best MVP test:
 3. Enable **Topics**.
 4. Add the Pincher bot.
 5. Make the bot an admin.
-6. Give it permission to **Manage Topics**.
+6. Give it permission to **Manage Topics** and **Delete Messages**.
 
 If topics are not enabled or the bot does not have topic permissions, Pincher still works. It will post ride cards in the main group instead of creating per-ride topics.
 
@@ -122,6 +123,17 @@ SUPABASE_SERVICE_ROLE_KEY=...
 ```
 
 Do not expose `SUPABASE_SERVICE_ROLE_KEY` in client-side code. It is only for server routes.
+
+Optional hardening variables:
+
+```env
+TELEGRAM_ALLOWED_CHAT_IDS=-1001234567890,-1009876543210
+CRON_SECRET=...
+```
+
+`TELEGRAM_ALLOWED_CHAT_IDS` limits the bot to specific Telegram groups. Leave it unset for open MVP testing.
+
+`CRON_SECRET` protects the stale-ride cleanup endpoint. If it is unset, the endpoint is public but only performs idempotent stale ride cleanup.
 
 ## Local Development
 
@@ -193,6 +205,15 @@ curl -X POST https://pincher-production.up.railway.app/api/telegram/webhook \
   -H "content-type: application/json" \
   -d '{}'
 ```
+
+Stale ride cleanup endpoint:
+
+```bash
+curl "https://pincher-production.up.railway.app/api/telegram/webhook?task=close-expired" \
+  -H "authorization: Bearer $CRON_SECRET"
+```
+
+Schedule this every 10-15 minutes with Railway cron, GitHub Actions, or any uptime monitor that can send an HTTP request. The Telegram webhook still runs the same cleanup opportunistically whenever the bot receives activity.
 
 ## MVP Success Metric
 
