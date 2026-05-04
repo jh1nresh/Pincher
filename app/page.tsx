@@ -26,7 +26,7 @@ export default function HomePage() {
           </div>
 
           <a
-            href="https://t.me/cryptosideevents"
+            href="https://t.me/consensus_ride"
             target="_blank"
             rel="noreferrer"
             className="hidden rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[10px] font-black uppercase tracking-[0.18em] text-slate-300 transition hover:border-white/20 hover:bg-white/10 sm:block"
@@ -54,7 +54,7 @@ export default function HomePage() {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a
-                href="https://t.me/cryptosideevents"
+                href="https://t.me/consensus_ride"
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex min-h-[56px] w-full items-center justify-center rounded-2xl bg-action-green px-6 text-center text-xs font-black uppercase tracking-[0.16em] text-black shadow-[0_0_34px_rgba(0,255,0,0.26)] transition hover:scale-[1.01] active:scale-[0.98] sm:w-auto sm:px-7 sm:text-sm sm:tracking-[0.18em]"

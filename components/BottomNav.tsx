@@ -26,7 +26,7 @@ export default function BottomNav() {
 
         {/* Telegram (Center) */}
         <a
-          href="https://t.me/cryptosideevents"
+          href="https://t.me/consensus_ride"
           className="flex flex-col items-center justify-center -mt-6"
         >
           <div className="w-14 h-14 bg-black rounded-full flex items-center justify-center shadow-lg text-white hover:scale-105 active:scale-95 transition-transform border-4 border-white">

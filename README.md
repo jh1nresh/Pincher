@@ -2,7 +2,7 @@
 
 Pincher is a Telegram-first carpool matcher agent for crypto conference side events.
 
-The current MVP is built for **Consensus Miami, May 4-8**. Attendees can create ride rooms in a Telegram group, join people heading to the same Luma side event, coordinate in a Telegram topic, and split the ride manually after one person calls Uber.
+The current MVP is built for **Consensus Miami, May 4-8**. Attendees can create ride rooms in the [Consensus Ride Telegram group](https://t.me/consensus_ride), join people heading to the same Luma side event, coordinate in a Telegram topic, and split the ride manually after one person calls Uber.
 
 ![Pincher logo](/public/pincher-agent-logo.png)
 
@@ -101,6 +101,12 @@ Close a completed ride. Allowed for the ride creator, Uber caller, or Telegram g
 ```
 
 ## Telegram Group Setup
+
+Live MVP group:
+
+```text
+https://t.me/consensus_ride
+```
 
 For the best MVP test:
 

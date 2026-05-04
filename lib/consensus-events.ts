@@ -21,7 +21,7 @@ export interface ConsensusSideEvent {
 }
 
 export const CONSENSUS_CALENDAR_URL = "https://luma.com/cryptosideevents";
-export const CONSENSUS_TELEGRAM_URL = "https://t.me/cryptosideevents";
+export const CONSENSUS_TELEGRAM_URL = "https://t.me/consensus_ride";
 
 export const CONSENSUS_VENUE = {
   id: "miami_beach_convention_center",
