@@ -392,6 +392,27 @@ async function editMessage(
   });
 }
 
+async function deleteMessage(chatId: TelegramChatId, messageId: number) {
+  return telegram("deleteMessage", {
+    chat_id: chatId,
+    message_id: messageId,
+  });
+}
+
+async function deleteMessageQuietly(chatId: TelegramChatId, messageId?: number) {
+  if (!messageId) return;
+
+  const result = await deleteMessage(chatId, messageId);
+  if (!result?.ok) console.warn("deleteMessage skipped:", result);
+}
+
+async function cleanupRidePromptMessages(chatId: TelegramChatId, message: TelegramMessage) {
+  await Promise.all([
+    deleteMessageQuietly(chatId, message.message_id),
+    deleteMessageQuietly(chatId, message.reply_to_message?.message_id),
+  ]);
+}
+
 async function answerCallback(callbackQueryId: string, text?: string) {
   return telegram("answerCallbackQuery", {
     callback_query_id: callbackQueryId,
@@ -828,15 +849,19 @@ async function handleTextMessage(message: TelegramMessage) {
 
     if (meta.telegram_topic_id) {
       await sendMessage(chatId, rideText, keyboard, meta.telegram_topic_id);
-      return sendMessage(
+      const result = await sendMessage(
         chatId,
         `Ride group ${formatRoomShortId(room.id)} opened for ${room.destination}.\nA forum topic was created for pickup coordination. Tap Join if you want in.`,
         keyboard,
         message.message_thread_id,
       );
+      await cleanupRidePromptMessages(chatId, message);
+      return result;
     }
 
-    return sendMessage(chatId, rideText, keyboard, message.message_thread_id);
+    const result = await sendMessage(chatId, rideText, keyboard, message.message_thread_id);
+    await cleanupRidePromptMessages(chatId, message);
+    return result;
   }
 
   if (command.startsWith("/start") || command.startsWith("/help")) {
@@ -853,12 +878,14 @@ async function handleTextMessage(message: TelegramMessage) {
 
   if (command.startsWith("/ride")) {
     if (!getRideQuery(text)) {
-      return sendMessage(
+      const result = await sendMessage(
         chatId,
         buildRideUsageText(),
         buildEventPickerKeyboard(),
         message.message_thread_id,
       );
+      await deleteMessageQuietly(chatId, message.message_id);
+      return result;
     }
 
     const {
@@ -873,14 +900,18 @@ async function handleTextMessage(message: TelegramMessage) {
 
     if (meta.telegram_topic_id) {
       await sendMessage(chatId, rideText, keyboard, meta.telegram_topic_id);
-      return sendMessage(
+      const result = await sendMessage(
         chatId,
         `Ride group ${formatRoomShortId(room.id)} opened for ${room.destination}.\nA forum topic was created for pickup coordination. Tap Join if you want in.`,
         keyboard,
       );
+      await deleteMessageQuietly(chatId, message.message_id);
+      return result;
     }
 
-    return sendMessage(chatId, rideText, keyboard);
+    const result = await sendMessage(chatId, rideText, keyboard);
+    await deleteMessageQuietly(chatId, message.message_id);
+    return result;
   }
 
   const actionMatch = text.match(
@@ -938,7 +969,7 @@ async function handleCallback(callback: TelegramCallbackQuery) {
     if (!event) return answerCallback(callback.id, "Event not found");
 
     await answerCallback(callback.id, "Event selected");
-    return sendMessage(
+    const result = await sendMessage(
       chatId,
       buildEventTimePrompt(event),
       {
@@ -947,6 +978,8 @@ async function handleCallback(callback: TelegramCallbackQuery) {
       },
       callback.message?.message_thread_id,
     );
+    await deleteMessageQuietly(chatId, messageId);
+    return result;
   }
 
   if (!["join", "leave", "payer", "paid", "close"].includes(action)) {
