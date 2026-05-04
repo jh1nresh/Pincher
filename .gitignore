@@ -34,6 +34,15 @@ lerna-debug.log*
 .idea/
 .vscode/
 
+# Local agent / assistant workspace files
+.agent/
+.agents/
+.claude/skills/
+.claude/settings.local.json
+.codex/
+PINCHER_AGENT_*.md
+PINCHER_AGENT_*.mermaid
+
 # Deploy providers
 .vercel/
 .railway/
@@ -49,5 +58,6 @@ out/
 broadcast/
 
 # iOS / Capacitor local output
+ios/
 ios/App/build/
 DerivedData/
