@@ -3,7 +3,7 @@
 import { usePrivy } from "@privy-io/react-auth";
 import Link from "next/link";
 
-const COMMANDS = ["/ride sui 6:30", "/rides", "/join 8f3a91b2", "/paid 8f3a91b2 0x..."];
+const COMMANDS = ["/events", "/ride <event> <time>", "/rides", "/join 8f3a91b2"];
 
 export default function HomePage() {
   const { ready, authenticated, login } = usePrivy();

@@ -131,12 +131,7 @@ function slugifyCustomDestination(value: string) {
 function findEventFromCommand(text: string) {
   const query = getRideQuery(text).toLowerCase();
 
-  if (!query) {
-    return (
-      CONSENSUS_SIDE_EVENTS.find(event => event.id === "evening-with-sui-miami") ||
-      CONSENSUS_SIDE_EVENTS[0]
-    );
-  }
+  if (!query) return undefined;
 
   return (
     CONSENSUS_SIDE_EVENTS.find(event => event.name.toLowerCase().includes(query)) ||
@@ -248,16 +243,59 @@ function buildHelpText() {
     "Use it in this group to find people heading from the venue to side events.",
     "",
     "Commands:",
-    "/ride sui 6:30 - start a ride group",
-    "/ride <event name> 6:30 - start a ride for any event",
+    "/ride <event keyword> <time> - start a ride group",
+    "/events - list known side events",
     "/rides - list open ride groups",
     "/join <id> - join a ride",
     "/leave <id> - leave a ride",
     "/payer <id> - mark yourself as the Uber caller",
     "/close <id> - close a ride after it is done or wrong",
-    "/paid <id> <txhash> - mark your USDC split as paid",
+    "/paid <id> [txhash] - mark your split as paid",
     "",
     `Side events source: ${CONSENSUS_CALENDAR_URL}`,
+  ].join("\n");
+}
+
+function buildRideUsageText() {
+  return [
+    "Tell Pincher which side event you are going to.",
+    "",
+    "Format:",
+    "/ride <event keyword> <time>",
+    "",
+    "Examples:",
+    "/ride bnb 5/6 6:00",
+    "/ride coinbase dinner 8:00",
+    "",
+    "Use /events to see known side events.",
+  ].join("\n");
+}
+
+function buildEventsText() {
+  const events = [...CONSENSUS_SIDE_EVENTS]
+    .filter(event => event.day >= "2026-05-04" && event.day <= "2026-05-08")
+    .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
+    .slice(0, 18);
+
+  const lines = events.map(event => {
+    const day = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      month: "short",
+      day: "numeric",
+    }).format(new Date(event.startsAt));
+
+    return `- ${day} ${formatMiamiTime(event.startsAt)} · ${event.name} · ${event.neighborhood}`;
+  });
+
+  return [
+    "Known Consensus side events:",
+    "",
+    ...lines,
+    "",
+    "Start a ride with:",
+    "/ride <event keyword> <time>",
+    "",
+    `Full calendar: ${CONSENSUS_CALENDAR_URL}`,
   ].join("\n");
 }
 
@@ -653,7 +691,7 @@ async function listOpenRides(chatId: TelegramChatId) {
   if (!rooms?.length) {
     return sendMessage(
       chatId,
-      `No open ride groups yet.\n\nStart one with /ride sui 6:30\nCalendar: ${CONSENSUS_CALENDAR_URL}`,
+      `No open ride groups yet.\n\nStart one with /ride <event keyword> <time>\nCalendar: ${CONSENSUS_CALENDAR_URL}`,
     );
   }
 
@@ -686,11 +724,19 @@ async function handleTextMessage(message: TelegramMessage) {
     return sendMessage(chatId, buildHelpText());
   }
 
+  if (command.startsWith("/events")) {
+    return sendMessage(chatId, buildEventsText());
+  }
+
   if (command.startsWith("/rides")) {
     return listOpenRides(chatId);
   }
 
   if (command.startsWith("/ride")) {
+    if (!getRideQuery(text)) {
+      return sendMessage(chatId, buildRideUsageText());
+    }
+
     const {
       room: createdRoom,
       passengers,

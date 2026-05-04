@@ -23,7 +23,6 @@ Pincher does **not** call Uber, custody funds, escrow USDC, or verify chain tran
 1. Someone creates a ride:
 
    ```text
-   /ride sui 6:30
    /ride coinbase dinner 5/4 8:00
    /ride closing dinner 5/8 7:30
    ```
@@ -48,6 +47,9 @@ Show the bot help message.
 /ride <event or destination> <time>
 Create a ride room. Known side events are matched automatically; unknown events become custom rides.
 
+/events
+List known Consensus side events from the Luma seed.
+
 /rides
 List open ride rooms.
 
@@ -60,8 +62,8 @@ Leave a ride room.
 /payer <id>
 Mark yourself as the person calling Uber.
 
-/paid <id> <txhash>
-Record that a rider paid. This is only a note, not chain verification.
+/paid <id> [txhash]
+Record that a rider paid. The tx hash is optional and is only a note, not chain verification.
 
 /close <id>
 Close a completed ride. Allowed for the ride creator, Uber caller, or Telegram group admins.
