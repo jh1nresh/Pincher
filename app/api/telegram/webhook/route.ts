@@ -603,8 +603,18 @@ function compactTopicPart(value?: string) {
   return (value || "")
     .replace(/\s+/g, " ")
     .replace(/\b(2026|Miami|The|A|An)\b/g, "")
+    .replace(/\s*-\s*exact location hidden\b/i, "")
+    .replace(/^Register to see (location|address)$/i, "")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function getTopicLocation(room: RideRoom) {
+  const event = getRoomEvent(room);
+  const eventLocation = event ? compactTopicPart(getLocationLabel(event)) : "";
+
+  if (eventLocation) return eventLocation;
+  return compactTopicPart(room.destination_address || room.destination);
 }
 
 function buildHelpText() {
@@ -1185,10 +1195,11 @@ async function createRideRoom(
 }
 
 function buildTopicTitle(room: RideRoom) {
-  const meta = getRoomMeta(room);
   const eventName = compactTopicPart(room.destination);
-  const creator = compactTopicPart(meta.creator_name || room.creator_id.replace(/^telegram:/, ""));
-  const title = `${formatMiamiTime(room.departure_time)} · ${eventName} · ${creator}`;
+  const location = getTopicLocation(room);
+  const title = [formatMiamiTime(room.departure_time), eventName, location]
+    .filter(Boolean)
+    .join(" · ");
 
   return title.length <= 128
     ? title
@@ -1254,16 +1265,7 @@ async function syncRideTopicTitle(chatId: TelegramChatId, room: RideRoom) {
   const meta = getRoomMeta(room);
   if (!meta.telegram_topic_id) return room;
 
-  let creatorName = meta.creator_name;
-  if (!creatorName) {
-    const passengers = await getPassengers(room.id);
-    creatorName = passengers.find(passenger => passenger.user_id === room.creator_id)?.user_name;
-  }
-
-  const topicTitle = buildTopicTitle({
-    ...room,
-    payment_method_info: { ...meta, creator_name: creatorName },
-  });
+  const topicTitle = buildTopicTitle(room);
   if (meta.telegram_topic_title === topicTitle) return room;
 
   const topicResult = await editForumTopic(
@@ -1278,7 +1280,6 @@ async function syncRideTopicTitle(chatId: TelegramChatId, room: RideRoom) {
   }
 
   return updateRoomMeta(room, {
-    creator_name: creatorName,
     telegram_chat_id: meta.telegram_chat_id || chatId,
     telegram_topic_title: topicTitle,
   });
