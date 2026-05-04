@@ -45,7 +45,7 @@ export default function Providers({children}: {children: React.ReactNode}) {
         appearance: {
           theme: 'dark',
           accentColor: '#00FF00',
-          logo: '/pincher-v1.5.png',
+          logo: '/pincher-agent-logo.png',
         },
       }}
     >

@@ -3,12 +3,12 @@
   "short_name": "Pincher",
   "icons": [
     {
-      "src": "/pincher-v1.png",
+      "src": "/pincher-agent-logo.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/pincher-v1.png",
+      "src": "/pincher-agent-logo.png",
       "sizes": "512x512",
       "type": "image/png"
     }
