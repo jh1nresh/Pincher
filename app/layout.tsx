@@ -22,8 +22,8 @@ export const metadata: Metadata = {
   title: "Pincher 拼車神器",
   description: "Sharing Rides, Splitting Costs.",
   icons: {
-    icon: "/pincher-v1.png",
-    apple: "/pincher-v1.png",
+    icon: "/pincher-agent-logo.png",
+    apple: "/pincher-agent-logo.png",
   },
   manifest: "/site.webmanifest",
 };

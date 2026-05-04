@@ -16,7 +16,7 @@ export default function HomePage() {
         <header className="flex items-center justify-between py-2">
           <div className="flex items-center gap-3">
             <div className="grid size-11 place-items-center overflow-hidden rounded-2xl border border-action-green/30 bg-black shadow-[0_0_28px_rgba(0,255,0,0.14)]">
-              <img src="/pincher-v1.png" alt="Pincher" className="size-full object-cover" />
+              <img src="/pincher-agent-logo.png" alt="Pincher" className="size-full object-cover" />
             </div>
             <div>
               <p className="font-display text-lg font-black italic tracking-[0.18em] text-white">
