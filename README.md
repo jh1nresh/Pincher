@@ -12,6 +12,9 @@ The current MVP is built for **Consensus Miami, May 4-8**. Attendees can create 
 - Matches riders by destination and departure time.
 - Tracks who is waiting, who joined, and who will call Uber.
 - Opens a Telegram Forum Topic for each ride when the group supports topics.
+- Understands simple ride requests like "anyone going to Marriott at 6:30?"
+- Suggests existing rides that are close in destination and departure time.
+- Reminds a ride topic when the group is nearly full.
 - Supports custom events that are not in the built-in Luma list.
 - Lets organizers or admins close completed rides with `/close <id>`.
 - Auto-closes stale rides after the departure window from bot activity or the cron endpoint.
@@ -22,19 +25,29 @@ Pincher does **not** call Uber, custody funds, escrow USDC, or verify chain tran
 ## MVP Flow
 
 1. Someone starts with `/ride`, picks a side event button, then replies with a leave time.
-2. Power users can also create a ride directly:
+2. People can also type natural ride requests:
+
+   ```text
+   anyone going to Marriott at 6:30?
+   誰要 6:30 去 Marriott
+   ```
+
+   Pincher will suggest a matching open ride if one exists, or open a new ride if there is no close match.
+
+3. Power users can also create a ride directly:
 
    ```text
    /ride coinbase dinner 5/4 8:00
    /ride closing dinner 5/8 7:30
    ```
 
-3. Pincher posts the ride room with Join / Leave / Uber caller actions.
-4. If Telegram Forum Topics are enabled, Pincher opens a topic for that ride.
-5. Riders join until the group has enough people.
-6. One person calls Uber.
-7. The group settles payment manually.
-8. The creator, Uber caller, or group admin closes the ride:
+4. Pincher posts the ride room with Join / Leave / Uber caller actions.
+5. If Telegram Forum Topics are enabled, Pincher opens a topic for that ride.
+6. If two rides look close enough, Pincher suggests joining the existing ride instead of duplicating coordination.
+7. Riders join until the group has enough people.
+8. One person calls Uber.
+9. The group settles payment manually.
+10. The creator, Uber caller, or group admin closes the ride:
 
    ```text
    /close <id>

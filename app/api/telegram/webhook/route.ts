@@ -73,6 +73,8 @@ const EVENT_ID_PROMPT_PREFIX = "Event ID:";
 const ACTIVE_ROOM_STATUSES = ["open", "full", "splitting"];
 const RIDE_CREATE_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RIDE_CREATE_RATE_LIMIT_MAX = 3;
+const SIMILAR_RIDE_WINDOW_MS = 30 * 60 * 1000;
+const NEARBY_EVENT_DISTANCE_MILES = 0.8;
 
 type PassengerUpsertResult = "joined" | "already_joined" | "updated";
 type PassengerLeaveResult = "left" | "creator_cannot_leave";
@@ -88,6 +90,7 @@ interface RideRoomMeta {
   closed_by?: string;
   closed_at?: string;
   close_reason?: string;
+  ready_reminded_at?: string;
 }
 
 const rideCreateRateLimit = new Map<string, number[]>();
@@ -184,14 +187,70 @@ function slugifyCustomDestination(value: string) {
 function findEventFromCommand(text: string) {
   const query = getRideQuery(text).toLowerCase();
 
-  if (!query) return undefined;
+  return findEventFromQuery(query);
+}
+
+function findEventFromQuery(query: string) {
+  const normalizedQuery = query.toLowerCase().trim();
+
+  if (!normalizedQuery) return undefined;
 
   return (
-    CONSENSUS_SIDE_EVENTS.find(event => event.name.toLowerCase().includes(query)) ||
-    CONSENSUS_SIDE_EVENTS.find(event => event.neighborhood.toLowerCase().includes(query)) ||
-    CONSENSUS_SIDE_EVENTS.find(event => event.id.toLowerCase().includes(query)) ||
+    CONSENSUS_SIDE_EVENTS.find(event => event.id.toLowerCase().includes(normalizedQuery)) ||
+    CONSENSUS_SIDE_EVENTS.find(event => event.name.toLowerCase().includes(normalizedQuery)) ||
+    CONSENSUS_SIDE_EVENTS.find(event => event.venueName.toLowerCase().includes(normalizedQuery)) ||
+    CONSENSUS_SIDE_EVENTS.find(event => event.address.toLowerCase().includes(normalizedQuery)) ||
+    CONSENSUS_SIDE_EVENTS.find(event =>
+      event.neighborhood.toLowerCase().includes(normalizedQuery),
+    ) ||
     undefined
   );
+}
+
+function getLeaveAtText(text: string) {
+  const dateMatch = text.match(/\b(?:may\s*[3-8]|5\/[3-8](?:\/2026)?)\b/i);
+  const textWithoutDate = text.replace(/\b(?:may\s*[3-8]|5\/[3-8](?:\/2026)?)\b/i, "");
+  const timeMatch = textWithoutDate.match(/\b\d{1,2}(?::\d{2})?\s*(?:am|pm)?\b/i);
+
+  return [dateMatch?.[0], timeMatch?.[0]].filter(Boolean).join(" ");
+}
+
+function getNaturalDestinationQuery(text: string) {
+  return text
+    .replace(/@\w+/g, " ")
+    .replace(/\b(?:may\s*[3-8]|5\/[3-8](?:\/2026)?)\b/gi, " ")
+    .replace(/\b\d{1,2}(?::\d{2})?\s*(?:am|pm)?\b/gi, " ")
+    .replace(
+      /\b(?:anyone|who|wants?|want|going|heading|leaving|leave|from|venue|ride|rides|carpool|uber|split|share|to|at|for)\b/gi,
+      " ",
+    )
+    .replace(/誰要|有人要|一起|拼車|叫車|搭車|去|到|從|會場|出發|嗎|呢|？|\?/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getNaturalRideRequest(text: string) {
+  const trimmedText = text.trim();
+  if (!trimmedText || trimmedText.startsWith("/")) return undefined;
+  if (!hasLeaveTime(trimmedText)) return undefined;
+
+  const destinationQuery = getNaturalDestinationQuery(trimmedText);
+  const event = findEventFromQuery(destinationQuery) || findEventFromQuery(trimmedText);
+  const hasRideIntent =
+    /誰要|有人要|一起|拼車|叫車|搭車|去|到|會場|出發|anyone|going|heading|ride|carpool|uber|split|share/i.test(
+      trimmedText,
+    );
+
+  if (!event && (!hasRideIntent || destinationQuery.length < 3)) return undefined;
+
+  const leaveAtText = getLeaveAtText(trimmedText);
+  if (!leaveAtText) return undefined;
+
+  return {
+    event,
+    destination: event?.id || destinationQuery,
+    rideCommand: `/ride ${event?.id || destinationQuery} ${leaveAtText}`,
+  };
 }
 
 function parseCommandDate(text: string, event?: ConsensusSideEvent) {
@@ -317,6 +376,7 @@ function buildHelpText() {
     "Commands:",
     "/ride - pick an event, then reply with time",
     "/ride <event keyword> <time> - start a ride directly",
+    "Or just ask: anyone going to Marriott at 6:30?",
     "/events - list known side events",
     "/rides - list open ride groups",
     "/join <id> - join a ride",
@@ -551,6 +611,200 @@ async function getPassengers(roomId: string) {
   return (data || []) as RidePassenger[];
 }
 
+function getRoomEvent(room: RideRoom) {
+  return CONSENSUS_SIDE_EVENTS.find(event => event.id === room.destination_hotzone_id);
+}
+
+function normalizePlace(value?: string) {
+  return (value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\b(miami|2026|the|a|an|usa|fl|33139|33132|33131|33140|beach)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getDistanceMiles(a?: { lat: number; lng: number }, b?: { lat: number; lng: number }) {
+  if (!a || !b) return Number.POSITIVE_INFINITY;
+
+  const toRadians = (value: number) => (value * Math.PI) / 180;
+  const earthRadiusMiles = 3958.8;
+  const dLat = toRadians(b.lat - a.lat);
+  const dLng = toRadians(b.lng - a.lng);
+  const lat1 = toRadians(a.lat);
+  const lat2 = toRadians(b.lat);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+
+  return 2 * earthRadiusMiles * Math.asin(Math.sqrt(h));
+}
+
+function areRideDestinationsSimilar(a: RideRoom, b: RideRoom) {
+  if (a.destination_hotzone_id && a.destination_hotzone_id === b.destination_hotzone_id)
+    return true;
+
+  const aEvent = getRoomEvent(a);
+  const bEvent = getRoomEvent(b);
+  if (getDistanceMiles(aEvent?.coordinate, bEvent?.coordinate) <= NEARBY_EVENT_DISTANCE_MILES) {
+    return true;
+  }
+
+  const aNeighborhood = aEvent?.neighborhood;
+  const bNeighborhood = bEvent?.neighborhood;
+  if (
+    aNeighborhood &&
+    bNeighborhood &&
+    aNeighborhood === bNeighborhood &&
+    !["Miami", "Miami Beach"].includes(aNeighborhood)
+  ) {
+    return true;
+  }
+
+  const aPlace = normalizePlace(a.destination_address || a.destination);
+  const bPlace = normalizePlace(b.destination_address || b.destination);
+  if (!aPlace || !bPlace) return false;
+
+  return aPlace.includes(bPlace) || bPlace.includes(aPlace);
+}
+
+function areRideTimesSimilar(a: RideRoom, b: RideRoom) {
+  return (
+    Math.abs(new Date(a.departure_time).getTime() - new Date(b.departure_time).getTime()) <=
+    SIMILAR_RIDE_WINDOW_MS
+  );
+}
+
+async function findSimilarOpenRooms(room: RideRoom, limit = 3) {
+  const { data, error } = await getSupabaseServerClient()
+    .from("trip_rooms")
+    .select("*")
+    .in("status", ["open", "splitting"])
+    .eq("origin_hotzone_id", CONSENSUS_VENUE.id)
+    .order("departure_time", { ascending: true })
+    .limit(80);
+
+  if (error) throw error;
+
+  const rooms = ((data || []) as RideRoom[]).filter(candidate => {
+    if (candidate.id === room.id) return false;
+    if (!areRideTimesSimilar(room, candidate)) return false;
+    return areRideDestinationsSimilar(room, candidate);
+  });
+
+  const roomsWithSpace = await Promise.all(
+    rooms.map(async candidate => ({
+      room: candidate,
+      passengers: await getPassengers(candidate.id),
+    })),
+  );
+
+  return roomsWithSpace
+    .filter(
+      ({ room: candidate, passengers }) => passengers.length < (candidate.max_passengers || 4),
+    )
+    .sort(
+      (a, b) =>
+        Math.abs(
+          new Date(a.room.departure_time).getTime() - new Date(room.departure_time).getTime(),
+        ) -
+        Math.abs(
+          new Date(b.room.departure_time).getTime() - new Date(room.departure_time).getTime(),
+        ),
+    )
+    .slice(0, limit);
+}
+
+function buildSimilarRideKeyboard(rooms: RideRoom[], roomToClose?: RideRoom) {
+  return {
+    inline_keyboard: [
+      ...rooms.map(room => [
+        {
+          text: `Join ${formatRoomShortId(room.id)}`,
+          callback_data: `join:${formatRoomShortId(room.id)}`,
+        },
+      ]),
+      roomToClose
+        ? [
+            {
+              text: `Close ${formatRoomShortId(roomToClose.id)}`,
+              callback_data: `close:${formatRoomShortId(roomToClose.id)}`,
+            },
+          ]
+        : [],
+    ].filter(row => row.length),
+  };
+}
+
+async function sendSimilarRideSuggestions(
+  chatId: TelegramChatId,
+  room: RideRoom,
+  messageThreadId?: number,
+) {
+  const similarRooms = await findSimilarOpenRooms(room);
+  if (!similarRooms.length) return;
+
+  const lines = similarRooms.map(({ room: similarRoom, passengers }) => {
+    return `- ${formatRoomShortId(similarRoom.id)} · ${formatMiamiTime(similarRoom.departure_time)} · ${similarRoom.destination} · ${passengers.length}/${similarRoom.max_passengers || 4}`;
+  });
+
+  const text = [
+    `Pincher found ${similarRooms.length === 1 ? "a similar ride" : "similar rides"} within 30 min:`,
+    "",
+    ...lines,
+    "",
+    "If this is the same plan, join the existing ride and close the duplicate.",
+  ].join("\n");
+
+  const keyboard = buildSimilarRideKeyboard(
+    similarRooms.map(({ room: similarRoom }) => similarRoom),
+    room,
+  );
+  const meta = getRoomMeta(room);
+
+  await sendMessage(chatId, text, keyboard, meta.telegram_topic_id || messageThreadId);
+
+  await Promise.all(
+    similarRooms.map(async ({ room: similarRoom }) => {
+      const similarMeta = getRoomMeta(similarRoom);
+      if (!similarMeta.telegram_topic_id) return;
+
+      await sendMessage(
+        chatId,
+        [
+          `Pincher found a possible merge: ${formatRoomShortId(room.id)} is also going to ${room.destination} around ${formatMiamiTime(room.departure_time)}.`,
+          "",
+          "Coordinate here if it is the same ride.",
+        ].join("\n"),
+        buildSimilarRideKeyboard([room]),
+        similarMeta.telegram_topic_id,
+      );
+    }),
+  );
+}
+
+async function sendExistingRideMatches(
+  chatId: TelegramChatId,
+  candidate: RideRoom,
+  matches: Awaited<ReturnType<typeof findSimilarOpenRooms>>,
+  messageThreadId?: number,
+) {
+  const lines = matches.map(({ room, passengers }) => {
+    return `- ${formatRoomShortId(room.id)} · ${formatMiamiTime(room.departure_time)} · ${room.destination} · ${passengers.length}/${room.max_passengers || 4}`;
+  });
+
+  return sendMessage(
+    chatId,
+    [
+      `Pincher found existing rides close to ${formatMiamiTime(candidate.departure_time)} for ${candidate.destination}:`,
+      "",
+      ...lines,
+      "",
+      "Tap Join if one works. If not, use /ride to open a new one.",
+    ].join("\n"),
+    buildSimilarRideKeyboard(matches.map(({ room }) => room)),
+    messageThreadId,
+  );
+}
+
 async function updateRoomMeta(room: RideRoom, patch: RideRoomMeta) {
   const meta = { ...getRoomMeta(room), ...patch };
   const { data, error } = await getSupabaseServerClient()
@@ -666,6 +920,34 @@ function buildTopicTitle(room: RideRoom) {
     : `${formatMiamiTime(room.departure_time)} · ${location}`.slice(0, 128);
 }
 
+function buildCandidateRoom(
+  chatId: TelegramChatId,
+  user: TelegramUser | undefined,
+  request: ReturnType<typeof getNaturalRideRequest>,
+) {
+  if (!request) return undefined;
+
+  const event = request.event;
+  const destination = event?.name || request.destination;
+
+  return {
+    id: "candidate",
+    creator_id: user ? getTelegramUserId(user) : `telegram-chat:${chatId}`,
+    origin: CONSENSUS_VENUE.name,
+    destination,
+    departure_time: parseLeaveAt(request.rideCommand, event).toISOString(),
+    max_passengers: 4,
+    estimated_cost: event ? estimateRideCostCents(event) : 4500,
+    destination_address: event?.address || destination,
+    destination_hotzone_id: event?.id || slugifyCustomDestination(destination),
+    payment_method_info: {
+      type: "usdc",
+      creator_name: user ? getTelegramName(user) : undefined,
+    },
+    status: "open",
+  } satisfies RideRoom;
+}
+
 async function ensureRideTopic(chatId: TelegramChatId, room: RideRoom) {
   const meta = getRoomMeta(room);
   if (meta.telegram_topic_id) return syncRideTopicTitle(chatId, room);
@@ -732,6 +1014,27 @@ async function updateRoomMessage(room: RideRoom, chatId: TelegramChatId, message
 
   if (messageId) return editMessage(chatId, messageId, text, keyboard);
   return sendMessage(chatId, text, keyboard, meta.telegram_topic_id);
+}
+
+async function maybeSendRideReadyReminder(room: RideRoom, chatId: TelegramChatId) {
+  const passengers = await getPassengers(room.id);
+  const maxPassengers = room.max_passengers || 4;
+  const meta = getRoomMeta(room);
+
+  if (meta.ready_reminded_at) return;
+  if (passengers.length < Math.max(3, maxPassengers - 1)) return;
+
+  await sendMessage(
+    chatId,
+    [
+      `Ride ${formatRoomShortId(room.id)} is ${passengers.length}/${maxPassengers}.`,
+      'If you are ready, one person can tap "I\'ll call Uber" and coordinate pickup in this topic.',
+    ].join("\n"),
+    undefined,
+    meta.telegram_topic_id,
+  );
+
+  await updateRoomMeta(room, { ready_reminded_at: new Date().toISOString() });
 }
 
 async function handleJoin(room: RideRoom, user: TelegramUser) {
@@ -981,11 +1284,13 @@ async function handleTextMessage(message: TelegramMessage) {
         message.message_thread_id,
       );
       await cleanupRidePromptMessages(chatId, message);
+      await sendSimilarRideSuggestions(chatId, room, message.message_thread_id);
       return result;
     }
 
     const result = await sendMessage(chatId, rideText, keyboard, message.message_thread_id);
     await cleanupRidePromptMessages(chatId, message);
+    await sendSimilarRideSuggestions(chatId, room, message.message_thread_id);
     return result;
   }
 
@@ -1040,10 +1345,64 @@ async function handleTextMessage(message: TelegramMessage) {
         keyboard,
       );
       await deleteMessageQuietly(chatId, message.message_id);
+      await sendSimilarRideSuggestions(chatId, room, message.message_thread_id);
       return result;
     }
 
     const result = await sendMessage(chatId, rideText, keyboard);
+    await deleteMessageQuietly(chatId, message.message_id);
+    await sendSimilarRideSuggestions(chatId, room, message.message_thread_id);
+    return result;
+  }
+
+  const naturalRideRequest = getNaturalRideRequest(text);
+  if (naturalRideRequest && message.from) {
+    const candidate = buildCandidateRoom(chatId, message.from, naturalRideRequest);
+    const matches = candidate ? await findSimilarOpenRooms(candidate) : [];
+
+    if (matches.length) {
+      const result = await sendExistingRideMatches(
+        chatId,
+        candidate as RideRoom,
+        matches,
+        message.message_thread_id,
+      );
+      await deleteMessageQuietly(chatId, message.message_id);
+      return result;
+    }
+
+    if (isRideCreateRateLimited(chatId, message.from)) {
+      return sendMessage(
+        chatId,
+        "Too many ride groups opened recently. Try again in a few minutes.",
+        undefined,
+        message.message_thread_id,
+      );
+    }
+
+    const {
+      room: createdRoom,
+      passengers,
+      event,
+    } = await createRideRoom(chatId, message.from, naturalRideRequest.rideCommand);
+    const room = await ensureRideTopic(chatId, createdRoom);
+    const meta = getRoomMeta(room);
+    const rideText = buildRideText(room, passengers, event);
+    const keyboard = buildRideKeyboard(room.id);
+
+    if (meta.telegram_topic_id) {
+      await sendMessage(chatId, rideText, keyboard, meta.telegram_topic_id);
+      const result = await sendMessage(
+        chatId,
+        `No existing match found, so Pincher opened ride group ${formatRoomShortId(room.id)} for ${room.destination}.`,
+        keyboard,
+        message.message_thread_id,
+      );
+      await deleteMessageQuietly(chatId, message.message_id);
+      return result;
+    }
+
+    const result = await sendMessage(chatId, rideText, keyboard, message.message_thread_id);
     await deleteMessageQuietly(chatId, message.message_id);
     return result;
   }
@@ -1072,6 +1431,7 @@ async function handleTextMessage(message: TelegramMessage) {
   if (action === "join") {
     const result = await handleJoin(room, message.from);
     await updateRoomMessage(room, chatId);
+    await maybeSendRideReadyReminder(room, chatId);
     return sendMessage(
       chatId,
       result === "already_joined"
@@ -1156,6 +1516,7 @@ async function handleCallback(callback: TelegramCallbackQuery) {
   if (action === "join") {
     const result = await handleJoin(room, callback.from);
     callbackText = result === "already_joined" ? "You're already in this ride" : "Joined ride";
+    await maybeSendRideReadyReminder(room, chatId);
   }
   if (action === "leave") {
     const result = await handleLeave(room, callback.from);
