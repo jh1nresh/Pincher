@@ -70,6 +70,9 @@ const CUSTOM_EVENT_ID_PREFIX = "custom-";
 const AUTO_CLOSE_AFTER_HOURS = 2;
 const CONSENSUS_YEAR = 2026;
 const EVENT_ID_PROMPT_PREFIX = "Event ID:";
+const ACTIVE_ROOM_STATUSES = ["open", "full", "splitting"];
+
+type PassengerUpsertResult = "joined" | "already_joined" | "updated";
 
 interface RideRoomMeta {
   type?: string;
@@ -420,16 +423,34 @@ async function getChatMember(chatId: TelegramChatId, userId: number) {
 
 async function findRoomByShortId(shortId: string) {
   const supabase = getSupabaseServerClient();
+  const normalizedId = shortId.trim().toLowerCase();
+  const isFullUuid =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(normalizedId);
+
+  if (isFullUuid) {
+    const { data, error } = await supabase
+      .from("trip_rooms")
+      .select("*")
+      .eq("id", normalizedId)
+      .in("status", ACTIVE_ROOM_STATUSES)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data as RideRoom | null;
+  }
+
   const { data, error } = await supabase
     .from("trip_rooms")
     .select("*")
-    .ilike("id", `${shortId}%`)
-    .in("status", ["open", "full", "splitting"])
-    .limit(1)
-    .maybeSingle();
+    .in("status", ACTIVE_ROOM_STATUSES)
+    .order("created_at", { ascending: false })
+    .limit(200);
 
   if (error) throw error;
-  return data as RideRoom | null;
+  return (
+    ((data || []) as RideRoom[]).find(room => room.id.toLowerCase().startsWith(normalizedId)) ||
+    null
+  );
 }
 
 async function getPassengers(roomId: string) {
@@ -457,14 +478,18 @@ async function updateRoomMeta(room: RideRoom, patch: RideRoomMeta) {
   return data as RideRoom;
 }
 
-async function upsertPassenger(roomId: string, user: TelegramUser, paymentStatus = "unpaid") {
+async function upsertPassenger(
+  roomId: string,
+  user: TelegramUser,
+  paymentStatus = "unpaid",
+): Promise<PassengerUpsertResult> {
   const supabase = getSupabaseServerClient();
   const userId = getTelegramUserId(user);
   const userName = getTelegramName(user);
 
   const { data: existing, error: findError } = await supabase
     .from("trip_passengers")
-    .select("id")
+    .select("id,user_name,payment_status")
     .eq("trip_id", roomId)
     .eq("user_id", userId)
     .maybeSingle();
@@ -472,12 +497,21 @@ async function upsertPassenger(roomId: string, user: TelegramUser, paymentStatus
   if (findError) throw findError;
 
   if (existing?.id) {
+    const nextPaymentStatus =
+      paymentStatus === "unpaid" && existing.payment_status
+        ? existing.payment_status
+        : paymentStatus;
+
+    if (existing.user_name === userName && existing.payment_status === nextPaymentStatus) {
+      return "already_joined";
+    }
+
     const { error } = await supabase
       .from("trip_passengers")
-      .update({ user_name: userName, payment_status: paymentStatus })
+      .update({ user_name: userName, payment_status: nextPaymentStatus })
       .eq("id", existing.id);
     if (error) throw error;
-    return;
+    return "updated";
   }
 
   const { error } = await supabase.from("trip_passengers").insert({
@@ -490,6 +524,7 @@ async function upsertPassenger(roomId: string, user: TelegramUser, paymentStatus
   });
 
   if (error) throw error;
+  return "joined";
 }
 
 async function createRideRoom(
@@ -569,12 +604,14 @@ async function updateRoomMessage(room: RideRoom, chatId: TelegramChatId, message
 }
 
 async function handleJoin(room: RideRoom, user: TelegramUser) {
-  await upsertPassenger(room.id, user);
+  const result = await upsertPassenger(room.id, user);
   const passengers = await getPassengers(room.id);
 
   if (passengers.length >= (room.max_passengers || 4)) {
     await getSupabaseServerClient().from("trip_rooms").update({ status: "full" }).eq("id", room.id);
   }
+
+  return result;
 }
 
 async function handleLeave(room: RideRoom, user: TelegramUser) {
@@ -687,7 +724,7 @@ async function closeExpiredRooms() {
   const { data: rooms, error } = await supabase
     .from("trip_rooms")
     .select("*")
-    .in("status", ["open", "full", "splitting"])
+    .in("status", ACTIVE_ROOM_STATUSES)
     .lt("departure_time", cutoff)
     .eq("origin_hotzone_id", CONSENSUS_VENUE.id)
     .limit(25);
@@ -729,7 +766,7 @@ async function listOpenRides(chatId: TelegramChatId) {
   const { data: rooms, error } = await supabase
     .from("trip_rooms")
     .select("*")
-    .in("status", ["open", "full", "splitting"])
+    .in("status", ACTIVE_ROOM_STATUSES)
     .eq("origin_hotzone_id", CONSENSUS_VENUE.id)
     .order("departure_time", { ascending: true })
     .limit(10);
@@ -867,7 +904,19 @@ async function handleTextMessage(message: TelegramMessage) {
     return sendMessage(chatId, `Ride ${shortId} closed.`);
   }
 
-  if (action === "join") await handleJoin(room, message.from);
+  if (action === "join") {
+    const result = await handleJoin(room, message.from);
+    await updateRoomMessage(room, chatId);
+    return sendMessage(
+      chatId,
+      result === "already_joined"
+        ? `You're already in ride ${formatRoomShortId(room.id)}.`
+        : `Joined ride ${formatRoomShortId(room.id)}.`,
+      undefined,
+      message.message_thread_id,
+    );
+  }
+
   if (action === "leave") await handleLeave(room, message.from);
   if (action === "payer") await handlePayer(room, message.from);
   if (action === "paid") await handlePaid(room, message.from, txHash);
@@ -921,12 +970,17 @@ async function handleCallback(callback: TelegramCallbackQuery) {
     return { ok: true, closed: shortId };
   }
 
-  if (action === "join") await handleJoin(room, callback.from);
+  let callbackText = action === "paid" ? "Marked as paid" : "Updated";
+
+  if (action === "join") {
+    const result = await handleJoin(room, callback.from);
+    callbackText = result === "already_joined" ? "You're already in this ride" : "Joined ride";
+  }
   if (action === "leave") await handleLeave(room, callback.from);
   if (action === "payer") await handlePayer(room, callback.from);
   if (action === "paid") await handlePaid(room, callback.from);
 
-  await answerCallback(callback.id, action === "paid" ? "Marked as paid" : "Updated");
+  await answerCallback(callback.id, callbackText);
   return updateRoomMessage(room, chatId, messageId);
 }
 
