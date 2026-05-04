@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-const COMMANDS = ["/events", "/ride <event> <time>", "/rides", "/join 8f3a91b2"];
+const COMMANDS = ["/ride", "tap event", "reply 6:30", "/join 8f3a91b2"];
 
 export default function HomePage() {
   return (

@@ -6,7 +6,6 @@ import {
   CONSENSUS_VENUE,
   ConsensusSideEvent,
   estimateRideCostCents,
-  estimateSplitCents,
   formatMiamiTime,
   getDefaultLeaveAt,
   getLocationLabel,
@@ -27,6 +26,7 @@ interface TelegramMessage {
   chat?: { id?: TelegramChatId; is_forum?: boolean };
   from?: TelegramUser;
   text?: string;
+  reply_to_message?: TelegramMessage;
 }
 
 interface TelegramCallbackQuery {
@@ -69,6 +69,7 @@ const ROOM_ID_LENGTH = 8;
 const CUSTOM_EVENT_ID_PREFIX = "custom-";
 const AUTO_CLOSE_AFTER_HOURS = 2;
 const CONSENSUS_YEAR = 2026;
+const EVENT_ID_PROMPT_PREFIX = "Event ID:";
 
 interface RideRoomMeta {
   type?: string;
@@ -190,6 +191,17 @@ function formatRoomShortId(roomId: string) {
   return roomId.slice(0, ROOM_ID_LENGTH);
 }
 
+function getPickerEvents() {
+  return [...CONSENSUS_SIDE_EVENTS]
+    .filter(event => event.day >= "2026-05-04" && event.day <= "2026-05-08")
+    .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
+    .slice(0, 18);
+}
+
+function hasLeaveTime(text: string) {
+  return /\b\d{1,2}(:\d{2})?\s*(am|pm)?\b/i.test(text);
+}
+
 function buildRideText(room: RideRoom, passengers: RidePassenger[], event?: ConsensusSideEvent) {
   const estimatedTotal = room.estimated_cost || (event ? estimateRideCostCents(event) : 4200);
   const split = Math.ceil(estimatedTotal / (room.max_passengers || 4));
@@ -243,7 +255,8 @@ function buildHelpText() {
     "Use it in this group to find people heading from the venue to side events.",
     "",
     "Commands:",
-    "/ride <event keyword> <time> - start a ride group",
+    "/ride - pick an event, then reply with time",
+    "/ride <event keyword> <time> - start a ride directly",
     "/events - list known side events",
     "/rides - list open ride groups",
     "/join <id> - join a ride",
@@ -258,9 +271,9 @@ function buildHelpText() {
 
 function buildRideUsageText() {
   return [
-    "Tell Pincher which side event you are going to.",
+    "Choose a side event, then reply with your leave time.",
     "",
-    "Format:",
+    "You can also type:",
     "/ride <event keyword> <time>",
     "",
     "Examples:",
@@ -271,11 +284,45 @@ function buildRideUsageText() {
   ].join("\n");
 }
 
+function buildEventPickerKeyboard() {
+  const rows = getPickerEvents().map((event, index) => {
+    const day = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      month: "short",
+      day: "numeric",
+    }).format(new Date(event.startsAt));
+
+    return [
+      {
+        text: `${day} ${formatMiamiTime(event.startsAt)} · ${event.name}`.slice(0, 64),
+        callback_data: `ride_event:${index}`,
+      },
+    ];
+  });
+
+  return { inline_keyboard: rows };
+}
+
+function buildEventTimePrompt(event: ConsensusSideEvent) {
+  return [
+    `Selected: ${event.name}`,
+    `When do you want to leave from ${CONSENSUS_VENUE.shortName}?`,
+    "",
+    "Reply with a time, e.g. 6:30 or 5/6 6:00.",
+    `${EVENT_ID_PROMPT_PREFIX} ${event.id}`,
+  ].join("\n");
+}
+
+function getSelectedEventFromReply(message: TelegramMessage) {
+  const replyText = message.reply_to_message?.text || "";
+  const match = replyText.match(new RegExp(`${EVENT_ID_PROMPT_PREFIX}\\s+([a-z0-9-]+)`, "i"));
+  if (!match) return undefined;
+
+  return CONSENSUS_SIDE_EVENTS.find(event => event.id === match[1]);
+}
+
 function buildEventsText() {
-  const events = [...CONSENSUS_SIDE_EVENTS]
-    .filter(event => event.day >= "2026-05-04" && event.day <= "2026-05-08")
-    .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
-    .slice(0, 18);
+  const events = getPickerEvents();
 
   const lines = events.map(event => {
     const day = new Intl.DateTimeFormat("en-US", {
@@ -719,6 +766,41 @@ async function handleTextMessage(message: TelegramMessage) {
   if (!chatId) return { ok: true, ignored: true };
 
   const command = text.trim().toLowerCase();
+  const selectedEvent = getSelectedEventFromReply(message);
+
+  if (selectedEvent && message.from) {
+    if (!hasLeaveTime(text)) {
+      return sendMessage(
+        chatId,
+        `Reply with a leave time for ${selectedEvent.name}, e.g. 6:30 or 5/6 6:00.`,
+        undefined,
+        message.message_thread_id,
+      );
+    }
+
+    const rideCommand = `/ride ${selectedEvent.id} ${text.trim()}`;
+    const {
+      room: createdRoom,
+      passengers,
+      event,
+    } = await createRideRoom(chatId, message.from, rideCommand);
+    const room = await ensureRideTopic(chatId, createdRoom);
+    const meta = getRoomMeta(room);
+    const rideText = buildRideText(room, passengers, event);
+    const keyboard = buildRideKeyboard(room.id);
+
+    if (meta.telegram_topic_id) {
+      await sendMessage(chatId, rideText, keyboard, meta.telegram_topic_id);
+      return sendMessage(
+        chatId,
+        `Ride group ${formatRoomShortId(room.id)} opened for ${room.destination}.\nA forum topic was created for pickup coordination. Tap Join if you want in.`,
+        keyboard,
+        message.message_thread_id,
+      );
+    }
+
+    return sendMessage(chatId, rideText, keyboard, message.message_thread_id);
+  }
 
   if (command.startsWith("/start") || command.startsWith("/help")) {
     return sendMessage(chatId, buildHelpText());
@@ -734,7 +816,12 @@ async function handleTextMessage(message: TelegramMessage) {
 
   if (command.startsWith("/ride")) {
     if (!getRideQuery(text)) {
-      return sendMessage(chatId, buildRideUsageText());
+      return sendMessage(
+        chatId,
+        buildRideUsageText(),
+        buildEventPickerKeyboard(),
+        message.message_thread_id,
+      );
     }
 
     const {
@@ -793,7 +880,27 @@ async function handleCallback(callback: TelegramCallbackQuery) {
   const messageId = callback.message?.message_id;
   const [action, shortId] = (callback.data || "").split(":");
 
-  if (!chatId || !shortId || !["join", "leave", "payer", "paid", "close"].includes(action)) {
+  if (!chatId || !shortId) {
+    return answerCallback(callback.id);
+  }
+
+  if (action === "ride_event") {
+    const event = getPickerEvents()[Number(shortId)];
+    if (!event) return answerCallback(callback.id, "Event not found");
+
+    await answerCallback(callback.id, "Event selected");
+    return sendMessage(
+      chatId,
+      buildEventTimePrompt(event),
+      {
+        force_reply: true,
+        input_field_placeholder: "6:30",
+      },
+      callback.message?.message_thread_id,
+    );
+  }
+
+  if (!["join", "leave", "payer", "paid", "close"].includes(action)) {
     return answerCallback(callback.id);
   }
 

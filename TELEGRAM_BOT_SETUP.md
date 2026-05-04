@@ -25,6 +25,7 @@ curl -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 ## Group Commands
 
 ```text
+/ride
 /ride <event_keyword> <time>
 /events
 /rides
@@ -35,7 +36,7 @@ curl -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 /close <ride_id>
 ```
 
-`/events` lists known side events. `/ride <event> <time>` creates a ride group using the Luma side-event seed for May 4-8, or creates a custom destination when the event is unknown. A bare `/ride` only shows usage, so users do not accidentally create the default Sui ride.
+`/ride` shows side event buttons. After a user picks an event, the bot asks them to reply with a leave time. `/events` lists known side events. `/ride <event> <time>` still creates a ride group directly using the Luma side-event seed for May 4-8, or creates a custom destination when the event is unknown.
 
 ## Data Model
 

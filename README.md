@@ -20,19 +20,20 @@ Pincher does **not** call Uber, custody funds, escrow USDC, or verify chain tran
 
 ## MVP Flow
 
-1. Someone creates a ride:
+1. Someone starts with `/ride`, picks a side event button, then replies with a leave time.
+2. Power users can also create a ride directly:
 
    ```text
    /ride coinbase dinner 5/4 8:00
    /ride closing dinner 5/8 7:30
    ```
 
-2. Pincher posts the ride room with Join / Leave / Uber caller actions.
-3. If Telegram Forum Topics are enabled, Pincher opens a topic for that ride.
-4. Riders join until the group has enough people.
-5. One person calls Uber.
-6. The group settles payment manually.
-7. The creator, Uber caller, or group admin closes the ride:
+3. Pincher posts the ride room with Join / Leave / Uber caller actions.
+4. If Telegram Forum Topics are enabled, Pincher opens a topic for that ride.
+5. Riders join until the group has enough people.
+6. One person calls Uber.
+7. The group settles payment manually.
+8. The creator, Uber caller, or group admin closes the ride:
 
    ```text
    /close <id>
@@ -44,8 +45,11 @@ Pincher does **not** call Uber, custody funds, escrow USDC, or verify chain tran
 /start
 Show the bot help message.
 
+/ride
+Show side event buttons. After picking an event, reply with a leave time.
+
 /ride <event or destination> <time>
-Create a ride room. Known side events are matched automatically; unknown events become custom rides.
+Create a ride room directly. Known side events are matched automatically; unknown events become custom rides.
 
 /events
 List known Consensus side events from the Luma seed.
