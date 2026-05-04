@@ -88,6 +88,7 @@ const SIMILAR_PICKUP_DISTANCE_MILES = 0.35;
 
 type PassengerUpsertResult = "joined" | "already_joined" | "updated";
 type PassengerLeaveResult = "left" | "creator_cannot_leave";
+type OriginCoordinateSource = "command" | "google_geocoding" | "telegram_location" | "venue";
 
 interface RideRoomMeta {
   type?: string;
@@ -102,7 +103,16 @@ interface RideRoomMeta {
   close_reason?: string;
   ready_reminded_at?: string;
   origin_coordinate?: EventCoordinate;
-  origin_coordinate_source?: "command" | "telegram_location";
+  origin_coordinate_source?: OriginCoordinateSource;
+  origin_geocoded_address?: string;
+}
+
+interface RideOrigin {
+  name: string;
+  address: string;
+  coordinate?: EventCoordinate;
+  coordinateSource?: OriginCoordinateSource;
+  geocodedAddress?: string;
 }
 
 const rideCreateRateLimit = new Map<string, number[]>();
@@ -291,15 +301,102 @@ function getMessageCoordinate(message: TelegramMessage): EventCoordinate | undef
   return parseCoordinateFromText(message.text || message.caption);
 }
 
-function getRideOrigin(text: string, coordinate?: EventCoordinate) {
+function getRideOrigin(text: string, coordinate?: EventCoordinate): RideOrigin {
   const origin = getOriginInput(text);
   const parsedCoordinate = coordinate || parseCoordinateFromText(text);
-  const hasCoordinate = Boolean(parsedCoordinate);
+  const parsedCoordinateFromText = Boolean(parsedCoordinate);
 
   return {
-    name: origin || (hasCoordinate ? "GPS pickup" : CONSENSUS_VENUE.name),
-    address: origin || (hasCoordinate ? "Shared GPS pickup" : CONSENSUS_VENUE.address),
-    coordinate: parsedCoordinate,
+    name: origin || (parsedCoordinateFromText ? "GPS pickup" : CONSENSUS_VENUE.name),
+    address: origin || (parsedCoordinateFromText ? "Shared GPS pickup" : CONSENSUS_VENUE.address),
+    coordinate: parsedCoordinate || (!origin ? CONSENSUS_VENUE.coordinate : undefined),
+    coordinateSource: parsedCoordinate ? "command" : !origin ? "venue" : undefined,
+  };
+}
+
+function getGoogleMapsApiKey() {
+  return process.env.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_GEOCODING_API_KEY;
+}
+
+function buildGeocodingAddress(origin: string) {
+  const hasMiamiContext = /\b(miami|miami beach|fl|florida)\b/i.test(origin);
+  return hasMiamiContext ? origin : `${origin}, Miami Beach, FL`;
+}
+
+async function geocodePickupOrigin(origin: string): Promise<
+  | {
+      coordinate: EventCoordinate;
+      formattedAddress?: string;
+    }
+  | undefined
+> {
+  const key = getGoogleMapsApiKey();
+  const address = cleanOriginText(origin);
+  if (!key || !address) return undefined;
+
+  const params = new URLSearchParams({
+    address: buildGeocodingAddress(address),
+    components: "country:US",
+    region: "us",
+    key,
+  });
+
+  const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?${params}`, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    console.warn("Google Maps geocoding failed:", response.status);
+    return undefined;
+  }
+
+  const payload = (await response.json()) as {
+    status?: string;
+    results?: Array<{
+      formatted_address?: string;
+      geometry?: {
+        location?: {
+          lat?: number;
+          lng?: number;
+        };
+      };
+    }>;
+  };
+
+  if (payload.status !== "OK") {
+    if (payload.status && payload.status !== "ZERO_RESULTS") {
+      console.warn("Google Maps geocoding skipped:", payload.status);
+    }
+    return undefined;
+  }
+
+  const location = payload.results?.[0]?.geometry?.location;
+  if (!location || typeof location.lat !== "number" || typeof location.lng !== "number") {
+    return undefined;
+  }
+
+  const coordinate = { lat: location.lat, lng: location.lng };
+  if (!isValidCoordinate(coordinate)) return undefined;
+
+  return {
+    coordinate,
+    formattedAddress: payload.results?.[0]?.formatted_address,
+  };
+}
+
+async function resolveRideOrigin(text: string, coordinate?: EventCoordinate): Promise<RideOrigin> {
+  const origin = getRideOrigin(text, coordinate);
+  if (origin.coordinate || !getOriginInput(text)) return origin;
+
+  const geocoded = await geocodePickupOrigin(origin.name);
+  if (!geocoded) return origin;
+
+  return {
+    ...origin,
+    address: geocoded.formattedAddress || origin.address,
+    coordinate: geocoded.coordinate,
+    coordinateSource: "google_geocoding",
+    geocodedAddress: geocoded.formattedAddress,
   };
 }
 
@@ -1053,7 +1150,7 @@ async function createRideRoom(
   const customDestination = getRideQuery(text) || "Custom side event";
   const leaveAt = parseLeaveAt(text, event);
   const estimatedCost = event ? estimateRideCostCents(event) : 4500;
-  const origin = getRideOrigin(text, originCoordinate);
+  const origin = await resolveRideOrigin(text, originCoordinate);
 
   const { data: room, error } = await supabase
     .from("trip_rooms")
@@ -1074,7 +1171,8 @@ async function createRideRoom(
         type: "usdc",
         creator_name: user ? getTelegramName(user) : undefined,
         origin_coordinate: origin.coordinate,
-        origin_coordinate_source: origin.coordinate ? "command" : undefined,
+        origin_coordinate_source: origin.coordinateSource,
+        origin_geocoded_address: origin.geocodedAddress,
       },
     })
     .select()
@@ -1099,7 +1197,7 @@ function buildTopicTitle(room: RideRoom) {
     : `${formatMiamiTime(room.departure_time)} · ${eventName}`.slice(0, 128);
 }
 
-function buildCandidateRoom(
+async function buildCandidateRoom(
   chatId: TelegramChatId,
   user: TelegramUser | undefined,
   request: ReturnType<typeof getNaturalRideRequest>,
@@ -1108,7 +1206,7 @@ function buildCandidateRoom(
 
   const event = request.event;
   const destination = event?.name || request.destination;
-  const origin = getRideOrigin(request.rideCommand);
+  const origin = await resolveRideOrigin(request.rideCommand);
 
   return {
     id: "candidate",
@@ -1125,7 +1223,8 @@ function buildCandidateRoom(
       type: "usdc",
       creator_name: user ? getTelegramName(user) : undefined,
       origin_coordinate: origin.coordinate,
-      origin_coordinate_source: origin.coordinate ? "command" : undefined,
+      origin_coordinate_source: origin.coordinateSource,
+      origin_geocoded_address: origin.geocodedAddress,
     },
     status: "open",
   } satisfies RideRoom;
@@ -1355,6 +1454,7 @@ async function updateRidePickup(
   coordinate: EventCoordinate,
   label?: string,
   source: RideRoomMeta["origin_coordinate_source"] = "command",
+  geocodedAddress?: string,
 ) {
   const originName = label || "GPS pickup";
   const meta = getRoomMeta(room);
@@ -1369,6 +1469,7 @@ async function updateRidePickup(
         telegram_chat_id: meta.telegram_chat_id || chatId,
         origin_coordinate: coordinate,
         origin_coordinate_source: source,
+        origin_geocoded_address: geocodedAddress,
       },
     })
     .eq("id", room.id)
@@ -1637,10 +1738,15 @@ async function handleTextMessage(message: TelegramMessage) {
       return sendMessage(chatId, `Join ride ${shortId} before updating its pickup.`);
     }
 
-    if (!messageCoordinate) {
+    const pickupLabel = getPickupLabel(text, shortId);
+    const geocodedPickup =
+      !messageCoordinate && pickupLabel ? await geocodePickupOrigin(pickupLabel) : undefined;
+    const pickupCoordinate = messageCoordinate || geocodedPickup?.coordinate;
+
+    if (!pickupCoordinate) {
       return sendMessage(
         chatId,
-        `Send /pickup ${formatRoomShortId(room.id)} with a Google Maps link or lat,lng, e.g. /pickup ${formatRoomShortId(room.id)} 25.7909,-80.1865.`,
+        `Send /pickup ${formatRoomShortId(room.id)} with a pickup name, Google Maps link, or lat,lng, e.g. /pickup ${formatRoomShortId(room.id)} Fontainebleau lobby.`,
         undefined,
         message.message_thread_id,
       );
@@ -1650,9 +1756,10 @@ async function handleTextMessage(message: TelegramMessage) {
       room,
       chatId,
       message.from,
-      messageCoordinate,
-      getPickupLabel(text, shortId),
-      "command",
+      pickupCoordinate,
+      pickupLabel,
+      geocodedPickup ? "google_geocoding" : "command",
+      geocodedPickup?.formattedAddress,
     );
     await updateRoomMessage(updatedRoom, chatId);
     return { ok: true, pickup: "updated" };
@@ -1709,7 +1816,7 @@ async function handleTextMessage(message: TelegramMessage) {
 
   const naturalRideRequest = getNaturalRideRequest(text);
   if (naturalRideRequest && message.from) {
-    const candidate = buildCandidateRoom(chatId, message.from, naturalRideRequest);
+    const candidate = await buildCandidateRoom(chatId, message.from, naturalRideRequest);
     const matches = candidate ? await findSimilarOpenRooms(candidate, 3, chatId) : [];
 
     if (matches.length) {

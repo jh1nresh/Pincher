@@ -75,7 +75,7 @@ Create a ride room from a custom pickup point instead of the Consensus venue.
 /ride <event or destination> <time> from <lat,lng>
 Create a ride room with GPS pickup matching.
 
-/pickup <id> <maps link or lat,lng>
+/pickup <id> <pickup name, maps link, or lat,lng>
 Add or update GPS pickup for an existing ride. Inside a ride topic, riders can also send a Telegram location.
 
 /events
@@ -156,11 +156,14 @@ Optional hardening variables:
 ```env
 TELEGRAM_ALLOWED_CHAT_IDS=-1001234567890,-1009876543210
 CRON_SECRET=...
+GOOGLE_MAPS_API_KEY=...
 ```
 
 `TELEGRAM_ALLOWED_CHAT_IDS` limits the bot to specific Telegram groups. Leave it unset for open MVP testing.
 
 `CRON_SECRET` protects the stale-ride cleanup endpoint. Use the same value on the webhook service and the Railway cleanup cron service.
+
+`GOOGLE_MAPS_API_KEY` is optional. When set server-side, Pincher geocodes text pickup points like `Fontainebleau lobby` into GPS coordinates for better ride matching. Without it, explicit `lat,lng`, map links with coordinates, and Telegram locations still work.
 
 ## Local Development
 
