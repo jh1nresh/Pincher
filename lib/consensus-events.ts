@@ -11,7 +11,7 @@ export interface ConsensusSideEvent {
   lumaUrl: string;
   startsAt: string;
   endsAt: string;
-  day: "2026-05-03" | "2026-05-04" | "2026-05-05" | "2026-05-06" | "2026-05-07";
+  day: "2026-05-03" | "2026-05-04" | "2026-05-05" | "2026-05-06" | "2026-05-07" | "2026-05-08";
   venueName: string;
   address: string;
   neighborhood: string;
@@ -37,6 +37,7 @@ export const CONSENSUS_EVENT_DAYS = [
   { id: "2026-05-05", label: "May 5" },
   { id: "2026-05-06", label: "May 6" },
   { id: "2026-05-07", label: "May 7" },
+  { id: "2026-05-08", label: "May 8" },
 ] as const;
 
 export const CONSENSUS_SIDE_EVENTS: ConsensusSideEvent[] = [

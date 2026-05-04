@@ -23,7 +23,8 @@ interface TelegramUser {
 
 interface TelegramMessage {
   message_id?: number;
-  chat?: { id?: TelegramChatId };
+  message_thread_id?: number;
+  chat?: { id?: TelegramChatId; is_forum?: boolean };
   from?: TelegramUser;
   text?: string;
 }
@@ -50,6 +51,7 @@ interface RideRoom {
   estimated_cost?: number;
   destination_address?: string;
   destination_hotzone_id?: string;
+  payment_method_info?: Record<string, unknown>;
   payer_id?: string;
   status: string;
 }
@@ -65,6 +67,19 @@ interface RidePassenger {
 const BOT_API_BASE = "https://api.telegram.org/bot";
 const ROOM_ID_LENGTH = 8;
 const CUSTOM_EVENT_ID_PREFIX = "custom-";
+const AUTO_CLOSE_AFTER_HOURS = 2;
+const CONSENSUS_YEAR = 2026;
+
+interface RideRoomMeta {
+  type?: string;
+  payer_name?: string;
+  telegram_chat_id?: TelegramChatId;
+  telegram_topic_id?: number;
+  telegram_topic_status?: "open" | "closed" | "unavailable";
+  closed_by?: string;
+  closed_at?: string;
+  close_reason?: string;
+}
 
 function getSupabaseServerClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -91,9 +106,14 @@ function getTelegramUserId(user: TelegramUser) {
   return `telegram:${user.id}`;
 }
 
+function getRoomMeta(room: RideRoom): RideRoomMeta {
+  return (room.payment_method_info || {}) as RideRoomMeta;
+}
+
 function getRideQuery(text: string) {
   return text
     .replace(/^\/ride(@\w+)?/i, "")
+    .replace(/\b(?:may\s*[3-8]|5\/[3-8](?:\/2026)?)\b/i, "")
     .replace(/\b\d{1,2}(:\d{2})?\s*(am|pm)?\b/i, "")
     .trim();
 }
@@ -126,18 +146,37 @@ function findEventFromCommand(text: string) {
   );
 }
 
-function parseLeaveAt(text: string, event?: ConsensusSideEvent) {
-  const explicitTime = text.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/i);
-  if (!explicitTime) {
-    return event ? getDefaultLeaveAt(event, 30) : new Date(Date.now() + 60 * 60 * 1000);
+function parseCommandDate(text: string, event?: ConsensusSideEvent) {
+  if (event) {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/New_York",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date(event.startsAt));
   }
 
-  const eventDate = new Intl.DateTimeFormat("en-CA", {
+  const explicitDay = text.match(/\b(?:may\s*([3-8])|5\/([3-8])(?:\/2026)?)\b/i);
+  if (explicitDay) {
+    return `${CONSENSUS_YEAR}-05-${String(Number(explicitDay[1] || explicitDay[2])).padStart(2, "0")}`;
+  }
+
+  return new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/New_York",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(event ? new Date(event.startsAt) : new Date());
+  }).format(new Date());
+}
+
+function parseLeaveAt(text: string, event?: ConsensusSideEvent) {
+  const textWithoutDate = text.replace(/\b(?:may\s*[3-8]|5\/[3-8](?:\/2026)?)\b/i, "");
+  const explicitTime = textWithoutDate.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/i);
+  if (!explicitTime) {
+    return event ? getDefaultLeaveAt(event, 30) : new Date(Date.now() + 60 * 60 * 1000);
+  }
+
+  const eventDate = parseCommandDate(text, event);
 
   let hour = Number(explicitTime[1]);
   const minute = explicitTime[2] ? Number(explicitTime[2]) : 0;
@@ -180,7 +219,7 @@ function buildRideText(room: RideRoom, passengers: RidePassenger[], event?: Cons
     "",
     waitingList,
     "",
-    `Commands: /join ${formatRoomShortId(room.id)} · /leave ${formatRoomShortId(room.id)} · /paid ${formatRoomShortId(room.id)} <txhash>`,
+    `Commands: /join ${formatRoomShortId(room.id)} · /leave ${formatRoomShortId(room.id)} · /payer ${formatRoomShortId(room.id)} · /close ${formatRoomShortId(room.id)}`,
   ]
     .filter(Boolean)
     .join("\n");
@@ -196,7 +235,7 @@ function buildRideKeyboard(roomId: string) {
       ],
       [
         { text: "I'll call Uber", callback_data: `payer:${shortId}` },
-        { text: "Paid", callback_data: `paid:${shortId}` },
+        { text: "Close", callback_data: `close:${shortId}` },
       ],
     ],
   };
@@ -215,6 +254,7 @@ function buildHelpText() {
     "/join <id> - join a ride",
     "/leave <id> - leave a ride",
     "/payer <id> - mark yourself as the Uber caller",
+    "/close <id> - close a ride after it is done or wrong",
     "/paid <id> <txhash> - mark your USDC split as paid",
     "",
     `Side events source: ${CONSENSUS_CALENDAR_URL}`,
@@ -234,9 +274,15 @@ async function telegram(method: string, body: Record<string, unknown>) {
   return res.json();
 }
 
-async function sendMessage(chatId: TelegramChatId, text: string, replyMarkup?: unknown) {
+async function sendMessage(
+  chatId: TelegramChatId,
+  text: string,
+  replyMarkup?: unknown,
+  messageThreadId?: number,
+) {
   return telegram("sendMessage", {
     chat_id: chatId,
+    message_thread_id: messageThreadId,
     text,
     reply_markup: replyMarkup,
     disable_web_page_preview: true,
@@ -266,6 +312,27 @@ async function answerCallback(callbackQueryId: string, text?: string) {
   });
 }
 
+async function createForumTopic(chatId: TelegramChatId, name: string) {
+  return telegram("createForumTopic", {
+    chat_id: chatId,
+    name: name.slice(0, 128),
+  });
+}
+
+async function closeForumTopic(chatId: TelegramChatId, messageThreadId: number) {
+  return telegram("closeForumTopic", {
+    chat_id: chatId,
+    message_thread_id: messageThreadId,
+  });
+}
+
+async function getChatMember(chatId: TelegramChatId, userId: number) {
+  return telegram("getChatMember", {
+    chat_id: chatId,
+    user_id: userId,
+  });
+}
+
 async function findRoomByShortId(shortId: string) {
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase
@@ -290,6 +357,19 @@ async function getPassengers(roomId: string) {
 
   if (error) throw error;
   return (data || []) as RidePassenger[];
+}
+
+async function updateRoomMeta(room: RideRoom, patch: RideRoomMeta) {
+  const meta = { ...getRoomMeta(room), ...patch };
+  const { data, error } = await getSupabaseServerClient()
+    .from("trip_rooms")
+    .update({ payment_method_info: meta })
+    .eq("id", room.id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as RideRoom;
 }
 
 async function upsertPassenger(roomId: string, user: TelegramUser, paymentStatus = "unpaid") {
@@ -365,14 +445,42 @@ async function createRideRoom(
   return { room: room as RideRoom, passengers, event };
 }
 
+function buildTopicTitle(room: RideRoom) {
+  return `${formatRoomShortId(room.id)} · ${formatMiamiTime(room.departure_time)} · ${room.destination}`.slice(
+    0,
+    128,
+  );
+}
+
+async function ensureRideTopic(chatId: TelegramChatId, room: RideRoom) {
+  const meta = getRoomMeta(room);
+  if (meta.telegram_topic_id) return room;
+
+  const topic = await createForumTopic(chatId, buildTopicTitle(room));
+  if (!topic?.ok || !topic.result?.message_thread_id) {
+    console.warn("createForumTopic skipped:", topic);
+    return updateRoomMeta(room, {
+      telegram_chat_id: chatId,
+      telegram_topic_status: "unavailable",
+    });
+  }
+
+  return updateRoomMeta(room, {
+    telegram_chat_id: chatId,
+    telegram_topic_id: topic.result.message_thread_id,
+    telegram_topic_status: "open",
+  });
+}
+
 async function updateRoomMessage(room: RideRoom, chatId: TelegramChatId, messageId?: number) {
   const passengers = await getPassengers(room.id);
   const event = CONSENSUS_SIDE_EVENTS.find(item => item.id === room.destination_hotzone_id);
   const text = buildRideText(room, passengers, event);
   const keyboard = buildRideKeyboard(room.id);
+  const meta = getRoomMeta(room);
 
   if (messageId) return editMessage(chatId, messageId, text, keyboard);
-  return sendMessage(chatId, text, keyboard);
+  return sendMessage(chatId, text, keyboard, meta.telegram_topic_id);
 }
 
 async function handleJoin(room: RideRoom, user: TelegramUser) {
@@ -403,7 +511,11 @@ async function handlePayer(room: RideRoom, user: TelegramUser) {
     .from("trip_rooms")
     .update({
       payer_id: getTelegramUserId(user),
-      payment_method_info: { type: "usdc", payer_name: getTelegramName(user) },
+      payment_method_info: {
+        ...getRoomMeta(room),
+        type: "usdc",
+        payer_name: getTelegramName(user),
+      },
     })
     .eq("id", room.id);
 
@@ -433,7 +545,101 @@ async function handlePaid(room: RideRoom, user: TelegramUser, txHash?: string) {
   if (error) console.warn("payment_confirmations insert failed:", error);
 }
 
+async function isChatAdmin(chatId: TelegramChatId, user: TelegramUser) {
+  const result = await getChatMember(chatId, user.id);
+  const status = result?.result?.status;
+  return status === "creator" || status === "administrator";
+}
+
+async function canCloseRoom(room: RideRoom, chatId: TelegramChatId, user: TelegramUser) {
+  const userId = getTelegramUserId(user);
+  if (room.creator_id === userId || room.payer_id === userId) return true;
+  return isChatAdmin(chatId, user);
+}
+
+async function closeRoom(
+  room: RideRoom,
+  chatId: TelegramChatId,
+  user?: TelegramUser,
+  reason = "manual",
+) {
+  const meta = getRoomMeta(room);
+  const closedMeta: RideRoomMeta = {
+    ...meta,
+    telegram_chat_id: meta.telegram_chat_id || chatId,
+    telegram_topic_status: "closed",
+    closed_by: user ? getTelegramUserId(user) : "system",
+    closed_at: new Date().toISOString(),
+    close_reason: reason,
+  };
+
+  const { data, error } = await getSupabaseServerClient()
+    .from("trip_rooms")
+    .update({
+      status: "completed",
+      payment_method_info: closedMeta,
+    })
+    .eq("id", room.id)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  if (meta.telegram_topic_id) {
+    const topicResult = await closeForumTopic(
+      meta.telegram_chat_id || chatId,
+      meta.telegram_topic_id,
+    );
+    if (!topicResult?.ok) console.warn("closeForumTopic skipped:", topicResult);
+  }
+
+  return data as RideRoom;
+}
+
+async function closeExpiredRooms() {
+  const cutoff = new Date(Date.now() - AUTO_CLOSE_AFTER_HOURS * 60 * 60 * 1000).toISOString();
+  const supabase = getSupabaseServerClient();
+  const { data: rooms, error } = await supabase
+    .from("trip_rooms")
+    .select("*")
+    .in("status", ["open", "full", "splitting"])
+    .lt("departure_time", cutoff)
+    .eq("origin_hotzone_id", CONSENSUS_VENUE.id)
+    .limit(25);
+
+  if (error) throw error;
+  if (!rooms?.length) return 0;
+
+  await Promise.all(
+    (rooms as RideRoom[]).map(async room => {
+      const meta = getRoomMeta(room);
+      await supabase
+        .from("trip_rooms")
+        .update({
+          status: "completed",
+          payment_method_info: {
+            ...meta,
+            telegram_topic_status: meta.telegram_topic_id ? "closed" : meta.telegram_topic_status,
+            closed_by: "system",
+            closed_at: new Date().toISOString(),
+            close_reason: "expired",
+          },
+        })
+        .eq("id", room.id);
+
+      if (meta.telegram_chat_id && meta.telegram_topic_id) {
+        const topicResult = await closeForumTopic(meta.telegram_chat_id, meta.telegram_topic_id);
+        if (!topicResult?.ok) console.warn("close expired topic skipped:", topicResult);
+      }
+    }),
+  );
+
+  return rooms.length;
+}
+
 async function listOpenRides(chatId: TelegramChatId) {
+  await closeExpiredRooms();
+
   const supabase = getSupabaseServerClient();
   const { data: rooms, error } = await supabase
     .from("trip_rooms")
@@ -485,18 +691,48 @@ async function handleTextMessage(message: TelegramMessage) {
   }
 
   if (command.startsWith("/ride")) {
-    const { room, passengers, event } = await createRideRoom(chatId, message.from, text);
-    return sendMessage(chatId, buildRideText(room, passengers, event), buildRideKeyboard(room.id));
+    const {
+      room: createdRoom,
+      passengers,
+      event,
+    } = await createRideRoom(chatId, message.from, text);
+    const room = await ensureRideTopic(chatId, createdRoom);
+    const meta = getRoomMeta(room);
+    const rideText = buildRideText(room, passengers, event);
+    const keyboard = buildRideKeyboard(room.id);
+
+    if (meta.telegram_topic_id) {
+      await sendMessage(chatId, rideText, keyboard, meta.telegram_topic_id);
+      return sendMessage(
+        chatId,
+        `Ride group ${formatRoomShortId(room.id)} opened for ${room.destination}.\nA forum topic was created for pickup coordination. Tap Join if you want in.`,
+        keyboard,
+      );
+    }
+
+    return sendMessage(chatId, rideText, keyboard);
   }
 
   const actionMatch = text.match(
-    /^\/(join|leave|payer|paid)(@\w+)?\s+([a-f0-9-]{6,36})(?:\s+(\S+))?/i,
+    /^\/(join|leave|payer|paid|close)(@\w+)?\s+([a-f0-9-]{6,36})(?:\s+(\S+))?/i,
   );
   if (!actionMatch || !message.from) return { ok: true, ignored: true };
 
   const [, action, , shortId, txHash] = actionMatch;
   const room = await findRoomByShortId(shortId);
   if (!room) return sendMessage(chatId, `Ride ${shortId} was not found. Try /rides.`);
+
+  if (action === "close") {
+    if (!(await canCloseRoom(room, chatId, message.from))) {
+      return sendMessage(
+        chatId,
+        `Only the ride creator, Uber caller, or a group admin can close ${shortId}.`,
+      );
+    }
+
+    await closeRoom(room, chatId, message.from);
+    return sendMessage(chatId, `Ride ${shortId} closed.`);
+  }
 
   if (action === "join") await handleJoin(room, message.from);
   if (action === "leave") await handleLeave(room, message.from);
@@ -511,12 +747,26 @@ async function handleCallback(callback: TelegramCallbackQuery) {
   const messageId = callback.message?.message_id;
   const [action, shortId] = (callback.data || "").split(":");
 
-  if (!chatId || !shortId || !["join", "leave", "payer", "paid"].includes(action)) {
+  if (!chatId || !shortId || !["join", "leave", "payer", "paid", "close"].includes(action)) {
     return answerCallback(callback.id);
   }
 
   const room = await findRoomByShortId(shortId);
   if (!room) return answerCallback(callback.id, `Ride ${shortId} was not found`);
+
+  if (action === "close") {
+    if (!(await canCloseRoom(room, chatId, callback.from))) {
+      return answerCallback(
+        callback.id,
+        "Only the ride creator, Uber caller, or a group admin can close this ride",
+      );
+    }
+
+    await answerCallback(callback.id, "Ride closed");
+    if (messageId) await editMessage(chatId, messageId, `Ride ${shortId} closed.`, undefined);
+    await closeRoom(room, chatId, callback.from);
+    return { ok: true, closed: shortId };
+  }
 
   if (action === "join") await handleJoin(room, callback.from);
   if (action === "leave") await handleLeave(room, callback.from);
@@ -530,6 +780,8 @@ async function handleCallback(callback: TelegramCallbackQuery) {
 export async function POST(request: NextRequest) {
   try {
     const update = (await request.json()) as TelegramUpdate;
+
+    await closeExpiredRooms().catch(error => console.warn("closeExpiredRooms skipped:", error));
 
     if (update.callback_query) {
       const telegramResult = await handleCallback(update.callback_query);
