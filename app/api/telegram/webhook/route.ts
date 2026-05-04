@@ -76,6 +76,7 @@ type PassengerUpsertResult = "joined" | "already_joined" | "updated";
 
 interface RideRoomMeta {
   type?: string;
+  creator_name?: string;
   payer_name?: string;
   telegram_chat_id?: TelegramChatId;
   telegram_topic_id?: number;
@@ -249,6 +250,14 @@ function buildRideKeyboard(roomId: string) {
       ],
     ],
   };
+}
+
+function compactTopicPart(value?: string) {
+  return (value || "")
+    .replace(/\s+/g, " ")
+    .replace(/\b(2026|Miami|The|A|An)\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function buildHelpText() {
@@ -574,6 +583,10 @@ async function createRideRoom(
       min_passengers: 2,
       max_passengers: 4,
       estimated_cost: estimatedCost,
+      payment_method_info: {
+        type: "usdc",
+        creator_name: user ? getTelegramName(user) : undefined,
+      },
     })
     .select()
     .single();
@@ -587,10 +600,14 @@ async function createRideRoom(
 }
 
 function buildTopicTitle(room: RideRoom) {
-  return `${formatRoomShortId(room.id)} · ${formatMiamiTime(room.departure_time)} · ${room.destination}`.slice(
-    0,
-    128,
-  );
+  const meta = getRoomMeta(room);
+  const location = compactTopicPart(room.destination_address || room.destination);
+  const creator = compactTopicPart(meta.creator_name || room.creator_id.replace(/^telegram:/, ""));
+  const title = `${formatMiamiTime(room.departure_time)} · ${location} · ${creator}`;
+
+  return title.length <= 128
+    ? title
+    : `${formatMiamiTime(room.departure_time)} · ${location}`.slice(0, 128);
 }
 
 async function ensureRideTopic(chatId: TelegramChatId, room: RideRoom) {
