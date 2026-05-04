@@ -45,6 +45,7 @@ interface RideRoom {
   id: string;
   creator_id: string;
   origin: string;
+  origin_address?: string;
   destination: string;
   departure_time: string;
   max_passengers: number;
@@ -73,6 +74,8 @@ const EVENT_ID_PROMPT_PREFIX = "Event ID:";
 const ACTIVE_ROOM_STATUSES = ["open", "full", "splitting"];
 const RIDE_CREATE_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RIDE_CREATE_RATE_LIMIT_MAX = 3;
+const RIDE_ACTION_RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RIDE_ACTION_RATE_LIMIT_MAX = 20;
 const SIMILAR_RIDE_WINDOW_MS = 30 * 60 * 1000;
 const NEARBY_EVENT_DISTANCE_MILES = 0.8;
 
@@ -94,6 +97,7 @@ interface RideRoomMeta {
 }
 
 const rideCreateRateLimit = new Map<string, number[]>();
+const rideActionRateLimit = new Map<string, number[]>();
 
 function getSupabaseServerClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -130,6 +134,11 @@ function isUsableOpenRoom(room: RideRoom) {
   return topicStatus !== "unavailable" && topicStatus !== "closed";
 }
 
+function roomBelongsToChat(room: RideRoom, chatId: TelegramChatId) {
+  const roomChatId = getRoomMeta(room).telegram_chat_id;
+  return !roomChatId || String(roomChatId) === String(chatId);
+}
+
 function getAllowedChatIds() {
   return (process.env.TELEGRAM_ALLOWED_CHAT_IDS || "")
     .split(",")
@@ -147,20 +156,40 @@ function getRateLimitKey(chatId: TelegramChatId, user?: TelegramUser) {
   return `${chatId}:${user?.id || "unknown"}`;
 }
 
-function isRideCreateRateLimited(chatId: TelegramChatId, user?: TelegramUser) {
+function isRateLimited(
+  store: Map<string, number[]>,
+  key: string,
+  windowMs: number,
+  maxAttempts: number,
+) {
   const now = Date.now();
-  const key = getRateLimitKey(chatId, user);
-  const recentAttempts = (rideCreateRateLimit.get(key) || []).filter(
-    timestamp => now - timestamp < RIDE_CREATE_RATE_LIMIT_WINDOW_MS,
-  );
+  const recentAttempts = (store.get(key) || []).filter(timestamp => now - timestamp < windowMs);
 
-  if (recentAttempts.length >= RIDE_CREATE_RATE_LIMIT_MAX) {
-    rideCreateRateLimit.set(key, recentAttempts);
+  if (recentAttempts.length >= maxAttempts) {
+    store.set(key, recentAttempts);
     return true;
   }
 
-  rideCreateRateLimit.set(key, [...recentAttempts, now]);
+  store.set(key, [...recentAttempts, now]);
   return false;
+}
+
+function isRideCreateRateLimited(chatId: TelegramChatId, user?: TelegramUser) {
+  return isRateLimited(
+    rideCreateRateLimit,
+    getRateLimitKey(chatId, user),
+    RIDE_CREATE_RATE_LIMIT_WINDOW_MS,
+    RIDE_CREATE_RATE_LIMIT_MAX,
+  );
+}
+
+function isRideActionRateLimited(chatId: TelegramChatId, user?: TelegramUser) {
+  return isRateLimited(
+    rideActionRateLimit,
+    getRateLimitKey(chatId, user),
+    RIDE_ACTION_RATE_LIMIT_WINDOW_MS,
+    RIDE_ACTION_RATE_LIMIT_MAX,
+  );
 }
 
 function isCronAuthorized(request: NextRequest) {
@@ -172,12 +201,49 @@ function isCronAuthorized(request: NextRequest) {
   return authHeader === `Bearer ${secret}` || key === secret;
 }
 
-function getRideQuery(text: string) {
+function stripOriginFromText(text: string) {
   return text
+    .replace(/\s+\b(?:from|pickup(?:\s+at)?|leaving\s+from)\b\s+.+$/i, "")
+    .replace(/\s+(?:從|上車點|出發點)\s*[^，,]+$/i, "")
+    .trim();
+}
+
+function getRideQuery(text: string) {
+  const textWithoutOrigin = stripOriginFromText(text);
+
+  return textWithoutOrigin
     .replace(/^\/ride(@\w+)?/i, "")
     .replace(/\b(?:may\s*[3-8]|5\/[3-8](?:\/2026)?)\b/i, "")
     .replace(/\b\d{1,2}(:\d{2})?\s*(am|pm)?\b/i, "")
     .trim();
+}
+
+function cleanOriginText(value?: string) {
+  return (value || "")
+    .replace(/\b(?:may\s*[3-8]|5\/[3-8](?:\/2026)?)\b/gi, " ")
+    .replace(/\b\d{1,2}(?::\d{2})?\s*(?:am|pm)?\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80);
+}
+
+function getOriginInput(text: string) {
+  const englishMatch = text.match(
+    /\b(?:from|pickup(?:\s+at)?|leaving\s+from)\b\s+(.+?)(?=\s+\b(?:to|for|at)\b|\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)?\b|$)/i,
+  );
+  const chineseMatch = text.match(
+    /(?:從|上車點|出發點)\s*([^，,]+?)(?=\s*(?:去|到)|\s*\d{1,2}(?::\d{2})?\s*(?:am|pm)?\b|$)/i,
+  );
+  return cleanOriginText(englishMatch?.[1] || chineseMatch?.[1]);
+}
+
+function getRideOrigin(text: string) {
+  const origin = getOriginInput(text);
+
+  return {
+    name: origin || CONSENSUS_VENUE.name,
+    address: origin || CONSENSUS_VENUE.address,
+  };
 }
 
 function slugifyCustomDestination(value: string) {
@@ -222,6 +288,18 @@ function getLeaveAtText(text: string) {
 }
 
 function getNaturalDestinationQuery(text: string) {
+  const destinationMatch = text.match(
+    /\b(?:to|for)\b\s+(.+?)(?=\s+\b(?:from|pickup|leaving|at)\b|\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)?\b|$)/i,
+  );
+  const chineseDestinationMatch = text.match(
+    /(?:去|到)\s*([^，,]+?)(?=\s*(?:從|上車點|出發點)|\s*\d{1,2}(?::\d{2})?\s*(?:am|pm)?\b|$)/i,
+  );
+  const explicitDestination = (destinationMatch?.[1] || chineseDestinationMatch?.[1] || "").trim();
+
+  if (explicitDestination.length >= 3) {
+    return explicitDestination;
+  }
+
   return text
     .replace(/@\w+/g, " ")
     .replace(/\b(?:may\s*[3-8]|5\/[3-8](?:\/2026)?)\b/gi, " ")
@@ -255,7 +333,12 @@ function getNaturalRideRequest(text: string) {
   return {
     event,
     destination: event?.id || destinationQuery,
-    rideCommand: `/ride ${event?.id || destinationQuery} ${leaveAtText}`,
+    rideCommand: [
+      `/ride ${event?.id || destinationQuery} ${leaveAtText}`,
+      getOriginInput(trimmedText) ? `from ${getOriginInput(trimmedText)}` : undefined,
+    ]
+      .filter(Boolean)
+      .join(" "),
   };
 }
 
@@ -379,6 +462,7 @@ function buildHelpText() {
     "Commands:",
     "/ride - pick an event, then reply with time",
     "/ride <event keyword> <time> - start a ride directly",
+    "/ride <event keyword> <time> from <pickup> - start from another pickup point",
     "Or just ask: anyone going to Marriott at 6:30?",
     "/events - list known side events",
     "/rides - list open ride groups",
@@ -398,10 +482,12 @@ function buildRideUsageText() {
     "",
     "You can also type:",
     "/ride <event keyword> <time>",
+    "/ride <event keyword> <time> from <pickup>",
     "",
     "Examples:",
     "/ride bnb 5/6 6:00",
     "/ride coinbase dinner 8:00",
+    "/ride sui 6:30 from Fontainebleau lobby",
     "",
     "Use /events to see known side events.",
   ].join("\n");
@@ -432,6 +518,7 @@ function buildEventTimePrompt(event: ConsensusSideEvent) {
     `When do you want to leave from ${CONSENSUS_VENUE.shortName}?`,
     "",
     "Reply with a time, e.g. 6:30 or 5/6 6:00.",
+    "Optional: add pickup, e.g. 6:30 from Fontainebleau lobby.",
     `${EVENT_ID_PROMPT_PREFIX} ${event.id}`,
   ].join("\n");
 }
@@ -678,7 +765,17 @@ function areRideTimesSimilar(a: RideRoom, b: RideRoom) {
   );
 }
 
-async function findSimilarOpenRooms(room: RideRoom, limit = 3) {
+function areRideOriginsSimilar(a: RideRoom, b: RideRoom) {
+  const aPlace = normalizePlace(a.origin);
+  const bPlace = normalizePlace(b.origin);
+
+  if (!aPlace || !bPlace) return true;
+  if (aPlace === bPlace) return true;
+
+  return aPlace.includes(bPlace) || bPlace.includes(aPlace);
+}
+
+async function findSimilarOpenRooms(room: RideRoom, limit = 3, chatId?: TelegramChatId) {
   const { data, error } = await getSupabaseServerClient()
     .from("trip_rooms")
     .select("*")
@@ -692,7 +789,9 @@ async function findSimilarOpenRooms(room: RideRoom, limit = 3) {
   const rooms = ((data || []) as RideRoom[]).filter(candidate => {
     if (candidate.id === room.id) return false;
     if (!isUsableOpenRoom(candidate)) return false;
+    if (chatId && !roomBelongsToChat(candidate, chatId)) return false;
     if (!areRideTimesSimilar(room, candidate)) return false;
+    if (!areRideOriginsSimilar(room, candidate)) return false;
     return areRideDestinationsSimilar(room, candidate);
   });
 
@@ -745,11 +844,11 @@ async function sendSimilarRideSuggestions(
   room: RideRoom,
   messageThreadId?: number,
 ) {
-  const similarRooms = await findSimilarOpenRooms(room);
+  const similarRooms = await findSimilarOpenRooms(room, 3, chatId);
   if (!similarRooms.length) return;
 
   const lines = similarRooms.map(({ room: similarRoom, passengers }) => {
-    return `- ${formatRoomShortId(similarRoom.id)} · ${formatMiamiTime(similarRoom.departure_time)} · ${similarRoom.destination} · ${passengers.length}/${similarRoom.max_passengers || 4}`;
+    return `- ${formatRoomShortId(similarRoom.id)} · ${formatMiamiTime(similarRoom.departure_time)} · from ${similarRoom.origin} · ${similarRoom.destination} · ${passengers.length}/${similarRoom.max_passengers || 4}`;
   });
 
   const text = [
@@ -794,7 +893,7 @@ async function sendExistingRideMatches(
   messageThreadId?: number,
 ) {
   const lines = matches.map(({ room, passengers }) => {
-    return `- ${formatRoomShortId(room.id)} · ${formatMiamiTime(room.departure_time)} · ${room.destination} · ${passengers.length}/${room.max_passengers || 4}`;
+    return `- ${formatRoomShortId(room.id)} · ${formatMiamiTime(room.departure_time)} · from ${room.origin} · ${room.destination} · ${passengers.length}/${room.max_passengers || 4}`;
   });
 
   return sendMessage(
@@ -883,14 +982,15 @@ async function createRideRoom(
   const customDestination = getRideQuery(text) || "Custom side event";
   const leaveAt = parseLeaveAt(text, event);
   const estimatedCost = event ? estimateRideCostCents(event) : 4500;
+  const origin = getRideOrigin(text);
 
   const { data: room, error } = await supabase
     .from("trip_rooms")
     .insert({
       creator_id: user ? getTelegramUserId(user) : `telegram-chat:${chatId}`,
-      origin: CONSENSUS_VENUE.name,
+      origin: origin.name,
       origin_hotzone_id: CONSENSUS_VENUE.id,
-      origin_address: CONSENSUS_VENUE.address,
+      origin_address: origin.address,
       destination: event?.name || customDestination,
       destination_hotzone_id: event?.id || slugifyCustomDestination(customDestination),
       destination_address: event?.address || "Ask in the ride thread",
@@ -935,15 +1035,17 @@ function buildCandidateRoom(
 
   const event = request.event;
   const destination = event?.name || request.destination;
+  const origin = getRideOrigin(request.rideCommand);
 
   return {
     id: "candidate",
     creator_id: user ? getTelegramUserId(user) : `telegram-chat:${chatId}`,
-    origin: CONSENSUS_VENUE.name,
+    origin: origin.name,
     destination,
     departure_time: parseLeaveAt(request.rideCommand, event).toISOString(),
     max_passengers: 4,
     estimated_cost: event ? estimateRideCostCents(event) : 4500,
+    origin_address: origin.address,
     destination_address: event?.address || destination,
     destination_hotzone_id: event?.id || slugifyCustomDestination(destination),
     payment_method_info: {
@@ -1217,7 +1319,9 @@ async function listOpenRides(chatId: TelegramChatId) {
     .limit(10);
 
   if (error) throw error;
-  const usableRooms = ((rooms || []) as RideRoom[]).filter(isUsableOpenRoom);
+  const usableRooms = ((rooms || []) as RideRoom[]).filter(
+    room => isUsableOpenRoom(room) && roomBelongsToChat(room, chatId),
+  );
 
   if (!usableRooms.length) {
     return sendMessage(
@@ -1232,7 +1336,7 @@ async function listOpenRides(chatId: TelegramChatId) {
       const names =
         passengers.map(passenger => passenger.user_name || passenger.user_id).join(", ") ||
         "nobody yet";
-      return `${index + 1}. ${room.destination} · ${formatMiamiTime(room.departure_time)} · ${passengers.length}/${room.max_passengers || 4}\n   ${formatRoomShortId(room.id)} · ${names}`;
+      return `${index + 1}. ${room.destination} · ${formatMiamiTime(room.departure_time)} · from ${room.origin} · ${passengers.length}/${room.max_passengers || 4}\n   ${formatRoomShortId(room.id)} · ${names}`;
     }),
   );
 
@@ -1366,7 +1470,7 @@ async function handleTextMessage(message: TelegramMessage) {
   const naturalRideRequest = getNaturalRideRequest(text);
   if (naturalRideRequest && message.from) {
     const candidate = buildCandidateRoom(chatId, message.from, naturalRideRequest);
-    const matches = candidate ? await findSimilarOpenRooms(candidate) : [];
+    const matches = candidate ? await findSimilarOpenRooms(candidate, 3, chatId) : [];
 
     if (matches.length) {
       const result = await sendExistingRideMatches(
@@ -1421,8 +1525,15 @@ async function handleTextMessage(message: TelegramMessage) {
   if (!actionMatch || !message.from) return { ok: true, ignored: true };
 
   const [, action, , shortId, txHash] = actionMatch;
+  if (isRideActionRateLimited(chatId, message.from)) {
+    return sendMessage(chatId, "Too many ride actions. Try again in a minute.");
+  }
+
   const room = await findRoomByShortId(shortId);
   if (!room) return sendMessage(chatId, `Ride ${shortId} was not found. Try /rides.`);
+  if (!roomBelongsToChat(room, chatId)) {
+    return sendMessage(chatId, `Ride ${shortId} belongs to a different Telegram group.`);
+  }
 
   if (action === "close") {
     if (!(await canCloseRoom(room, chatId, message.from))) {
@@ -1502,8 +1613,15 @@ async function handleCallback(callback: TelegramCallbackQuery) {
     return answerCallback(callback.id);
   }
 
+  if (isRideActionRateLimited(chatId, callback.from)) {
+    return answerCallback(callback.id, "Too many ride actions. Try again in a minute.");
+  }
+
   const room = await findRoomByShortId(shortId);
   if (!room) return answerCallback(callback.id, `Ride ${shortId} was not found`);
+  if (!roomBelongsToChat(room, chatId)) {
+    return answerCallback(callback.id, "This ride belongs to another group");
+  }
 
   if (action === "close") {
     if (!(await canCloseRoom(room, chatId, callback.from))) {

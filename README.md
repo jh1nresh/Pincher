@@ -9,6 +9,7 @@ The current MVP is built for **Consensus Miami, May 4-8**. Attendees can create 
 ## What It Does
 
 - Creates carpool rooms from the Consensus venue to side events.
+- Supports optional custom pickup points for riders starting away from the venue.
 - Matches riders by destination and departure time.
 - Tracks who is waiting, who joined, and who will call Uber.
 - Opens a Telegram Forum Topic for each ride when the group supports topics.
@@ -39,6 +40,7 @@ Pincher does **not** call Uber, custody funds, escrow USDC, or verify chain tran
    ```text
    /ride coinbase dinner 5/4 8:00
    /ride closing dinner 5/8 7:30
+   /ride sui 6:30 from Fontainebleau lobby
    ```
 
 4. Pincher posts the ride room with Join / Leave / Uber caller actions.
@@ -64,6 +66,9 @@ Show side event buttons. After picking an event, reply with a leave time.
 
 /ride <event or destination> <time>
 Create a ride room directly. Known side events are matched automatically; unknown events become custom rides.
+
+/ride <event or destination> <time> from <pickup>
+Create a ride room from a custom pickup point instead of the Consensus venue.
 
 /events
 List known Consensus side events from the Luma seed.
@@ -146,7 +151,7 @@ CRON_SECRET=...
 
 `TELEGRAM_ALLOWED_CHAT_IDS` limits the bot to specific Telegram groups. Leave it unset for open MVP testing.
 
-`CRON_SECRET` protects the stale-ride cleanup endpoint. If it is unset, the endpoint is public but only performs idempotent stale ride cleanup.
+`CRON_SECRET` protects the stale-ride cleanup endpoint. Use the same value on the webhook service and the Railway cleanup cron service.
 
 ## Local Development
 
