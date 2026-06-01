@@ -12,6 +12,7 @@
     "lint": "eslint . --ext .ts --fix",
     "lint:check": "eslint . --ext .ts",
     "cleanup:expired": "node scripts/close-expired-rides.mjs",
+    "smoke:mcp": "node scripts/smoke-mcp.mjs",
     "test:smoke": "node scripts/smoke-test.js"
   },
   "dependencies": {

@@ -18,6 +18,7 @@ The current MVP is built for **Consensus Miami, May 4-8**. Attendees can create 
 - Suggests existing rides that are close in destination and departure time.
 - Reminds a ride topic when the group is nearly full.
 - Supports custom events that are not in the built-in Luma list.
+- Exposes a small MCP endpoint so assistants can list events, find rides, create ride records, join rides, and prepare Base USDC settlement instructions.
 - Lets organizers or admins close completed rides with `/close <id>`.
 - Auto-closes stale rides after the departure window from bot activity or the cron endpoint.
 - Supports optional group allowlisting and basic ride-creation rate limiting.
@@ -100,6 +101,49 @@ Record that a rider paid. The tx hash is optional and is only a note, not chain 
 Close a completed ride. Allowed for the ride creator, Uber caller, or Telegram group admins.
 ```
 
+## MCP Agent Endpoint
+
+Pincher exposes a minimal MCP-compatible HTTP endpoint for assistant-driven ride coordination:
+
+```text
+POST /api/mcp
+GET /api/mcp
+```
+
+Supported tools:
+
+```text
+list_side_events
+find_rides
+create_ride
+join_ride
+get_ride_status
+get_settlement
+```
+
+This lets ChatGPT, Claude, or another MCP client ask Pincher to find or create ride groups. It does **not** call Uber/Lyft/TADA, custody funds, or move money. `get_settlement` only returns suggested Base USDC split instructions; the actual transfer should be prepared and approved through Base MCP / Base Account by the user.
+
+Optional protection:
+
+```env
+MCP_API_KEY=...
+```
+
+When `MCP_API_KEY` is set, clients must send:
+
+```text
+Authorization: Bearer <MCP_API_KEY>
+```
+
+If `MCP_API_KEY` is not set, `/api/mcp` only allows handshake, tool discovery, and `list_side_events`. Ride lookup, ride creation, joining, and settlement tools require the bearer key.
+
+Local smoke test:
+
+```bash
+npm run dev
+PINCHER_MCP_URL=http://localhost:3000/api/mcp npm run smoke:mcp
+```
+
 ## Telegram Group Setup
 
 Live MVP group:
@@ -141,7 +185,7 @@ Add registration later only if the product needs:
 - **Hosting**: Railway.
 - **Identity**: Telegram user identity in the bot; the web UI uses a lightweight local rider ID.
 - **Payments**: Manual settlement; no escrow or chain verification in the MVP.
-- **Maps**: Coordinate parsing and haversine distance matching; no paid map/geocoding API.
+- **Maps**: Coordinate parsing, optional Google Maps geocoding, and haversine distance matching.
 
 ## Environment Variables
 
@@ -163,6 +207,7 @@ Optional hardening variables:
 TELEGRAM_ALLOWED_CHAT_IDS=-1001234567890,-1009876543210
 CRON_SECRET=...
 GOOGLE_MAPS_API_KEY=...
+MCP_API_KEY=...
 ```
 
 `TELEGRAM_ALLOWED_CHAT_IDS` limits the bot to specific Telegram groups. Leave it unset for open MVP testing.
@@ -170,6 +215,8 @@ GOOGLE_MAPS_API_KEY=...
 `CRON_SECRET` protects the stale-ride cleanup endpoint. Use the same value on the webhook service and the Railway cleanup cron service.
 
 `GOOGLE_MAPS_API_KEY` is optional. When set server-side, Pincher geocodes text pickup points like `Fontainebleau lobby` into GPS coordinates for better ride matching. Without it, explicit `lat,lng`, map links with coordinates, and Telegram locations still work.
+
+`MCP_API_KEY` protects `/api/mcp` ride tools. Without it, only event listing is available.
 
 ## Local Development
 
