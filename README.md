@@ -2,9 +2,53 @@
 
 Pincher is a Telegram-first carpool matcher agent for crypto conference side events.
 
-The current MVP is built for **Consensus Miami, May 4-8**. Attendees can create ride rooms in the [Consensus Ride Telegram group](https://t.me/consensus_ride), join people heading to the same Luma side event, coordinate in a Telegram topic, and split the ride manually after one person calls Uber.
+The first MVP was built for **Consensus Miami, May 4-8, 2026**. Attendees could create ride rooms in the [Consensus Ride Telegram group](https://t.me/consensus_ride), join people heading to the same Luma side event, coordinate in a Telegram topic, and split the ride manually after one person called Uber.
+
+> **Current status (July 2026):** the bundled Consensus event catalog is historical. The web app and public MCP discovery can be run locally, but known-event ride creation is not ready for a live campaign: those rides still receive May 2026 departure dates and become cleanup-eligible. Refresh the event catalog and date behavior for a chosen conference before inviting riders. Do not silently roll the old events into a new year.
 
 ![Pincher logo](/public/pincher-agent-logo.png)
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 22 or newer. If you use `nvm`, run `nvm use` in the repo.
+- npm, included with Node.js.
+- Supabase and a public HTTPS URL are needed only for the connected Telegram flow.
+
+Confirm that you are in this repository, not an older standalone Pincher prototype:
+
+```bash
+git remote get-url origin
+# Expected: https://github.com/JhiNResH/Pincher.git
+```
+
+### Preview the web app — no credentials
+
+```bash
+npm ci
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000). This verifies the landing pages and public MCP metadata. Supabase-backed Web Board actions are not enabled by this credential-free preview.
+
+Run the repeatable build and live-server check:
+
+```bash
+npm run check
+```
+
+Stop the development server before running this command. `npm run check` builds the current source, starts that production build on an ephemeral local port, probes the key pages and MCP metadata, verifies that protected routes fail closed, then stops the server. It does not contact Telegram, Supabase, or the deployed service.
+
+### Smoke-test public MCP discovery — no credentials
+
+With `npm run dev` running in another terminal:
+
+```bash
+npm run smoke:mcp
+```
+
+This covers MCP initialization, tool discovery, and static side-event listing only. It does not prove that the historical event dates or database-backed ride tools are usable.
 
 ## What It Does
 
@@ -137,12 +181,7 @@ Authorization: Bearer <MCP_API_KEY>
 
 If `MCP_API_KEY` is not set, `/api/mcp` only allows handshake, tool discovery, and `list_side_events`. Ride lookup, ride creation, joining, and settlement tools require the bearer key.
 
-Local smoke test:
-
-```bash
-npm run dev
-PINCHER_MCP_URL=http://localhost:3000/api/mcp npm run smoke:mcp
-```
+The credential-free MCP smoke command is in [Quick Start](#smoke-test-public-mcp-discovery--no-credentials).
 
 ## Telegram Group Setup
 
@@ -187,130 +226,81 @@ Add registration later only if the product needs:
 - **Payments**: Manual settlement; no escrow or chain verification in the MVP.
 - **Maps**: Coordinate parsing, optional Google Maps geocoding, and haversine distance matching.
 
-## Environment Variables
+## Configuration Modes
 
-Required for the Telegram MVP:
+Copy the template only when you need a connected surface:
 
-```env
-TELEGRAM_BOT_TOKEN=...
-
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...
+```bash
+cp .env.example .env.local
 ```
 
-Do not expose `SUPABASE_SERVICE_ROLE_KEY` in client-side code. It is only for server routes.
+| Mode | Required variables | What works |
+| --- | --- | --- |
+| Static web preview | None | Landing pages and MCP metadata |
+| Browser data reads | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase-backed reads; current Web Board writes still need a real authenticated web identity |
+| Telegram rides | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Authenticated webhook handling and server-side ride writes |
+| Full MCP ride tools | `MCP_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Ride lookup and mutations over bearer-authenticated MCP |
+| Cleanup worker | `PINCHER_CLEANUP_URL`, `CRON_SECRET` | Authenticated stale-ride cleanup |
 
-Optional hardening variables:
+Never expose `SUPABASE_SERVICE_ROLE_KEY`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `CRON_SECRET`, or `MCP_API_KEY` to client-side code. MCP accepts secrets only through `Authorization: Bearer ...`; query-string keys are rejected.
+
+Optional controls:
 
 ```env
 TELEGRAM_ALLOWED_CHAT_IDS=-1001234567890,-1009876543210
-CRON_SECRET=...
 GOOGLE_MAPS_API_KEY=...
-MCP_API_KEY=...
 ```
 
-`TELEGRAM_ALLOWED_CHAT_IDS` limits the bot to specific Telegram groups. Leave it unset for open MVP testing.
+`TELEGRAM_ALLOWED_CHAT_IDS` limits normal bot handling to specific groups after the Telegram webhook has been authenticated. `GOOGLE_MAPS_API_KEY` adds server-side geocoding; explicit coordinates, coordinate-bearing map links, and Telegram locations work without it.
 
-`CRON_SECRET` protects the stale-ride cleanup endpoint. Use the same value on the webhook service and the Railway cleanup cron service.
+## Fresh Supabase Setup for the Telegram Bot
 
-`GOOGLE_MAPS_API_KEY` is optional. When set server-side, Pincher geocodes text pickup points like `Fontainebleau lobby` into GPS coordinates for better ride matching. Without it, explicit `lat,lng`, map links with coordinates, and Telegram locations still work.
+The migration directory contains multiple historical product lanes. Do **not** run every SQL file in order. For a fresh Supabase project, run this subset once in the SQL Editor:
 
-`MCP_API_KEY` protects `/api/mcp` ride tools. Without it, only event listing is available.
+1. `supabase/migrations/20240117_base_schema.sql` — required core tables.
+2. `supabase/migrations/20250123_security_policies.sql` — required RLS policies; use the server-only service-role key for Telegram writes.
 
-## Local Development
+Do not apply `20250125_payment_methods.sql` as part of this setup: its historical policies expose payment-confirmation rows to public clients. The core `/paid <id>` flow still records `trip_passengers.payment_status`; this safe bootstrap does not persist the optional transaction-hash note.
+
+The ratings/push migration, SQL auto-expiry migration, and `user_profiles.sql` are not part of the Telegram core bootstrap. Verify the required tables in the SQL Editor:
+
+```sql
+select
+  to_regclass('public.trip_rooms') as trip_rooms,
+  to_regclass('public.trip_passengers') as trip_passengers;
+```
+
+`trip_rooms.payment_method_info` stores lightweight Telegram metadata, including topic and close state, so the bot does not require a separate topic table.
+
+## Connect the Telegram Webhook
+
+Pincher requires a public HTTPS URL. After configuring the required variables on that server, set the webhook only when you are ready to change the bot's active delivery target:
 
 ```bash
-npm install
-npm run dev
-```
+export APP_BASE_URL=https://your-domain.example
 
-Open [http://localhost:3000](http://localhost:3000).
-
-Build check:
-
-```bash
-npm run build
-```
-
-Webhook smoke test:
-
-```bash
-curl -X POST http://localhost:3000/api/telegram/webhook \
-  -H "content-type: application/json" \
-  -d '{}'
-```
-
-Expected response:
-
-```json
-{"ok":true,"ignored":true}
-```
-
-## Supabase
-
-The bot needs these tables:
-
-- `trip_rooms`
-- `trip_passengers`
-- `payment_confirmations`
-
-Run the SQL files in `supabase/migrations` against the Supabase project before connecting the Telegram webhook.
-
-For the current bot MVP, `trip_rooms.payment_method_info` is also used to store lightweight Telegram metadata, such as topic IDs and close metadata, so no extra topic table is required.
-
-## Railway Deployment
-
-Pincher uses two Railway services:
-
-- `Pincher`: the always-on Telegram webhook/web service.
-- `pincher-cleanup-cron`: a scheduled job that closes stale rides and exits.
-
-Production web service:
-
-```text
-https://pincher-production.up.railway.app
-```
-
-Telegram webhook:
-
-```text
-https://pincher-production.up.railway.app/api/telegram/webhook
-```
-
-Set the webhook with BotFather token:
-
-```bash
 curl -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
   -H "content-type: application/json" \
-  -d '{"url":"https://pincher-production.up.railway.app/api/telegram/webhook"}'
+  -d "{\"url\":\"$APP_BASE_URL/api/telegram/webhook\",\"secret_token\":\"$TELEGRAM_WEBHOOK_SECRET\"}"
 ```
 
-Production smoke test:
+Telegram sends `TELEGRAM_WEBHOOK_SECRET` in the `X-Telegram-Bot-Api-Secret-Token` header. Pincher returns `503` when that secret is not configured and `401` when the header does not match. Verify the bot token and registered webhook with Telegram's `getMe` and `getWebhookInfo`, then manually test `/start`, a **custom future** `/ride`, and `/rides` in a test group. The bundled Consensus event buttons remain historical until the catalog is refreshed.
 
-```bash
-curl -X POST https://pincher-production.up.railway.app/api/telegram/webhook \
-  -H "content-type: application/json" \
-  -d '{}'
+## Cleanup Worker
+
+The cleanup script no longer falls back to a hard-coded production URL. Configure both variables explicitly on the scheduled worker:
+
+```env
+PINCHER_CLEANUP_URL=https://your-domain.example/api/telegram/webhook?task=close-expired
+CRON_SECRET=...
 ```
-
-Stale ride cleanup endpoint:
-
-```bash
-curl "https://pincher-production.up.railway.app/api/telegram/webhook?task=close-expired" \
-  -H "authorization: Bearer $CRON_SECRET"
-```
-
-Railway cleanup cron service:
 
 ```text
 Start command: npm run cleanup:expired
-Cron schedule: */15 * * * *
+Suggested schedule: */15 * * * *
 ```
 
-Cron schedules run in UTC. The script reads `PINCHER_CLEANUP_URL`; if that variable is unset, it defaults to the production cleanup endpoint above. If `CRON_SECRET` is set on the webhook service, set the same value on the cron service.
-
-The Telegram webhook still runs the same cleanup opportunistically whenever the bot receives activity, but the Railway cron keeps stale rides closing even when nobody is messaging the bot and the local Codex automation is offline.
+The cleanup endpoint requires `Authorization: Bearer $CRON_SECRET`; missing configuration returns `503` and an incorrect bearer token returns `401`.
 
 ## MVP Success Metric
 

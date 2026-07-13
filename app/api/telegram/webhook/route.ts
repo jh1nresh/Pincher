@@ -120,7 +120,7 @@ const rideActionRateLimit = new Map<string, number[]>();
 
 function getSupabaseServerClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !key) {
     throw new Error(
@@ -209,15 +209,6 @@ function isRideActionRateLimited(chatId: TelegramChatId, user?: TelegramUser) {
     RIDE_ACTION_RATE_LIMIT_WINDOW_MS,
     RIDE_ACTION_RATE_LIMIT_MAX,
   );
-}
-
-function isCronAuthorized(request: NextRequest) {
-  const secret = process.env.CRON_SECRET || process.env.AUTO_CLOSE_SECRET;
-  if (!secret) return true;
-
-  const authHeader = request.headers.get("authorization");
-  const key = request.nextUrl.searchParams.get("key");
-  return authHeader === `Bearer ${secret}` || key === secret;
 }
 
 function stripOriginFromText(text: string) {
@@ -2009,6 +2000,17 @@ async function handleCallback(callback: TelegramCallbackQuery) {
 }
 
 export async function POST(request: NextRequest) {
+  const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    return NextResponse.json(
+      { ok: false, error: "Telegram webhook is not configured" },
+      { status: 503 },
+    );
+  }
+  if (request.headers.get("x-telegram-bot-api-secret-token") !== webhookSecret) {
+    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
+  }
+
   try {
     const update = (await request.json()) as TelegramUpdate;
 
@@ -2041,7 +2043,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ ok: false, error: "unknown task" }, { status: 400 });
     }
 
-    if (!isCronAuthorized(request)) {
+    const cronSecret = process.env.CRON_SECRET;
+    if (!cronSecret) {
+      return NextResponse.json(
+        { ok: false, error: "Cleanup cron is not configured" },
+        { status: 503 },
+      );
+    }
+    if (request.headers.get("authorization") !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
     }
 

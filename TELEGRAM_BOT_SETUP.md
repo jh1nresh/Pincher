@@ -2,25 +2,34 @@
 
 Bot-only validation flow for Consensus Miami ride groups.
 
+> The bundled Consensus May 2026 catalog is historical. Use this guide to validate the infrastructure in a test group, but do not invite riders to known-event rooms until the event catalog and date behavior are refreshed. A custom future destination can be used for an isolated test.
+
 ## Environment
 
 ```env
 TELEGRAM_BOT_TOKEN=123:abc
+TELEGRAM_WEBHOOK_SECRET=replace-with-a-private-webhook-secret
 NEXT_PUBLIC_SUPABASE_URL=https://...
 SUPABASE_SERVICE_ROLE_KEY=...
 ```
 
-`SUPABASE_SERVICE_ROLE_KEY` is recommended because Telegram users are not browser-authenticated. If it is missing, the webhook falls back to `NEXT_PUBLIC_SUPABASE_ANON_KEY`, but RLS may block writes.
+All four values are required for the Telegram bot. `SUPABASE_SERVICE_ROLE_KEY` must stay server-side because Telegram users are not Supabase-authenticated and the documented RLS policies block anonymous writes.
+
+For a fresh Supabase project, run the exact Telegram migration subset documented in [README.md](README.md#fresh-supabase-setup-for-the-telegram-bot). Do not run every historical migration.
 
 ## Webhook
 
 Deploy the Next app to HTTPS, then point Telegram at the webhook:
 
 ```bash
+export APP_BASE_URL=https://your-domain.example
+
 curl -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
   -H "Content-Type: application/json" \
-  -d '{"url":"https://your-domain.com/api/telegram/webhook"}'
+  -d "{\"url\":\"$APP_BASE_URL/api/telegram/webhook\",\"secret_token\":\"$TELEGRAM_WEBHOOK_SECRET\"}"
 ```
+
+The webhook rejects requests that do not include the matching `X-Telegram-Bot-Api-Secret-Token` header. Run the command above only when you are ready to replace the bot's active webhook target.
 
 ## Group Commands
 
@@ -40,10 +49,12 @@ curl -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 
 ## Data Model
 
-No new tables are required for the bot MVP:
+No extra tables are required for the safe bot MVP setup:
 
 - `trip_rooms` stores ride groups.
 - `trip_passengers` stores who is waiting in each ride.
-- `payment_confirmations` stores optional USDC transaction hashes when that table is available.
+- `/paid` updates `trip_passengers.payment_status`; the optional transaction-hash note is not persisted by the core setup.
+
+Do not apply the historical `20250125_payment_methods.sql` migration without first replacing its public payment-confirmation policies with server-only access.
 
 Anyone waiting for a ride is represented by a `trip_passengers` row attached to an open Consensus `trip_rooms` record.

@@ -4,15 +4,6 @@ import { getPincherMcpMetadata, handlePincherMcpRequest } from "@/lib/pincher-mc
 
 export const dynamic = "force-dynamic";
 
-function getAuthState(request: NextRequest) {
-  const key = process.env.MCP_API_KEY;
-  if (!key) return { configured: false, authorized: false };
-
-  const authHeader = request.headers.get("authorization");
-  const queryKey = request.nextUrl.searchParams.get("key");
-  return { configured: true, authorized: authHeader === `Bearer ${key}` || queryKey === key };
-}
-
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
@@ -33,8 +24,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = getAuthState(request);
-  if (auth.configured && !auth.authorized) {
+  const key = process.env.MCP_API_KEY;
+  const authorized = Boolean(key && request.headers.get("authorization") === `Bearer ${key}`);
+  if (key && !authorized) {
     return NextResponse.json(
       { jsonrpc: "2.0", id: null, error: { code: -32001, message: "Unauthorized." } },
       { status: 401 },
@@ -43,7 +35,7 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json();
   const result = await handlePincherMcpRequest(body, {
-    access: auth.authorized ? "full" : "public",
+    access: authorized ? "full" : "public",
   });
   return NextResponse.json(result, {
     headers: {
