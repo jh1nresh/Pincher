@@ -28,7 +28,7 @@ const source = required
   .map((file) => readFileSync(new URL(file, root), "utf8"))
   .join("\n") + readFileSync(new URL("utils/api.js", root), "utf8");
 
-for (const marker of ["TELEGRAM_BOT_TOKEN", "SUPABASE_SERVICE_ROLE_KEY", "FAUCET_PRIVATE_KEY", "AIza"]) {
+for (const marker of ["WECHAT_APPSECRET", "SUPABASE_SERVICE_ROLE_KEY", "AIza"]) {
   if (source.includes(marker)) throw new Error(`Forbidden credential marker in mini program: ${marker}`);
 }
 
