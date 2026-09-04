@@ -1,95 +1,67 @@
-# Pincher
+# Pincher 校園合乘
 
-## Current product: PKU campus WeChat mini program
+Pincher 目前只做一個微信小程序試點：給受邀的北京大學口腔相關學生，從北大醫學部宿舍前往北大醫院時尋找同行者。
 
-Pincher is currently being validated as a WeChat mini program for invited Peking University School of Stomatology students. The first pilot has one deliberately narrow route:
-
-```
-北大醫學部宿舍 → 北大醫院
+```text
+手機號登入 → 固定路線 → 發起／加入拼車 → 行程房間 → 協調集合位置
 ```
 
-The main user flow is:
+## 現在有什麼
 
-```
-手機號登入 → 固定路線 → 發起／加入拼車 → 行程房間 → 集合協調 → 實際車費自行分攤
-```
+- 固定路線：`北大醫學部宿舍 → 北大醫院`
+- 受邀學生登入流程與本地 demo 資料
+- 查看推薦班次、發起拼車、加入、退出
+- 每個班次的行程房間與快速集合消息
+- 我的行程、歷史狀態與登出
+- 手機號碼不對其他乘客公開
 
-This README describes the current campus product only. The original Consensus Telegram implementation has been moved to [`docs/legacy-telegram.md`](docs/legacy-telegram.md) so historical event tooling does not get mistaken for the current pilot.
+目前資料保存在本地，登入頁也是流程展示；還沒有真實短信、微信身份綁定、後端服務、支付或司機接單。
 
-## Current status
+## 預覽小程序
 
-> **Pilot, not production:** the mini program runs in local demo mode. It does not yet send real SMS, bind WeChat identities, verify student membership, or write to a live backend.
+1. 開啟微信開發者工具，選擇「導入項目」。
+2. 將 `miniprogram/` 設為項目目錄。
+3. 使用測試 AppID 或本地預覽。
+4. 依序測試登入、推薦班次、發起／加入拼車、行程房間、集合消息、我的行程和登出。
 
-The current demo includes:
+## 正式接入順序
 
-- Fixed dorm-to-hospital route and public pickup points.
-- Invited-student product language and phone-login flow.
-- Create, join, leave, and view trips.
-- A member-only ride room with coordination messages and quick actions.
-- Manual fare-splitting estimates; the platform does not collect or hold money.
+1. 註冊小程序並配置 AppID。
+2. 部署公開 HTTPS API，將域名加入小程序 request 合法域名。
+3. 在服務端完成微信 session exchange 和手機 OTP 驗證。
+4. 將已驗證身份映射到 `auth.users.id`，簽發短期應用 token。
+5. 審查並套用 `supabase/migrations/20260904_pku_carpool_foundation.sql`。
+6. 實作建立、加入、退出拼車與行程房間消息 API；服務端重新檢查身份、座位、路線、時間和重複加入。
+7. 加入邀請碼／人工審核、隱私政策、使用者協議、舉報和管理員操作記錄。
+8. 由法務確認北京私人小客車合乘規則與小程序服務類目，再決定是否接支付。
 
-## Preview the mini program
+## 收費邊界
 
-1. Open WeChat Developer Tools.
-2. Import the `miniprogram/` directory as the project root.
-3. Use a test AppID or local preview mode.
-4. Exercise login, recommended rides, create/join, the ride room, coordination messages, trip history, and logout.
+第一版只展示預估分攤額，實際車費由同行者自行協調；平台不代收、不托管、不抽成。日後若接微信支付，仍需確認合資格主體、服務類目、商戶資格和相關合規要求。
 
-The demo stores user, ride, and message state locally. Setting an API URL alone does not make it production-ready; the pages must be switched from local demo state to authenticated server calls.
+## Supabase
 
-## Product boundaries
+`supabase/migrations/20260904_pku_carpool_foundation.sql` 是校園拼車的資料表與 verified-member RLS 基礎，只是待審 migration，尚未代表已修改線上資料。
 
-The first pilot is intentionally small:
-
-- Access is invite-only for the intended student group.
-- The route and pickup points are controlled rather than arbitrary addresses.
-- Each ride has a small seat count and its own coordination room.
-- Phone numbers are not shown to other riders.
-- The first version does not dispatch drivers, act as a ride-hailing marketplace, custody funds, escrow fares, or take a per-ride commission.
-
-微信群 can distribute invitations, but the mini program is the source of truth for seats, membership, messages, and leaving a ride.
-
-## Production connection checklist
-
-Before inviting real students, complete these in order:
-
-1. Register the mini program and configure its AppID.
-2. Deploy a public HTTPS API and add its domain to the mini program request-domain allowlist.
-3. Implement server-side WeChat session exchange and phone OTP verification.
-4. Map the verified identity to `auth.users.id` and issue a short-lived application token.
-5. Apply and review `supabase/migrations/20260904_pku_carpool_foundation.sql` in the intended Supabase project.
-6. Implement authenticated ride and room-message APIs; the server must re-check membership, seat capacity, route, time, and duplicate joins.
-7. Implement invite-code or manual student verification, privacy terms, abuse reporting, and operator audit records.
-8. Test with multiple accounts, including unverified users, full rides, leaving, and unauthorized room access.
-
-Secrets stay server-side. Never place a WeChat AppSecret, SMS credential, Supabase service-role key, merchant private key, cron secret, or bearer token in `miniprogram/`.
+正式後端應由服務端保存 Supabase service-role key、微信 AppSecret、短信憑證和支付密鑰；這些內容不可放進 `miniprogram/`。
 
 ## Repository layout
 
-| Path | Purpose |
+| 路徑 | 用途 |
 | --- | --- |
-| `miniprogram/` | Current WeChat mini program pilot and local demo |
-| `supabase/migrations/20260904_pku_carpool_foundation.sql` | Campus tables and verified-member RLS foundation; not applied to live data by this repository |
-| `app/`, `lib/`, `supabase/migrations/` | Existing web and historical Telegram product lanes |
-| `docs/legacy-telegram.md` | Archived Consensus Telegram documentation |
-
-Do not apply every historical migration blindly. Review the target project, required pre-state, and the exact migration before changing Supabase.
+| `miniprogram/` | 微信小程序試點與本地 demo |
+| `supabase/migrations/20260904_pku_carpool_foundation.sql` | 校園拼車資料表與 RLS 基礎 |
+| `scripts/check-miniprogram.mjs` | 小程序結構和 JavaScript 語法檢查 |
 
 ## Checks
 
-Run the focused mini program checks from the repository root:
-
-```
-npm run check:miniprogram
+```bash
+node scripts/check-miniprogram.mjs
 find miniprogram -name '*.js' -print0 | xargs -0 -n1 node --check
 ```
 
-The native WeChat Developer Tools runtime, live API, live Supabase project, production deployment, and payment qualification are separate gates; a local preview does not prove any of them.
-
-## Historical documentation
-
-For the original Telegram-first Consensus event tooling, commands, MCP endpoint, and historical setup notes, read [`docs/legacy-telegram.md`](docs/legacy-telegram.md). It is archived reference material, not a current launch checklist.
+本地預覽不代表已完成微信審核、真實 API、Supabase 線上套用、支付資格或正式部署。
 
 ## License
 
-MIT.
+MIT
