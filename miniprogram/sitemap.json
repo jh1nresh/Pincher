@@ -1,0 +1,4 @@
+{
+  "desc": "Pincher 校园合乘小程序页面索引",
+  "rules": [{ "action": "allow", "page": "*" }]
+}

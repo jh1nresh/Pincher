@@ -1,0 +1,27 @@
+<view class="page login-page">
+  <view class="login-mark">Pincher 校园合乘</view>
+  <view class="login-title">手机号登录</view>
+  <view class="login-subtitle">给北大口腔学生的固定路线拼车工具</view>
+
+  <view class="login-form">
+    <view class="phone-row">
+      <picker mode="selector" range="{{countryCodes}}" value="{{countryIndex}}" bindchange="onCountryChange">
+        <view class="country-code">{{countryCodes[countryIndex]}}⌄</view>
+      </picker>
+      <input class="login-input phone-input" type="number" maxlength="15" placeholder="请输入手机号" value="{{phone}}" bindinput="onPhoneInput" />
+    </view>
+    <view class="code-row">
+      <input class="login-input" type="number" maxlength="6" placeholder="请输入验证码" value="{{code}}" bindinput="onCodeInput" />
+      <button class="code-button" bindtap="sendCode">获取验证码</button>
+    </view>
+  </view>
+
+  <view class="agreement" bindtap="toggleAgreement">
+    <view class="checkbox {{agreed ? 'checked' : ''}}">{{agreed ? '✓' : ''}}</view>
+    <text>我已阅读并同意《用户协议》与《隐私政策》</text>
+  </view>
+
+  <button class="primary-button login-button" bindtap="submit">登录</button>
+  <view class="demo-note" wx:if="{{demoMode}}">当前为本地体验模式：验证码仅用于演示流程</view>
+  <view class="trust-line login-trust"><view class="trust-dot"></view>仅限邀请学生 · 不代收车费</view>
+</view>

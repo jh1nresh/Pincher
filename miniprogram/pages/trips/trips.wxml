@@ -1,0 +1,18 @@
+<view class="page">
+  <view class="topbar">
+    <view class="brand">我的行程</view>
+    <view class="small muted">{{rides.length}} 个进行中</view>
+  </view>
+  <view wx:if="{{rides.length}}">
+    <view class="ride-card" wx:for="{{rides}}" wx:key="id" data-id="{{item.id}}" bindtap="openRide">
+      <view class="ride-card-head"><text class="time">{{item.dateLabel}} {{item.time}}</text><text class="small muted">已加入 〉</text></view>
+      <view class="ride-route">{{item.origin}} → {{item.destination}}</view>
+      <view class="small muted">集合点：{{item.pickup}}</view>
+    </view>
+  </view>
+  <view class="empty-state" wx:else>
+    <view>还没有加入拼车</view>
+    <view class="small" style="margin-top: 12rpx;">选一个合适的时间，和同学一起出发。</view>
+    <button class="primary-button trips-empty-button" bindtap="createRide">发起第一趟</button>
+  </view>
+</view>
