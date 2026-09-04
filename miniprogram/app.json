@@ -1,0 +1,29 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/login/login",
+    "pages/trips/trips",
+    "pages/create/create",
+    "pages/ride/ride",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "navigationBarTitleText": "Pincher 校园合乘",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f6f8fb",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#778398",
+    "selectedColor": "#0b1f3a",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/home/home", "text": "首页" },
+      { "pagePath": "pages/trips/trips", "text": "我的行程" },
+      { "pagePath": "pages/profile/profile", "text": "个人" }
+    ]
+  },
+  "sitemapLocation": "sitemap.json"
+}

@@ -17,7 +17,8 @@
     "lint:check": "eslint . --ext .ts",
     "cleanup:expired": "node scripts/close-expired-rides.mjs",
     "smoke:mcp": "node scripts/smoke-mcp.mjs",
-    "test:smoke": "node scripts/smoke-test.js"
+    "test:smoke": "node scripts/smoke-test.js",
+    "check:miniprogram": "node scripts/check-miniprogram.mjs"
   },
   "dependencies": {
     "@capacitor/core": "^8.0.1",

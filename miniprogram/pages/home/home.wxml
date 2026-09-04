@@ -1,0 +1,47 @@
+<view class="page" wx:if="{{user}}">
+  <view class="topbar">
+    <view class="brand">Pincher 校园合乘</view>
+    <view class="small muted">试点中</view>
+  </view>
+
+  <view class="trust-line"><view class="trust-dot"></view>仅限邀请学生 · 不代收车费</view>
+
+  <view class="home-question">今天去北大医院？</view>
+  <view class="route-panel">
+    <view class="route-rail">
+      <view class="route-dot"></view>
+      <view class="route-line"></view>
+      <view class="route-dot end"></view>
+    </view>
+    <view class="route-copy">
+      <view class="route-title">北大医学部宿舍</view>
+      <view class="route-subtitle">指定集合点上车</view>
+      <view class="route-title route-end-title">北大医院</view>
+      <view class="route-subtitle">指定落客点</view>
+    </view>
+  </view>
+
+  <view class="section-heading">
+    <view class="section-title">推荐拼车</view>
+    <view class="small muted" bindtap="openTrips">查看全部 〉</view>
+  </view>
+
+  <view class="ride-card" wx:for="{{rides}}" wx:key="id" data-id="{{item.id}}" bindtap="openRide">
+    <view class="ride-card-head">
+      <text class="time">{{item.dateLabel}} {{item.time}}</text>
+      <text class="small muted">〉</text>
+    </view>
+    <view class="ride-route">{{item.origin}} → {{item.destination}}</view>
+    <view class="ride-card-meta">
+      <view class="meta-box">{{item.participants.length}} / {{item.seats}} 人</view>
+      <view class="meta-box">预计每人 ¥{{item.estimatedCost}}</view>
+    </view>
+  </view>
+
+  <view class="button-stack">
+    <button class="primary-button" bindtap="createRide">发起拼车</button>
+    <button class="secondary-button" bindtap="openTrips">加入拼车</button>
+  </view>
+
+  <view class="small muted home-footer">实际车费由乘车者自行分摊，平台不代收任何费用。</view>
+</view>

@@ -1,0 +1,70 @@
+<view class="page" wx:if="{{ride}}">
+  <view class="detail-head">
+    <view class="status-mark">{{joined ? '✓' : '○'}}</view>
+    <view>
+      <view class="detail-title">{{joined ? '已加入拼车' : '拼车详情'}}</view>
+      <view class="small muted">{{ride.dateLabel}} {{ride.time}}</view>
+    </view>
+  </view>
+
+  <view class="detail-card">
+    <view class="detail-route-row"><view class="route-dot"></view><view><view class="detail-place">{{ride.origin}}</view><view class="small muted">{{ride.pickup}}</view></view></view>
+    <view class="detail-route-line"></view>
+    <view class="detail-route-row"><view class="route-dot end"></view><view><view class="detail-place">{{ride.destination}}</view><view class="small muted">指定落客点</view></view></view>
+    <view class="ride-card-meta detail-meta">
+      <view class="meta-box">{{ride.participants.length}} / {{ride.seats}} 人</view>
+      <view class="meta-box">预计每人 ¥{{ride.estimatedCost}}</view>
+    </view>
+  </view>
+
+  <view class="room-heading">
+    <view class="section-title">行程房间</view>
+    <view class="small muted">仅限同行成员</view>
+  </view>
+  <view class="participant-list detail-card">
+    <view class="participant-row" wx:for="{{ride.participants}}" wx:key="name">
+      <view class="avatar">{{item.name[0]}}</view>
+      <view class="participant-name">{{item.name}}<text wx:if="{{item.role === '发起人'}}">（发起人）</text></view>
+      <view class="small muted">{{item.role}}</view>
+    </view>
+    <view class="participant-row empty-person" wx:for="{{ride.seats - ride.participants.length}}" wx:key="*this">
+      <view class="avatar outline">{{index + ride.participants.length + 1}}</view>
+      <view class="small muted">等待加入</view>
+    </view>
+  </view>
+
+  <view wx:if="{{joined}}" class="message-card detail-card">
+    <view class="message-heading">
+      <view>
+        <view class="section-title">集合协调</view>
+        <view class="room-caption small muted">确认上车位置、到达状态和叫车安排</view>
+      </view>
+      <view class="small muted">不公开手机号</view>
+    </view>
+    <scroll-view class="message-list" scroll-y="true">
+      <view wx:if="{{!messages.length}}" class="message-empty small muted">还没有消息，先确认集合位置吧。</view>
+      <view wx:for="{{messages}}" wx:key="id" class="message-row {{item.mine ? 'mine' : ''}}">
+        <view class="avatar">{{item.name[0]}}</view>
+        <view class="message-content">
+          <view class="message-meta small muted">{{item.name}} · {{item.time}}</view>
+          <view class="message-bubble">{{item.body}}</view>
+        </view>
+      </view>
+    </scroll-view>
+    <view class="quick-messages">
+      <button wx:for="{{quickMessages}}" wx:key="*this" class="quick-message" data-message="{{item}}" bindtap="useQuickMessage">{{item}}</button>
+    </view>
+    <view class="message-composer">
+      <input class="message-input" value="{{messageDraft}}" maxlength="200" placeholder="例如：我在东门外公交站" confirm-type="send" bindinput="onMessageInput" bindconfirm="sendMessage" />
+      <button class="send-button" bindtap="sendMessage">发送</button>
+    </view>
+  </view>
+
+  <view wx:else class="message-locked detail-card">
+    <view class="section-title">加入后进入行程房间</view>
+    <view class="small muted">加入拼车后，才能查看集合消息并协调上车位置。</view>
+  </view>
+
+  <view class="small muted safety-copy">请在公共集合点见面。若行程或人员有异常，请退出并联系试点管理员。</view>
+  <button class="primary-button" bindtap="toggleJoin">{{joined ? '取消加入' : '加入拼车'}}</button>
+</view>

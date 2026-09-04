@@ -1,0 +1,16 @@
+.home-question {
+  font-size: 54rpx;
+  font-weight: 750;
+  letter-spacing: -3rpx;
+  margin-bottom: 48rpx;
+}
+
+.route-end-title {
+  margin-top: 52rpx;
+}
+
+.home-footer {
+  line-height: 1.6;
+  margin-top: 30rpx;
+  text-align: center;
+}

@@ -1,14 +1,31 @@
 # Pincher
 
-Pincher is a Telegram-first carpool matcher agent for crypto conference side events.
+## Current direction: PKU campus pilot
+
+Pincher is being reshaped into a WeChat mini program for invited Peking University School of Stomatology students. The first focused use case is the route between the medical-campus dorms and the hospital:
+
+```text
+手機號登入 → 固定路線 → 發起／加入拼車 → 行程房間 → 實際車費自行分攤
+```
+
+The repository now has two deliberately separate product lanes:
+
+- **PKU campus pilot** — the new WeChat mini program baseline in [`miniprogram/`](miniprogram/README.md). It is a local demo with fixed public pickup points, small ride rooms, and no platform-collected payment.
+- **Consensus Telegram tooling** — the original event implementation below, retained as historical reference while the campus pilot is validated.
+
+The campus pilot is not a live service yet. Production SMS, WeChat identity binding, student membership verification, privacy terms, server-side mutations, and any payment qualification must be completed and reviewed before inviting real students. The pilot does not custody money, take a per-ride commission, or dispatch private cars.
 
 The first MVP was built for **Consensus Miami, May 4-8, 2026**. Attendees could create ride rooms in the [Consensus Ride Telegram group](https://t.me/consensus_ride), join people heading to the same Luma side event, coordinate in a Telegram topic, and split the ride manually after one person called Uber.
 
-> **Current status (July 2026):** the bundled Consensus event catalog is historical. The web app and public MCP discovery can be run locally, but known-event ride creation is not ready for a live campaign: those rides still receive May 2026 departure dates and become cleanup-eligible. Refresh the event catalog and date behavior for a chosen conference before inviting riders. Do not silently roll the old events into a new year.
+> **Historical lane status (September 2026):** the bundled Consensus event catalog is historical. The web app and public MCP discovery can be run locally, but known-event ride creation is not ready for a live campaign: those rides still receive May 2026 departure dates and become cleanup-eligible. Refresh the event catalog and date behavior for a chosen conference before inviting riders. Do not silently roll the old events into a new year.
 
 ![Pincher logo](/public/pincher-agent-logo.png)
 
 ## Quick Start
+
+### Start with the PKU mini program
+
+For the current product direction, open [`miniprogram/README.md`](miniprogram/README.md) and import the `miniprogram/` directory into WeChat Developer Tools. The current flow uses local demo data and does not send SMS, bind WeChat identities, or charge users.
 
 ### Prerequisites
 
@@ -302,9 +319,9 @@ Suggested schedule: */15 * * * *
 
 The cleanup endpoint requires `Authorization: Bearer $CRON_SECRET`; missing configuration returns `503` and an incorrect bearer token returns `401`.
 
-## MVP Success Metric
+## Historical Telegram Success Metric
 
-For Consensus Miami, the goal is simple:
+For the historical Consensus Miami MVP, the goal was simple:
 
 > Between May 4 and May 8, at least 3-5 real ride groups should form through the Telegram bot.
 

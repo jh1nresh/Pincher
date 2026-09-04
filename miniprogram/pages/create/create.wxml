@@ -1,0 +1,28 @@
+<view class="page create-page">
+  <view class="create-header">
+    <view class="back" bindtap="goBack">‹</view>
+    <view class="create-title">发起拼车</view>
+    <view class="small muted">明天</view>
+  </view>
+
+  <view class="form-card">
+    <view class="field-label">出发时间</view>
+    <picker mode="selector" range="{{timeSlots}}" value="{{timeIndex}}" bindchange="onTimeChange">
+      <view class="select-row"><text>{{dateLabel}} {{timeSlots[timeIndex]}}</text><text class="arrow">›</text></view>
+    </picker>
+
+    <view class="field-label">可用座位</view>
+    <view class="select-row">
+      <text>{{seats}} 座</text>
+      <view class="stepper"><button bindtap="decreaseSeats">−</button><text>{{seats}}</text><button bindtap="increaseSeats">＋</button></view>
+    </view>
+
+    <view class="field-label">指定上车点</view>
+    <picker mode="selector" range="{{pickupPoints}}" value="{{pickupIndex}}" bindchange="onPickupChange">
+      <view class="select-row"><text>{{pickupPoints[pickupIndex]}}</text><text class="arrow">›</text></view>
+    </picker>
+  </view>
+
+  <view class="small muted create-note">仅发布固定路线与公共集合点。实际车费由乘车者按人数分摊，平台不代收任何费用。</view>
+  <button class="primary-button create-submit" bindtap="submit">发起拼车</button>
+</view>

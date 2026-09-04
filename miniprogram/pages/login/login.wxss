@@ -1,0 +1,106 @@
+.login-page {
+  background: #fff;
+  padding: 84rpx 48rpx;
+}
+
+.login-mark {
+  font-size: 30rpx;
+  font-weight: 700;
+  margin-bottom: 100rpx;
+}
+
+.login-title {
+  font-size: 50rpx;
+  font-weight: 750;
+  letter-spacing: -2rpx;
+}
+
+.login-subtitle {
+  color: #778398;
+  font-size: 26rpx;
+  line-height: 1.6;
+  margin-top: 16rpx;
+}
+
+.login-form {
+  margin-top: 72rpx;
+}
+
+.phone-row,
+.code-row {
+  display: flex;
+  align-items: center;
+  min-height: 96rpx;
+  border: 2rpx solid #dce3ec;
+  border-radius: 14rpx;
+  margin-bottom: 20rpx;
+  padding: 0 22rpx;
+}
+
+.country-code {
+  border-right: 2rpx solid #e6ebf1;
+  color: #26354c;
+  font-size: 27rpx;
+  padding-right: 22rpx;
+}
+
+.login-input {
+  flex: 1;
+  height: 88rpx;
+  color: #0b1f3a;
+  font-size: 28rpx;
+}
+
+.phone-input {
+  padding-left: 22rpx;
+}
+
+.code-button {
+  background: transparent;
+  color: #1769e0;
+  font-size: 25rpx;
+  padding: 0;
+}
+
+.agreement {
+  display: flex;
+  align-items: flex-start;
+  color: #778398;
+  font-size: 23rpx;
+  line-height: 1.5;
+  margin: 20rpx 4rpx 34rpx;
+}
+
+.checkbox {
+  width: 30rpx;
+  height: 30rpx;
+  border: 2rpx solid #b8c3d1;
+  border-radius: 6rpx;
+  color: #fff;
+  font-size: 23rpx;
+  line-height: 30rpx;
+  margin-right: 12rpx;
+  text-align: center;
+}
+
+.checkbox.checked {
+  background: #35a565;
+  border-color: #35a565;
+}
+
+.login-button {
+  margin-top: 16rpx;
+}
+
+.demo-note {
+  color: #b07a22;
+  font-size: 22rpx;
+  line-height: 1.5;
+  margin-top: 20rpx;
+  text-align: center;
+}
+
+.login-trust {
+  justify-content: center;
+  margin-top: 90rpx;
+}

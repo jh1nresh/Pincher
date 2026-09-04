@@ -1,0 +1,19 @@
+<view class="page profile-page">
+  <view class="topbar"><view class="brand">个人</view><view class="small muted">试点账号</view></view>
+  <view class="profile-card" wx:if="{{user}}">
+    <view class="profile-avatar">{{user.name[0]}}</view>
+    <view class="profile-name">{{user.name}}</view>
+    <view class="small muted">{{user.phone}}</view>
+    <view class="membership">{{user.membership}}</view>
+  </view>
+  <view class="profile-card login-cta" wx:else>
+    <view class="profile-name">登录后管理你的行程</view>
+    <button class="primary-button" bindtap="logout">去登录</button>
+  </view>
+  <view class="profile-menu">
+    <view class="profile-row" bindtap="bindWechat"><text>绑定微信</text><text class="small muted">后端接入后可用 〉</text></view>
+    <view class="profile-row"><text>试点说明</text><text class="small muted">仅限邀请学生</text></view>
+    <view class="profile-row"><text>车费规则</text><text class="small muted">实际车费自行分摊</text></view>
+  </view>
+  <button class="secondary-button logout-button" wx:if="{{user}}" bindtap="logout">退出登录</button>
+</view>
